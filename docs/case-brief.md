@@ -39,7 +39,7 @@ The same for every team, so results can be compared.
 
 - **Weather:** Open-Meteo historical archive (<https://open-meteo.com/en/docs/historical-weather-api>), Basel (47.56 N, 7.59 E), 1 January to 31 December 2025, hourly, timezone Europe/Zurich: outdoor temperature and solar irradiance. Free CSV download, no login.
 - **Heating demand per hour:** `max(0, 10 kW × (20 − T) ÷ 25.6)`, with T = hourly `temperature_2m` in °C, on heating days only. A heating day is a local calendar day (00:00 to 23:00, Europe/Zurich) whose mean of the 24 hourly values is below 12 °C. 25.6 is a fixed constant (20 minus the coldest hour of 2025, −5.6 °C). This gives about 27,000 kWh of heat per year on 206 heating days.
-- The ready hourly profile (weather, heating demand, hot water) is provided as a CSV with the case, so every team starts from the same numbers. *(Not linked on the public case page; see [README](README.md#missing).)*
+- The ready hourly profile (weather, heating demand, hot water) is provided as a CSV with the case, so every team starts from the same numbers. *(Not linked on the case page, even when signed in; asked in the case Q&A. Our rebuilt stand-in: [data/reference_house_2025_hourly.csv](../data/README.md#reference-house-profile).)*
 - **Hot water:** 12 kWh per day, all year (household of four, about 50 litres of hot water per person and day).
 - **Heat storage:** one water tank with about 35 kWh usable capacity (1,000 litres, 30 K temperature spread), no losses.
 - **Electricity price:** ElCom 2026 (<https://www.strompreis.elcom.admin.ch>), IWB, Basel, category H4, total price per kWh including all fees, as one flat price.

@@ -12,6 +12,38 @@ Source: <https://app.sprintd.org/events/sprintd-basel-greentech> (copied 2026-11
 - **Prizes:** CHF 5,000 total. DigitalHeat case prize: dinner with the founders and a chance to keep working on the idea with DigitalHeat (project work or internship).
 - Powered by BaselTech, Basel Circular and Basel 2037.
 
+## Our team: Ctrl+Free
+
+Allocated to the DigitalHeat case. Team formation is closed; roster is locked (4/4).
+
+| Member | Handle | Role |
+|---|---|---|
+| Saifudeen Kolikara | @saif | Team leader |
+| Jumainah Khan | @jumainah | |
+| kamar el morabit | @kamar | |
+| Noella Mabelle | @ella | Stand-in |
+
+## Organizer announcements
+
+- **20 Nov, 20:24:** Case allocation at 20:30, submit case preferences now.
+- **20 Nov, 20:36:** Case allocation is done, everyone has a case. Questions → Infodesk.
+
+## Where to ask
+
+- **Case Q&A** (on the case page): public to everyone at the event, the partner answers there. Our CSV question was posted 20 Nov 23:27.
+- **Event Q&A** (`/events/sprintd-basel-greentech/qa`): event-wide thread, plus a private line to the organizers.
+- **Points of contact:** the case page lists two DigitalHeat co-initiators (one for concept and business questions, one for technical questions), visible to accepted builders only. Their contact details are not copied here because this repo will be public.
+- **Mentors:** bookable from the event page ("Book a mentor").
+
+## Venue basics (from the Builder Guide)
+
+[Builder Guide](https://bramble-breakfast-fd1.notion.site/Guidebook-40801406bbb181ad83a4f1410862719e) (Notion).
+
+- Wear your badge at all times, including at night.
+- Main entrance east only. Open Fri until 19:00 and Sat 07:00–17:00; all other times, including all of Sunday, it's locked. Use the door phone number in the guide.
+- Food only in Restaurant EG West; elsewhere only drinks with a lid.
+- WiFi: eduroam for Swiss university students, otherwise FHNW Public with an SMS code.
+
 ## Schedule (DigitalHeat-relevant items in bold)
 
 ### Friday 20 Nov

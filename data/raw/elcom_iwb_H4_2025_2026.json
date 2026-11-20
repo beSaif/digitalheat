@@ -1,0 +1,84 @@
+{
+    "data": {
+        "observations": [
+            {
+                "period": "2025",
+                "category": "H4",
+                "operator": "624",
+                "operatorLabel": "IWB Industrielle Werke Basel",
+                "municipality": "2701",
+                "municipalityLabel": "Basel",
+                "total": 33.856,
+                "gridusage": 13.162,
+                "energy": 10.892,
+                "charge": 7.501,
+                "aidfee": 2.3
+            },
+            {
+                "period": "2025",
+                "category": "H4",
+                "operator": "624",
+                "operatorLabel": "IWB Industrielle Werke Basel",
+                "municipality": "2702",
+                "municipalityLabel": "Bettingen",
+                "total": 33.856,
+                "gridusage": 13.162,
+                "energy": 10.892,
+                "charge": 7.501,
+                "aidfee": 2.3
+            },
+            {
+                "period": "2025",
+                "category": "H4",
+                "operator": "624",
+                "operatorLabel": "IWB Industrielle Werke Basel",
+                "municipality": "2703",
+                "municipalityLabel": "Riehen",
+                "total": 33.856,
+                "gridusage": 13.162,
+                "energy": 10.892,
+                "charge": 7.501,
+                "aidfee": 2.3
+            },
+            {
+                "period": "2026",
+                "category": "H4",
+                "operator": "624",
+                "operatorLabel": "IWB Industrielle Werke Basel",
+                "municipality": "2701",
+                "municipalityLabel": "Basel",
+                "total": 33.25,
+                "gridusage": 11.414,
+                "energy": 10.892,
+                "charge": 7.443,
+                "aidfee": 2.3
+            },
+            {
+                "period": "2026",
+                "category": "H4",
+                "operator": "624",
+                "operatorLabel": "IWB Industrielle Werke Basel",
+                "municipality": "2703",
+                "municipalityLabel": "Riehen",
+                "total": 33.25,
+                "gridusage": 11.414,
+                "energy": 10.892,
+                "charge": 7.443,
+                "aidfee": 2.3
+            },
+            {
+                "period": "2026",
+                "category": "H4",
+                "operator": "624",
+                "operatorLabel": "IWB Industrielle Werke Basel",
+                "municipality": "2702",
+                "municipalityLabel": "Bettingen",
+                "total": 33.25,
+                "gridusage": 11.414,
+                "energy": 10.892,
+                "charge": 7.443,
+                "aidfee": 2.3
+            }
+        ]
+    }
+}
