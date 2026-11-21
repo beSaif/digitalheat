@@ -2,3 +2,6 @@
 __pycache__/
 .venv/
 runs/
+
+# Scanned building plans of the city house (20 MB); download link in data/README.md
+data/raw/city_house/plans/

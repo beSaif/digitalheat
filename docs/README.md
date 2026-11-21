@@ -10,7 +10,7 @@
 | [measure-on-your-machine.md](measure-on-your-machine.md) | Prompt for teammates to run and measure the jobs on their own laptops, so we can average |
 | [submission.md](submission.md) | What the platform's submission form asks for, and what to fix before submitting |
 | [event.md](event.md) | Our team, organizer announcements, where to ask questions, venue basics, schedule, mentors, perks |
-| [../data/README.md](../data/README.md) | The input data: reference-house hourly profile, weather, electricity price, MLPerf summary |
+| [../data/README.md](../data/README.md) | The input data: reference-house hourly profile, weather, electricity price, MLPerf summary, real gas and electricity data of a Basel house with four apartments |
 
 ## Key deadlines
 
@@ -40,7 +40,8 @@ Pitch must open with those key figures, then demo a January day, a July day, and
 
 ## Open items
 
-- **Official reference-house CSV:** not linked on the case page, even for signed-in builders. Asked in the case Q&A (20 Nov, 23:27). Until it arrives, `data/reference_house_2025_hourly.csv` is our rebuilt stand-in; it matches the case's coldest hour, 206 heating days and about 27,000 kWh.
+- **Official reference-house CSV:** never published. Our Q&A question (20 Nov, 23:27) was answered on 21 Nov, 08:21 with real data from a Basel house with four apartments, which is a different building (see [data/README.md](../data/README.md#city-house-with-four-apartments-real-data)). `data/reference_house_2025_hourly.csv`, rebuilt from the case's formula, stays our reference; it matches the case's coldest hour, 206 heating days and about 27,000 kWh.
+- **City house data (new 21 Nov):** downloaded and summarised, not used in any model yet. The case allows testing other houses on top of the reference house.
 - **Repo is private:** must be opened up for the jury before submitting (see [submission.md](submission.md)).
 - **Unverified numbers in [assumption-limits.md](assumption-limits.md):** tank losses and server outlet temperatures are general engineering ranges; check them against the sources named there before using them in the pitch.
 - **Jobs per day:** not decided (unlimited backlog, sourced trace, or demand sweep). See [workloads.md](workloads.md#jobs-per-day-open).
