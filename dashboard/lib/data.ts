@@ -1,3 +1,17 @@
+export type ServiceSpec = {
+  what: string;
+  unit: string;
+  unit_per_server_h: number;
+  unit_range: [number, number];
+  checkpoint: string;
+  input: string;
+  output: string;
+  bench: string;
+  list_usd: { low: number; central: number; high: number };
+  list_unit: string;
+  measured_on_laptop: string | null;
+};
+
 export type JobType = {
   id: string;
   name: string;
@@ -5,6 +19,88 @@ export type JobType = {
   units: number; // half server-hours
   due_h: number;
   detail: string;
+  service: ServiceSpec;
+};
+
+export type MeasuredJob = {
+  id: string;
+  name: string;
+  model: string;
+  item: string;
+  items_per_s: [number, number];
+  j_per_item: number;
+  items_per_server_h: number;
+  items_per_job: number;
+  server_h_per_job: number;
+  due_h: number;
+};
+
+export type Money = {
+  sold_server_h: number;
+  electricity_chf: number;
+  heat_value_chf: number;
+  income_chf: number;
+  breakeven_case: number | null;
+  breakeven_homeowner: number | null;
+  installed_chf: number;
+  fixed_chf_yr: number;
+  price_needed: number | null;
+  margin_chf: number;
+};
+
+export type CostLine = { label: string; chf: number; kind: "sourced" | "computed" | "assumption" };
+
+export type Economics = {
+  electricity_chf_kwh: number;
+  electricity_source: string;
+  heat_pump_cop: number;
+  compute_price: number;
+  compute_price_note: string;
+  occ_alt: number;
+  occ_alt_note: string;
+  hardware: {
+    installed_house_chf: number;
+    installed_server_chf: number;
+    maint_house_chf_yr: number;
+    maint_server_chf_yr: number;
+    cards_server_chf_yr: number;
+    insurance_share_yr: number;
+    uplink_house_chf_yr: number;
+    life_y: number;
+  };
+  price_refs: { label: string; lo: number; hi: number; kind: string; note: string }[];
+  server: {
+    name: string;
+    chassis: string;
+    gpu: string;
+    gpu_tdp_w: number;
+    gpu_count: number;
+    gpu_memory_gb: number;
+    cpu: string;
+    cooling: string;
+    wall_w: { low: number; central: number; high: number };
+    card_chf: { low: number; central: number; high: number };
+    box_lines_chf: CostLine[];
+    house_lines_chf: CostLine[];
+    bench: string;
+    status: string;
+  };
+};
+
+export type ServiceStats = {
+  id: string;
+  offered: number;
+  admitted: number;
+  refused_heat: number;
+  refused_conflict: number;
+  missed: number;
+  admitted_server_h: number;
+  refused_server_h: number;
+  units_sold: number;
+  monthly_server_h: number[];
+  monthly_refused_server_h: number[];
+  site_server_h: number[];
+  turnaround_h: { median: number; p95: number; max: number } | null;
 };
 
 export type Site = {
@@ -28,6 +124,8 @@ export type Site = {
     run_server_h: number;
     utilisation: number;
   };
+  money: Money;
+  money_occ60: Money;
 };
 
 export type City = {
@@ -56,12 +154,16 @@ export type Fleet = {
     hours: number;
     constants: { server_kw: number; heat_recovery: number; price_chf_kwh: number; heat_value_chf_kwh: number };
     job_types: JobType[];
+    measured_jobs: MeasuredJob[];
+    economics: Economics;
+    scales?: { demand: number; served: number; soc: number };
     weather: string;
     time_note: string;
   };
   cities: City[];
   sites: Site[];
   totals: Record<string, number>;
+  services: ServiceStats[];
   hourly: SiteHourly[];
   temps: Record<string, number[]>;
   daily_jobs: { offered: number[]; refused: number[]; admitted_server_h: number[] };

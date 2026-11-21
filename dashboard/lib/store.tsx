@@ -27,6 +27,11 @@ export function FleetProvider({ children }: { children: React.ReactNode }) {
     fetch("/data/fleet.json")
       .then((r) => r.json())
       .then((f: Fleet) => {
+        // screens read demand/served as kWh ×10; the file may store them ×100 for the money figures
+        for (const key of ["demand", "served"] as const) {
+          const k = (f.meta.scales?.[key] ?? 10) / 10;
+          if (k !== 1) for (const h of f.hourly) h[key] = h[key].map((v) => v / k);
+        }
         if (Number.isFinite(q) && q > 0) setTRaw(Math.min(H - 1, Math.round(q)));
         setFleet(f);
       });

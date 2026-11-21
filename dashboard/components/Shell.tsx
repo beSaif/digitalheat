@@ -5,7 +5,9 @@ import { usePathname, useRouter } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 import clsx from "clsx";
 import {
+  Banknote,
   Bell,
+  Boxes,
   BookOpen,
   Building2,
   ChevronLeft,
@@ -27,6 +29,8 @@ const NAV = [
   { href: "/", label: "Overview", icon: LayoutGrid, match: (p: string) => p === "/" },
   { href: "/map", label: "Fleet map", icon: MapIcon, match: (p: string) => p.startsWith("/map") },
   { href: "/sites/BS-01", label: "Sites", icon: Building2, match: (p: string) => p.startsWith("/sites") },
+  { href: "/services", label: "Services", icon: Boxes, match: (p: string) => p.startsWith("/services") },
+  { href: "/economics", label: "Economics", icon: Banknote, match: (p: string) => p.startsWith("/economics") },
   { href: "/live", label: "Live demo", icon: Radio, match: (p: string) => p.startsWith("/live") },
 ];
 
