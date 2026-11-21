@@ -1,0 +1,35 @@
+{
+  "_note": "Every number used for computing income and hardware cost, with its source. Read by scheduler/pricing.py.",
+  "usd_chf": {"value": 0.84, "source": "USD/CHF mid-market, about 0.83-0.84 on 11-14 Nov 2026 (Trustnet, xe.com)", "url": "https://www.xe.com/currencycharts/?from=USD&to=CHF"},
+  "reference_server": {
+    "value": "2x AMD EPYC 9654 (192 cores)",
+    "why": "A dual EPYC 9654 server draws 1.0-1.2 kW at the wall under full load, so it is the case's 1 kW reference server.",
+    "source": "ServeTheHome, AMD EPYC Genoa review",
+    "url": "https://www.servethehome.com/amd-epyc-genoa-gaps-intel-xeon-in-stunning-fashion/9/"
+  },
+  "cloud_same_server": {
+    "instance": "AWS c7a.48xlarge (192 AMD EPYC Genoa cores), eu-central-1 Frankfurt, Linux",
+    "on_demand_usd_h": 11.244,
+    "spot_usd_h": 3.26,
+    "source": "AWS EC2 pricing via devzero.io instance page (spot price moves; checked Nov 2026)",
+    "url": "https://www.devzero.io/instances/aws/c7a.48xlarge"
+  },
+  "managed_services": {
+    "embed": {"service": "Amazon Titan Text Embeddings V2 on Bedrock", "usd": 0.02, "per": "1M tokens",
+              "url": "https://aws.amazon.com/blogs/machine-learning/get-started-with-amazon-titan-text-embeddings-v2-a-new-state-of-the-art-embeddings-model-on-amazon-bedrock/"},
+    "rerank": {"service": "Cohere Rerank 3.5 on Amazon Bedrock", "usd": 2.0, "per": "1,000 queries of up to 100 documents",
+               "url": "https://aws.amazon.com/bedrock/pricing/"}
+  },
+  "tokens_per_abstract": {"value": 239.7, "source": "measured: mean MiniLM tokens of the 5,183 SciFact abstracts as we embed them (truncated at 256)"},
+  "rerank_docs_per_query": {"value": 100, "source": "our job definition: 50k queries x 100 candidates = 5M pairs"},
+  "hardware": {
+    "chf_per_server": 25000,
+    "years": 5,
+    "source": "Listed dual EPYC 9654 server, 512 GB DDR5: USD 23,028 = CHF 19,300 (AVADirect). Plus about 30% for 2026 memory prices (server DRAM roughly doubled since Q1 2025, Counterpoint) and water cooling: our estimate.",
+    "url": "https://www.networkworld.com/article/4093752/server-memory-prices-could-double-by-2026-as-ai-demand-strains-supply.html"
+  },
+  "sell_price": {
+    "default": "spot",
+    "why": "Our compute pauses when the heat is not needed, like AWS spot capacity, so we price it like spot: the cautious choice."
+  }
+}

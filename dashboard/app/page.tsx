@@ -3,37 +3,23 @@
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import clsx from "clsx";
-import { MapPinPlus, Pause, Play, RotateCcw, Snowflake, Square, Sun } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, MapPinPlus, Pause, Play, RotateCcw, Snowflake, Square, Sun } from "lucide-react";
 import { useFleet } from "@/lib/store";
 import { fmtDate, fmtDay, fmtTime, hourDate } from "@/lib/data";
-import { DEFAULT_SITES, KIND_LABEL, KIND_SERVERS, plainSite, useSchedule, type Kind, type Schedule, type SiteIn } from "@/lib/schedule";
-import { Card, Loading } from "@/components/ui";
+import { DEFAULT_SITES, KIND_LABEL, KIND_SERVERS, plainSite, useSavedSites, useSchedule, type Kind, type Schedule, type SiteIn } from "@/lib/schedule";
+import { Card, Loading, PayChip } from "@/components/ui";
 
 const SitesMap = dynamic(() => import("@/components/SitesMap").then((m) => m.SitesMap), { ssr: false });
 
 const WINTER_T = 14 * 24 + 6; // 15 Jan, 06:00
 const SUMMER_T = 195 * 24 + 6; // 15 Jul, 06:00
-const STORE = "dh.sites.v1";
 
 export default function Overview() {
   const { t, setT, playing, setPlaying, speed, year } = useFleet();
-  const [sites, setSites] = useState<SiteIn[]>(DEFAULT_SITES);
+  const [sites, save] = useSavedSites();
   const [selected, setSelected] = useState(1);
   const [adding, setAdding] = useState(false);
-
-  useEffect(() => {
-    let saved: SiteIn[] | null = null;
-    try {
-      saved = JSON.parse(localStorage.getItem(STORE) || "null");
-    } catch {}
-    if (Array.isArray(saved) && saved.length) Promise.resolve(saved).then(setSites);
-  }, []);
-  const save = (next: SiteIn[]) => {
-    setSites(next);
-    try {
-      localStorage.setItem(STORE, JSON.stringify(next));
-    } catch {}
-  };
 
   const { data, loading, error } = useSchedule(sites, year);
   const base = useSchedule(DEFAULT_SITES, year).data;
@@ -168,6 +154,7 @@ function ServersCard({ s, t }: { s: Schedule; t: number }) {
 
 function PriceCard({ s, base, changed, reset }: { s: Schedule; base: Schedule | null; changed: boolean; reset: () => void }) {
   const p = s.fleet.price_chf_per_server_h ?? 0;
+  const m = s.fleet.money;
   const d = base?.fleet.price_chf_per_server_h != null ? p - base.fleet.price_chf_per_server_h : 0;
   return (
     <Card>
@@ -176,6 +163,11 @@ function PriceCard({ s, base, changed, reset }: { s: Schedule; base: Schedule | 
         CHF {p.toFixed(2)}
         <span className="ml-1 text-[16px] font-medium text-muted">/ server-h</span>
       </div>
+      <Link href="/money" className="mt-3 flex items-center gap-2 text-[13px] text-muted hover:text-ink">
+        {m && <PayChip ok={m.pays_off} />}
+        AWS CHF {s.constants.aws_spot_chf_h.toFixed(2)}
+        <ArrowRight size={13} />
+      </Link>
       {changed && (
         <button onClick={reset} className="mt-3 flex items-center gap-1.5 text-[13px] text-muted hover:text-ink">
           <span className={clsx("font-semibold", d > 0 ? "text-rust" : "text-[#2f6e75]")}>

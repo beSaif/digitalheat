@@ -44,7 +44,22 @@ export type YearFig = {
   hardware_chf: number;
   break_even_chf_per_server_h: number | null;
   price_chf_per_server_h: number | null;
+  money: Money | null;
 };
+
+/** Computing income and where the model stops paying off (scheduler/pricing.py). */
+export type Money = {
+  sell_chf_per_server_h: number;
+  income_chf: number;
+  profit_chf: number;
+  pays_off: boolean;
+  min_price_chf_per_server_h: number;
+  min_utilisation: number | null;
+  max_electricity_chf_kwh: number;
+  max_hardware_chf_per_server: number;
+};
+
+export type JobPrice = { items: number; server_h: number; spot_chf: number; on_demand_chf: number; service_chf: number; service: string };
 
 export type Series = {
   demand: number[];
@@ -63,11 +78,25 @@ export type Series = {
   moved_in: number[];
   started: number[];
   finished: number[];
+  /** jobs paused in memory at this site at the end of the hour */
+  paused_now: number[];
+  /** jobs saved at a checkpoint, waiting for heat */
+  waiting_now: number[];
 };
 
 export type Schedule = {
   year: number;
-  constants: { heat_recovery: number; electricity_chf_kwh: number; heat_value_chf_kwh: number; hardware_chf_per_server: number; hardware_years: number };
+  constants: {
+    heat_recovery: number;
+    electricity_chf_kwh: number;
+    heat_value_chf_kwh: number;
+    hardware_chf_per_server: number;
+    hardware_years: number;
+    sell_chf_per_server_h: number;
+    aws_spot_chf_h: number;
+    aws_on_demand_chf_h: number;
+  };
+  job_prices: Record<"embed" | "rerank", JobPrice>;
   job_types: Record<"embed" | "rerank", { server_h: number; due_h: number; arrival_hours: number[]; backlog: boolean }>;
   sites: (SiteIn & { tank_kwh: number; size: number; label: string; year: YearFig })[];
   fleet: YearFig;
@@ -76,6 +105,27 @@ export type Schedule = {
   /** [id, origin, arrive, due, site, start, finish, status (0 done, 1 missed, 2 open), forced] */
   deadline_jobs: number[][];
 };
+
+const STORE = "dh.sites.v1";
+
+/** The sites the user set up on the overview (kept in this browser). */
+export function useSavedSites() {
+  const [sites, setSites] = useState<SiteIn[]>(DEFAULT_SITES);
+  useEffect(() => {
+    let saved: SiteIn[] | null = null;
+    try {
+      saved = JSON.parse(localStorage.getItem(STORE) || "null");
+    } catch {}
+    if (Array.isArray(saved) && saved.length) Promise.resolve(saved).then(setSites);
+  }, []);
+  const save = (next: SiteIn[]) => {
+    setSites(next);
+    try {
+      localStorage.setItem(STORE, JSON.stringify(next));
+    } catch {}
+  };
+  return [sites, save] as const;
+}
 
 /** What the scheduler needs to know about a site (no UI flags). */
 export const plainSite = (s: SiteIn) => ({ id: s.id, kind: s.kind, name: s.name, lat: s.lat, lon: s.lon, servers: s.servers });

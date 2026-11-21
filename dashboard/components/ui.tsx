@@ -93,3 +93,11 @@ export const STATE_LABEL = {
   "idle-heat": { label: "Idle · no heat", tone: "hatch" as const },
   "idle-work": { label: "Idle · no work", tone: "neutral" as const },
 };
+
+export function PayChip({ ok }: { ok: boolean }) {
+  return (
+    <span className={clsx("rounded-full px-2 py-0.5 text-[12px] font-semibold", ok ? "bg-[#dcebe9] text-[#2f6e75]" : "bg-amber-soft text-rust-deep")}>
+      {ok ? "Pays off" : "Loses money"}
+    </span>
+  );
+}
