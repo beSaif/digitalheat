@@ -1,0 +1,14 @@
+{
+ "url": "https://archive-api.open-meteo.com/v1/archive?latitude=46.88042%2C47.02076%2C46.89611%2C46.95805%2C47.04057%2C47.17242%2C47.20791%2C47.48455&longitude=8.64441%2C8.65414%2C8.24531%2C8.36609%2C9.06804%2C8.51745%2C7.53714%2C7.73446&start_date=2025-01-01&end_date=2025-12-31&hourly=temperature_2m&timezone=Europe%2FZurich&format=csv",
+ "names": [
+  "Altdorf",
+  "Schwyz",
+  "Sarnen",
+  "Stans",
+  "Glarus",
+  "Zug",
+  "Solothurn",
+  "Liestal"
+ ],
+ "downloaded": "2026-11-21"
+}
