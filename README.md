@@ -25,9 +25,18 @@ uv venv --python 3.11 .venv && uv pip install --python .venv/bin/python -r requi
 
 Models download from Hugging Face on first run (~180 MB). Measurement uses the macOS battery gauge, so it needs an Apple-silicon laptop on battery; running the jobs works anywhere. To add your machine to the team average, see [docs/measure-on-your-machine.md](docs/measure-on-your-machine.md).
 
+### Operator dashboard
+
+A Next.js fleet console in [`dashboard/`](dashboard/README.md): live KPIs, a Swiss fleet map and a 3D view of each site with its servers, replaying a simulated fleet of 24 houses in 10 Swiss cities over the 2025 weather. **Scenario data, not telemetry.**
+
+```bash
+python3 scripts/build_fleet_scenario.py   # regenerate dashboard/public/data (standard library, seed 11)
+cd dashboard && pnpm install && pnpm dev  # http://localhost:3000
+```
+
 ## AI tools
 
-Repository set-up, data collection and documentation were done with Claude Code.
+Repository set-up, data collection, analysis scripts, the dashboard and documentation were done with Claude Code. The dashboard started from the `create-next-app` template (Next.js, Tailwind).
 
 ## Step 1: House data
 
