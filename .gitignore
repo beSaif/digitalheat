@@ -1,2 +1,5 @@
 .DS_Store
 __pycache__/
+
+# Scanned building plans of the city house (20 MB); download link in data/README.md
+data/raw/city_house/plans/

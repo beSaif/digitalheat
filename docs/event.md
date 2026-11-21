@@ -30,7 +30,7 @@ Allocated to the DigitalHeat case. Team formation is closed; roster is locked (4
 
 ## Where to ask
 
-- **Case Q&A** (on the case page): public to everyone at the event, the partner answers there. Our CSV question was posted 20 Nov 23:27.
+- **Case Q&A** (on the case page): public to everyone at the event, the partner answers there. Our CSV question was posted 20 Nov 23:27 and answered 21 Nov 08:21 with the city-house data (see [case-brief.md](case-brief.md#case-qa-public-thread-on-the-case-page)).
 - **Event Q&A** (`/events/sprintd-basel-greentech/qa`): event-wide thread, plus a private line to the organizers.
 - **Points of contact:** the case page lists two DigitalHeat co-initiators (one for concept and business questions, one for technical questions), visible to accepted builders only. Their contact details are not copied here because this repo will be public.
 - **Mentors:** bookable from the event page ("Book a mentor").

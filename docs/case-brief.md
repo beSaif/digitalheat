@@ -4,7 +4,7 @@
 
 Category: Useful heat from computing · Case partner: DigitalHeat
 Event: sprintd Basel · GreenTech Edition, 20–22 November 2026
-Source: <https://app.sprintd.org/events/sprintd-basel-greentech/cases/useful-load-useful-heat-can-your-computing-power-heat-a-home> (copied 2026-11-20)
+Source: <https://app.sprintd.org/events/sprintd-basel-greentech/cases/useful-load-useful-heat-can-your-computing-power-heat-a-home> (copied 2026-11-20; re-checked 2026-11-21 10:40: case text unchanged, two resources added, see [Resources](#resources-shared-by-the-case-partner))
 
 ---
 
@@ -39,7 +39,7 @@ The same for every team, so results can be compared.
 
 - **Weather:** Open-Meteo historical archive (<https://open-meteo.com/en/docs/historical-weather-api>), Basel (47.56 N, 7.59 E), 1 January to 31 December 2025, hourly, timezone Europe/Zurich: outdoor temperature and solar irradiance. Free CSV download, no login.
 - **Heating demand per hour:** `max(0, 10 kW × (20 − T) ÷ 25.6)`, with T = hourly `temperature_2m` in °C, on heating days only. A heating day is a local calendar day (00:00 to 23:00, Europe/Zurich) whose mean of the 24 hourly values is below 12 °C. 25.6 is a fixed constant (20 minus the coldest hour of 2025, −5.6 °C). This gives about 27,000 kWh of heat per year on 206 heating days.
-- The ready hourly profile (weather, heating demand, hot water) is provided as a CSV with the case, so every team starts from the same numbers. *(Not linked on the case page, even when signed in; asked in the case Q&A. Our rebuilt stand-in: [data/reference_house_2025_hourly.csv](../data/README.md#reference-house-profile).)*
+- The ready hourly profile (weather, heating demand, hot water) is provided as a CSV with the case, so every team starts from the same numbers. *(Still not on the case page. We asked in the case Q&A; the answer on 21 Nov was an upload of real data from a Basel house with four apartments, see [Resources](#resources-shared-by-the-case-partner). That is a different building, not this profile. Our rebuilt profile stays the reference: [data/reference_house_2025_hourly.csv](../data/README.md#reference-house-profile).)*
 - **Hot water:** 12 kWh per day, all year (household of four, about 50 litres of hot water per person and day).
 - **Heat storage:** one water tank with about 35 kWh usable capacity (1,000 litres, 30 K temperature spread), no losses.
 - **Electricity price:** ElCom 2026 (<https://www.strompreis.elcom.admin.ch>), IWB, Basel, category H4, total price per kWh including all fees, as one flat price.
@@ -122,3 +122,13 @@ Dinner with the founders and the chance to keep working on the idea with Digital
 - [MLPerf Inference results with power measurements](https://mlcommons.org/benchmarks/inference-datacenter/)
 - [Alibaba GPU cluster trace 2020](https://github.com/alibaba/clusterdata/tree/master/cluster-trace-gpu-v2020)
 - [PDF of the case presentation](https://www.dropbox.com/scl/fi/6byhvibtqd73fmtkax6b7/DigitalHeat.pdf?rlkey=inpoz7g3kumwogq624yhx5z6y&dl=0) — local copy: [DigitalHeat-case-presentation.pdf](DigitalHeat-case-presentation.pdf), text in [case-presentation.md](case-presentation.md)
+- [Bodycams and AI Application](https://www.axon.com/products) (added 21 Nov) — Axon's product page. The case page gives no explanation; we read it as an example of a real AI workload (video and audio from body cameras).
+- [Data of a city home, 4 apartments](https://www.dropbox.com/scl/fi/zdz4taiy03zs6r6pf20rz/Housedata.zip?rlkey=1a7i86b1ar9t93drl5a0jmted&dl=0) (added 21 Nov) — anonymised gas and electricity data 2021–2025 and building plans of a real Basel house. Local copy and summary: [data/README.md](../data/README.md#city-house-with-four-apartments-real-data).
+
+## Case Q&A (public thread on the case page)
+
+- **20 Nov, 23:27, us:** Where can we download the reference-house hourly CSV (weather, heating demand, hot water)? The case says it's provided, but the case page doesn't link it.
+- **21 Nov, 08:21, case partner:** "I uploaded it. It is a typical Basel City house with 4 appartments."
+- **21 Nov, 10:38, us:** Thank you.
+
+What was uploaded is the city-home data above, not the hourly profile of the reference house. See the note under [Reference house](#reference-house).
