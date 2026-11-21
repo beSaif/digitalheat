@@ -1,0 +1,11 @@
+{
+ "url": "https://archive-api.open-meteo.com/v1/archive?latitude=46.47700%2C46.52855%2C46.23653%2C46.32441%2C46.35112&longitude=8.80125%2C8.61189%2C9.12748%2C10.05823%2C9.62080&start_date=2025-01-01&end_date=2025-12-31&hourly=temperature_2m&timezone=Europe%2FZurich&format=csv",
+ "names": [
+  "Faido",
+  "Airolo",
+  "Roveredo",
+  "Poschiavo",
+  "Vicosoprano"
+ ],
+ "downloaded": "2026-11-21"
+}

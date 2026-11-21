@@ -1,0 +1,14 @@
+{
+ "url": "https://archive-api.open-meteo.com/v1/archive?latitude=46.29370%2C46.31667%2C46.10020%2C46.31316%2C46.37943%2C46.01998%2C46.10805%2C46.50536&longitude=7.88149%2C7.98333%2C7.22651%2C7.47914%2C7.62687%2C7.74863%2C7.92741%2C8.30959&start_date=2025-01-01&end_date=2025-12-31&hourly=temperature_2m&timezone=Europe%2FZurich&format=csv",
+ "names": [
+  "Visp",
+  "Brig",
+  "Verbier",
+  "Crans-Montana",
+  "Leukerbad",
+  "Zermatt",
+  "Saas-Fee",
+  "Ulrichen"
+ ],
+ "downloaded": "2026-11-21"
+}

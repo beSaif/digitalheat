@@ -1,0 +1,14 @@
+{
+ "url": "https://archive-api.open-meteo.com/v1/archive?latitude=46.53399%2C46.42886%2C46.46852%2C46.44527%2C46.17086%2C45.87019%2C45.83203%2C46.35972&longitude=9.87276%2C9.76364%2C9.65088%2C9.57947%2C8.79953%2C8.98160%2C9.03119%2C8.96965&start_date=2025-01-01&end_date=2025-12-31&hourly=temperature_2m&timezone=Europe%2FZurich&format=csv",
+ "names": [
+  "Samedan",
+  "Sils",
+  "Bivio",
+  "Juf",
+  "Locarno",
+  "Mendrisio",
+  "Chiasso",
+  "Biasca"
+ ],
+ "downloaded": "2026-11-21"
+}
