@@ -1,10 +1,12 @@
 {
  "what": "mean over team machines, written by scripts/combine_measurements.py",
  "files": [
-  "workloads_2026-11-21_jk_apple-m1.json"
+  "workloads_2026-11-21_jk_apple-m1.json",
+  "workloads_2026-11-21_kamar_apple-m3.json",
+  "workloads_2026-11-21_noella_apple-m4.json"
  ],
  "machine": {
-  "cpu": "mean of 1 machine(s)"
+  "cpu": "mean of 3 machine(s)"
  },
  "jobs": {
   "embed": {
@@ -12,68 +14,72 @@
    "model": "sentence-transformers/all-MiniLM-L6-v2",
    "revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
    "machines": [
-    "jk: Apple M1"
+    "jk: Apple M1",
+    "kamar: Apple M3",
+    "noella: Apple M4"
    ],
    "stats": {
     "items_per_s": {
-     "n": 1,
-     "mean": 50.959999524765216,
+     "n": 3,
+     "mean": 77.01356462419486,
      "min": 50.959999524765216,
-     "max": 50.959999524765216,
-     "stdev": 0.0
+     "max": 106.36085051325504,
+     "stdev": 27.846903239718543
     },
     "gross_j_per_item": {
-     "n": 1,
-     "mean": 0.3222931900309212,
-     "min": 0.3222931900309212,
+     "n": 2,
+     "mean": 0.3085874393247351,
+     "min": 0.2948816886185489,
      "max": 0.3222931900309212,
-     "stdev": 0.0
+     "stdev": 0.019382858531193082
     },
     "marginal_j_per_item": {
-     "n": 1,
-     "mean": 0.20505731567382923,
+     "n": 2,
+     "mean": 0.22320037891195985,
      "min": 0.20505731567382923,
-     "max": 0.20505731567382923,
-     "stdev": 0.0
+     "max": 0.24134344215009046,
+     "stdev": 0.025658166094357036
     }
    },
-   "items_per_s": 50.959999524765216,
-   "gross_j_per_item": 0.3222931900309212,
-   "marginal_j_per_item": 0.20505731567382923
+   "items_per_s": 77.01356462419486,
+   "gross_j_per_item": 0.3085874393247351,
+   "marginal_j_per_item": 0.22320037891195985
   },
   "rerank": {
    "item": "one (query, abstract) pair scored",
    "model": "cross-encoder/ms-marco-MiniLM-L6-v2",
    "revision": "233902d25c440f23af6f7d6e94d2946bac0bee0a",
    "machines": [
-    "jk: Apple M1"
+    "jk: Apple M1",
+    "kamar: Apple M3",
+    "noella: Apple M4"
    ],
    "stats": {
     "items_per_s": {
-     "n": 1,
-     "mean": 19.497471195522188,
+     "n": 3,
+     "mean": 31.397645897605166,
      "min": 19.497471195522188,
-     "max": 19.497471195522188,
-     "stdev": 0.0
+     "max": 42.5084148983968,
+     "stdev": 11.525764770510444
     },
     "gross_j_per_item": {
-     "n": 1,
-     "mean": 0.6541045496358303,
-     "min": 0.6541045496358303,
+     "n": 2,
+     "mean": 0.6385556266570194,
+     "min": 0.6230067036782083,
      "max": 0.6541045496358303,
-     "stdev": 0.0
+     "stdev": 0.021989497756929176
     },
     "marginal_j_per_item": {
-     "n": 1,
-     "mean": 0.34768839742759333,
+     "n": 2,
+     "mean": 0.4240366976979211,
      "min": 0.34768839742759333,
-     "max": 0.34768839742759333,
-     "stdev": 0.0
+     "max": 0.5003849979682489,
+     "stdev": 0.10797280170643096
     }
    },
-   "items_per_s": 19.497471195522188,
-   "gross_j_per_item": 0.6541045496358303,
-   "marginal_j_per_item": 0.34768839742759333
+   "items_per_s": 31.397645897605166,
+   "gross_j_per_item": 0.6385556266570194,
+   "marginal_j_per_item": 0.4240366976979211
   }
  }
 }

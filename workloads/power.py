@@ -70,9 +70,22 @@ def wait_for_publish(after=None, timeout_s=240, poll_s=0.5):
     raise TimeoutError("battery gauge did not publish a new value in time")
 
 
+def _signed_delta(a, b):
+    """b - a for 64-bit counters, read as a signed number (handles wrap-around)."""
+    d = (b - a) % 2**64
+    return d - 2**64 if d >= 2**63 else d
+
+
 def average_w(a, b):
-    """Average whole-system power (W) and covered seconds between two snapshots."""
+    """Average whole-system power (W) and covered seconds between two snapshots.
+
+    The sign convention differs between machines: on an M1 / macOS 26.3 the
+    system-load samples are positive while on battery, on an M4 / macOS 26.6
+    they are negative (SystemLoad = -BatteryPower; see docs/workloads.md,
+    "Apple M4 battery-gauge diagnostic"). The magnitude is the power drawn in
+    both cases, so we use it.
+    """
     n = b.count - a.count
     if n <= 0:
         raise ValueError("snapshots cover no samples; take them at two different publish events")
-    return (b.acc_mw - a.acc_mw) / n / 1000.0, n
+    return abs(_signed_delta(a.acc_mw, b.acc_mw)) / n / 1000.0, n
