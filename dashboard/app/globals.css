@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+/* DigitalHeat brand, taken from the case deck: warm paper, ink black, rust rules, amber figures, teal control */
+@theme inline {
+  --color-paper: #e8e4da;
+  --color-cream: #f6f3ec;
+  --color-card: #fbfaf6;
+  --color-line: #ddd7ca;
+  --color-ink: #141412;
+  --color-ink-2: #2a2926;
+  --color-muted: #6b675e;
+  --color-faint: #9a958a;
+  --color-rust: #c0653a;
+  --color-rust-deep: #8f4423;
+  --color-amber: #f2a65a;
+  --color-amber-soft: #f8d9b3;
+  --color-teal: #5fa8b0;
+  --color-teal-soft: #d5e8ea;
+  --color-alarm: #c62f2f;
+  --font-sans: var(--font-plex);
+  --font-display: var(--font-display);
+}
+
+html,
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+body {
+  font-family: var(--font-plex), system-ui, sans-serif;
+  font-feature-settings: "tnum" 1;
+}
+
+.font-display {
+  font-family: var(--font-display), var(--font-plex), sans-serif;
+  letter-spacing: -0.02em;
+}
+
+/* hatched fill for "not yet / not covered", as in the reference's pending bars */
+.hatch {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(20, 20, 18, 0.28) 0 2px,
+    transparent 2px 7px
+  );
+}
+.hatch-light {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(255, 255, 255, 0.18) 0 2px,
+    transparent 2px 7px
+  );
+}
+
+.grain {
+  background-image: radial-gradient(
+      120% 90% at 100% 0%,
+      rgba(242, 166, 90, 0.22),
+      transparent 55%
+    ),
+    radial-gradient(90% 80% at 0% 100%, rgba(192, 101, 58, 0.28), transparent 60%),
+    linear-gradient(160deg, #1b1a17, #0f0f0e);
+}
+
+.scroll-thin::-webkit-scrollbar {
+  width: 6px;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: var(--color-line);
+  border-radius: 6px;
+}
+
+.maplibregl-ctrl-attrib {
+  font-size: 10px !important;
+}
