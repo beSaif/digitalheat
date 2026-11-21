@@ -93,13 +93,25 @@ export type Job = {
 };
 
 export const H = 8760;
-export const DEFAULT_T = 324 * 24 + 14; // 21 Nov 2025, 14:00, same date as the event
+export const DEFAULT_T = 324 * 24 + 14; // 21 Nov, 14:00, same date as the event
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+/** The weather year on screen. Every model year has 365 days: in leap years 29 February is left out. */
+let YEAR = 2025;
+export function setDataYear(y: number) {
+  YEAR = y;
+}
+export function dataYear() {
+  return YEAR;
+}
+export const isLeap = (y: number) => y % 4 === 0 && (y % 100 !== 0 || y % 400 === 0);
+export const YEARS = Array.from({ length: 10 }, (_, i) => 2025 - i);
+
 export function hourDate(t: number) {
-  return new Date(Date.UTC(2025, 0, 1, 0) + t * 3600_000);
+  const skip = isLeap(YEAR) && t >= 59 * 24 ? 24 : 0;
+  return new Date(Date.UTC(YEAR, 0, 1, 0) + (t + skip) * 3600_000);
 }
 
 export function fmtTime(t: number) {

@@ -4,7 +4,8 @@ Operator dashboard for a scenario fleet of heat-following servers: 24 houses in 
 
 | Screen | Route | What it shows |
 |---|---|---|
-| Overview | `/` | Live operator KPIs (servers running vs heat permit, heat delivered, job queue, refusals), week of heat, jobs due next, site states, year-to-date coverage, year replay |
+| Overview | `/` | House, hospital and spa on a map of Basel; servers running, price of compute, embed and rerank jobs; winter / summer (`lib/sim3.ts`) |
+| Swiss replay | `/replay` | The 24-house scenario: live operator KPIs (servers running vs heat permit, heat delivered, job queue, refusals), week of heat, jobs due next, site states, year-to-date coverage, year replay |
 | Fleet map | `/map` | Swiss cantons coloured by heat demand / servers running / coverage, city pins, city detail card, 7-day heat, coverage trend |
 | Site | `/sites/[id]` | 3D city block (MapLibre + OpenFreeMap) with the house highlighted, the rack with each server's state and job, tank, ±24 h heat permit, per-server detail |
 
@@ -21,5 +22,7 @@ pnpm dev
 Map tiles load from tiles.openfreemap.org, so the site view needs internet. Everything else is served from `public/data`.
 
 ## Data
+
+The Overview's three sites are modelled in `lib/sim3.ts` (assumptions and sources in the file).
 
 Not live telemetry. See the generator's docstring (`../scripts/build_fleet_scenario.py`) and the "Method & data" dialog in the app.

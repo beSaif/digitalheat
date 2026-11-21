@@ -151,7 +151,7 @@ function SitePanel({ fleet, si, t }: { fleet: Fleet; si: number; t: number }) {
 
           {/* year */}
           <div className="mt-6 grid grid-cols-3 gap-2 border-t border-line pt-4 text-[12px]">
-            <Stat v={`${Math.round(site.year.coverage * 100)}%`} k="heat covered, 2025" />
+            <Stat v={`${Math.round(site.year.coverage * 100)}%`} k={`heat covered, ${fleet.meta.year}`} />
             <Stat v={`${Math.round(site.year.utilisation * 100)}%`} k="server utilisation" />
             <Stat v={nf(site.year.run_server_h)} k="server-h of work" />
           </div>
@@ -160,7 +160,7 @@ function SitePanel({ fleet, si, t }: { fleet: Fleet; si: number; t: number }) {
           </button>
           {showInfo && (
             <p className="mt-2 text-[12px] leading-relaxed text-muted">
-              Reference house ×{site.scale.toFixed(2)} on {site.city}&apos;s 2025 hourly temperature.{" "}
+              Reference house ×{site.scale.toFixed(2)} on {site.city}&apos;s {fleet.meta.year} hourly temperature.{" "}
               {site.reference ? "This is the case's reference house unchanged. " : ""}
               The building is the closest OpenStreetMap footprint to a representative address in {site.district}. It is not a real
               customer.

@@ -140,3 +140,25 @@ Code: [`src/swiss_points.py`](src/swiss_points.py) (places, geocoding, weather),
 | Surface accuracy | leave-one-out: annual mean temperature ±0.35 °C (worst 1.9 °C), HGT ±140 Kd (worst 725 Kd); plain IDW is about 4× worse | data | `outputs/interpolation_check.csv` |
 
 Known limits: one weather year; one model grid cell per place (inversions, slopes and valley floors are smoothed); the house formula is linear and ignores sun, wind, thermal mass and occupancy; both house sizings are simplifications ([`docs/criteria.md`](docs/criteria.md#4-limits-read-before-using-these-numbers)). The 16 raw files in `data/raw/swiss_cities/` (with irradiance) come from the earlier 16-city map and are reused.
+
+## Step 2: Scheduler
+
+One scheduler (`scheduler/core.py`) makes the yearly balance, controls the real job and feeds the dashboard. Each hour, for each site:
+
+1. **Heat signal:** room in the tank = capacity − charge.
+2. **Heat permit:** servers = min(N, ⌊(demand + room) ÷ 0.8⌋).
+3. **Deadline reserve:** looks 24 h ahead and keeps tank room for the rerank jobs that will be due.
+4. **Jobs:** rerank jobs go earliest-deadline-first to the site with the most free heat; embed jobs fill the rest. A job that would miss its deadline runs anyway, and its heat is dumped.
+5. **No heat:** if heat returns within 2 h, the job pauses (SIGSTOP). Otherwise it is checkpointed (SIGTERM, exit 75) and goes back to the queue, maybe to another site.
+6. **Heat balance:** heat = 0.8 kW per running server. The tank serves demand first; any heat above capacity is dumped.
+
+```bash
+python3 -m scheduler.balance                 # reference house, 2025
+python3 -m scheduler.balance --fleet         # house + hospital + spa
+python3 -m scheduler.balance --year 2023     # any year 1950–2025 (Open-Meteo weather)
+python3 -m scheduler.balance --sweep 1-12    # servers vs coverage and price
+python3 -m scheduler.live --fleet            # the scheduler runs a real embed job: pause/resume/checkpoint
+python3 -m unittest tests.test_scheduler
+```
+
+Data: workload catalog (embed 0.81 server-h, due 48 h; rerank 0.92 server-h, due 4 h), reference house 2025, Basel city-house gas bills (`scripts/calibrate_city_house.py`, R² 0.93), ElCom 2026 price 0.3325 CHF/kWh, and Open-Meteo hourly weather.

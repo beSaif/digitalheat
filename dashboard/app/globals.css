@@ -74,3 +74,20 @@ body {
 .maplibregl-ctrl-attrib {
   font-size: 10px !important;
 }
+
+/* overview map: jobs fly from the queue to a site */
+@keyframes fly-to-site {
+  0% { left: 50%; top: 36px; opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+  15% { opacity: 1; }
+  100% { left: var(--x); top: var(--y); opacity: 0; transform: translate(-50%, -50%) scale(1); }
+}
+.token {
+  left: 50%;
+  top: 36px;
+  opacity: 0;
+  animation: fly-to-site var(--d) cubic-bezier(0.4, 0, 0.6, 1) var(--delay) both;
+}
+@keyframes pop {
+  0% { color: var(--color-rust); transform: translateY(-2px); }
+  100% { color: inherit; transform: none; }
+}

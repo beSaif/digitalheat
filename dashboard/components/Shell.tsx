@@ -10,6 +10,7 @@ import {
   Building2,
   ChevronLeft,
   ChevronRight,
+  Flame,
   LayoutGrid,
   Map as MapIcon,
   Pause,
@@ -20,10 +21,11 @@ import {
 } from "lucide-react";
 import { Logo } from "./Logo";
 import { useFleet } from "@/lib/store";
-import { cityTemp, fmtDate, fmtTime, siteNow } from "@/lib/data";
+import { YEARS, cityTemp, fmtDate, fmtTime, siteNow } from "@/lib/data";
 
 const NAV = [
   { href: "/", label: "Overview", icon: LayoutGrid, match: (p: string) => p === "/" },
+  { href: "/replay", label: "Swiss replay", icon: Flame, match: (p: string) => p.startsWith("/replay") },
   { href: "/map", label: "Fleet map", icon: MapIcon, match: (p: string) => p.startsWith("/map") },
   { href: "/sites/BS-01", label: "Sites", icon: Building2, match: (p: string) => p.startsWith("/sites") },
 ];
@@ -89,7 +91,7 @@ function Sidebar({ onMethod }: { onMethod: () => void }) {
 
       <div className="grain relative mt-auto overflow-hidden rounded-2xl p-4 text-cream">
         <div className="text-[11px] uppercase tracking-[0.14em] text-amber">Scenario replay</div>
-        <div className="mt-2 font-display text-[19px] font-semibold leading-tight">2025 weather, simulated fleet</div>
+        <div className="mt-2 font-display text-[19px] font-semibold leading-tight">{fleet?.meta.year ?? 2025} weather, simulated fleet</div>
         <p className="mt-1.5 text-[12px] leading-snug text-cream/65">
           Not live telemetry. Every number comes from one seeded run.
         </p>
@@ -105,7 +107,7 @@ function Sidebar({ onMethod }: { onMethod: () => void }) {
 }
 
 function Topbar() {
-  const { fleet, t, setT, playing, setPlaying, speed, setSpeed } = useFleet();
+  const { fleet, t, setT, playing, setPlaying, speed, setSpeed, year, setYear, yearLoading } = useFleet();
   const [q, setQ] = useState("");
   const router = useRouter();
   const matches = useMemo(() => {
@@ -157,9 +159,26 @@ function Topbar() {
 
       {/* one clock drives every screen */}
       <div className="ml-auto flex items-center gap-1 rounded-full bg-ink py-1.5 pl-4 pr-1.5 text-cream">
+        <label className="relative mr-3 flex items-center gap-1 rounded-full bg-white/10 py-1.5 pl-3 pr-2 text-[14px] font-semibold hover:bg-white/15">
+          <span className="sr-only">Weather year</span>
+          <select
+            value={year}
+            onChange={(e) => setYear(Number(e.target.value))}
+            className="cursor-pointer appearance-none bg-transparent pr-4 outline-none"
+            title="Weather year"
+          >
+            {YEARS.map((y) => (
+              <option key={y} value={y} className="text-ink">
+                {y}
+              </option>
+            ))}
+          </select>
+          <ChevronRight size={13} className="pointer-events-none absolute right-2 rotate-90 text-cream/70" />
+          {yearLoading && <span className="ml-1 size-2 animate-pulse rounded-full bg-amber" title="Loading this year" />}
+        </label>
         <div className="mr-2 leading-tight">
           <div className="text-[10px] uppercase tracking-[0.14em] text-amber">Replay</div>
-          <div className="text-[14px] font-semibold tabular-nums">
+          <div className="text-[14px] font-semibold tabular-nums" suppressHydrationWarning>
             {fmtDate(t)} · {fmtTime(t)}
           </div>
         </div>
@@ -235,6 +254,10 @@ function MethodDialog({ onClose }: { onClose: () => void }) {
         </div>
         <h2 className="mt-3 font-display text-[28px] font-semibold leading-tight">A scenario fleet, replayed hour by hour</h2>
         <div className="mt-5 space-y-3 text-[14px] leading-relaxed text-ink-2">
+          <p>
+            <b>Overview.</b> House (4 servers), hospital (15) and spa (11) in Basel, 2025 weather. Scheduler:{" "}
+            <code>scheduler/core.py</code>.
+          </p>
           <p>
             <b>Houses.</b> 24 houses in 10 Swiss cities. Each one is the case&apos;s reference house scaled ×0.6–1.5 and driven
             by its own city&apos;s 2025 hourly temperature (Open-Meteo archive). BS-01 is the reference house itself: 6 servers,

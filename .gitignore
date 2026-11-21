@@ -8,3 +8,4 @@ data/raw/city_house/plans/
 
 # Natural Earth source files (19 MB); re-downloaded by src/swiss_geo.py
 data/raw/natural_earth/
+dashboard/public/data/y*/

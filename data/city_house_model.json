@@ -1,0 +1,11 @@
+{
+ "what": "Basel city house, 4 apartments: heat = base_kw + k_kw_per_K x max(0, 20 - T) on heating days",
+ "base_kw": 2.0499,
+ "k_kw_per_K": 0.4429,
+ "boiler_efficiency": 0.9,
+ "months_used": 45,
+ "r2_monthly": 0.932,
+ "excluded": "2022-10 to 2023-09 (anomalously low, cause unknown)",
+ "source": "data/raw/city_house/Data_Gas_2021-2026_anonymisiert.csv (MESSPUNKT_004), Basel Open-Meteo archive",
+ "generator": "scripts/calibrate_city_house.py"
+}

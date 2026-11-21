@@ -2,6 +2,7 @@
 
     python3 scripts/build_fleet_scenario.py            # uses cached weather
     python3 scripts/build_fleet_scenario.py --download # re-fetch city weather
+    python3 scripts/build_fleet_scenario.py --year 2023  # another weather year -> dashboard/public/data/y2023/
 
 A SCENARIO, not measured data. 24 houses in 10 Swiss cities. Each house is the
 case's reference house (docs/case-brief.md) scaled ×0.6–1.5 and driven by its
@@ -31,11 +32,13 @@ import csv
 import json
 import math
 import random
+import sys
 import urllib.request
 from datetime import date, timedelta
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
 OUT = ROOT / "dashboard" / "public" / "data"
 WEATHER_CACHE = ROOT / "data" / "raw" / "openmeteo_swiss_cities_2025_hourly.json"
 SEED = 11
@@ -124,6 +127,17 @@ def load_weather(download):
     elev["Basel"] = 247.0
     for city, t in temps.items():
         assert len(t) == H, (city, len(t))
+    return temps, elev
+
+
+def load_weather_year(year):
+    """Any other year: Open-Meteo archive per city via scheduler.weather (cached, 29 Feb dropped)."""
+    from scheduler.weather import temperatures, CACHE
+    temps, elev = {}, {}
+    for city, c in CITIES.items():
+        temps[city] = temperatures(c["lat"], c["lon"], year)
+        doc = json.loads((CACHE / f"{c['lat']:.3f}_{c['lon']:.3f}_{year}.json").read_text())
+        elev[city] = doc["elevation"]
     return temps, elev
 
 
@@ -271,8 +285,14 @@ def simulate_site(si, site, demand, rng, jobs):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--download", action="store_true")
+    ap.add_argument("--year", type=int, default=2025)
     args = ap.parse_args()
-    temps, elev = load_weather(args.download)
+    global OUT
+    if args.year == 2025:
+        temps, elev = load_weather(args.download)
+    else:
+        temps, elev = load_weather_year(args.year)
+        OUT = OUT / f"y{args.year}"
     rng = random.Random(SEED)
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "sites").mkdir(exist_ok=True)
@@ -345,7 +365,7 @@ def main():
         "meta": {
             "title": "DigitalHeat Swiss scenario fleet",
             "scenario": True,
-            "year": 2025,
+            "year": args.year,
             "seed": SEED,
             "generator": "scripts/build_fleet_scenario.py",
             "hours": H,
@@ -355,7 +375,7 @@ def main():
                           "heat_value_chf_kwh": round(HEAT_VALUE, 4)},
             "scales": {"demand": 10, "soc": 10, "served": 10, "temp": 10, "run": "half server-hours"},
             "job_types": JOB_TYPES,
-            "weather": "Open-Meteo archive 2025, default model; Basel from data/raw/openmeteo_basel_2025_hourly.csv",
+            "weather": (f"Open-Meteo archive {args.year}, default model" + ("; Basel from data/raw/openmeteo_basel_2025_hourly.csv" if args.year == 2025 else "; 29 Feb dropped in leap years")),
         },
         "cities": [{"name": c, **{k: v for k, v in CITIES[c].items()}, "elevation_m": elev[c]} for c in CITIES],
         "sites": sites,

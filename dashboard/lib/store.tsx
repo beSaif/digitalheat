@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { DEFAULT_T, H, type Fleet, type Job, type JobChunk } from "./data";
+import { DEFAULT_T, H, setDataYear, type Fleet, type Job, type JobChunk } from "./data";
 
 type Ctx = {
   fleet: Fleet | null;
@@ -11,26 +11,57 @@ type Ctx = {
   setPlaying: (p: boolean) => void;
   speed: number; // simulated hours per second
   setSpeed: (s: number) => void;
+  year: number;
+  setYear: (y: number) => void;
+  yearLoading: boolean;
 };
 
 const FleetCtx = createContext<Ctx | null>(null);
+
+// where the Swiss replay for the current year lives (public/data for 2025, public/data/y<year> otherwise)
+let DATA_PATH = "/data";
 
 export function FleetProvider({ children }: { children: React.ReactNode }) {
   const [fleet, setFleet] = useState<Fleet | null>(null);
   const [t, setTRaw] = useState(DEFAULT_T);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(4);
+  const [year, setYearRaw] = useState(2025);
+  setDataYear(year); // date labels follow the chosen year
+  const yearLoading = fleet !== null && fleet.meta.year !== year;
 
   useEffect(() => {
-    // ?t=<hour of year> opens the replay at a given hour (e.g. for a demo link)
-    const q = Number(new URLSearchParams(window.location.search).get("t"));
-    fetch("/data/fleet.json")
-      .then((r) => r.json())
-      .then((f: Fleet) => {
-        if (Number.isFinite(q) && q > 0) setTRaw(Math.min(H - 1, Math.round(q)));
-        setFleet(f);
-      });
+    // ?t=<hour of year> opens the replay at a given hour, ?year=<year> in another weather year
+    const qs = new URLSearchParams(window.location.search);
+    const q = Number(qs.get("t"));
+    const y = Number(qs.get("year"));
+    Promise.resolve().then(() => {
+      if (Number.isFinite(q) && q > 0) setTRaw(Math.min(H - 1, Math.round(q)));
+      if (y >= 1950 && y <= 2025 && y !== 2025) setYearRaw(y);
+    });
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (year === 2025
+      ? Promise.resolve({ path: "/data" })
+      : fetch("/api/fleet-year", { method: "POST", body: JSON.stringify({ year }) }).then((r) => r.json())
+    )
+      .then((r: { path?: string }) => {
+        if (!r.path) throw new Error("no data");
+        return fetch(`${r.path}/fleet.json`).then((x) => x.json().then((f: Fleet) => ({ f, path: r.path! })));
+      })
+      .then(({ f, path }) => {
+        if (cancelled) return;
+        DATA_PATH = path;
+        chunkCache.clear();
+        setFleet(f);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [year]);
 
   const setT = useCallback((v: number | ((t: number) => number)) => {
     setTRaw((prev) => {
@@ -46,8 +77,8 @@ export function FleetProvider({ children }: { children: React.ReactNode }) {
   }, [playing, speed, setT]);
 
   const value = useMemo(
-    () => ({ fleet, t, setT, playing, setPlaying, speed, setSpeed }),
-    [fleet, t, setT, playing, speed],
+    () => ({ fleet, t, setT, playing, setPlaying, speed, setSpeed, year, setYear: setYearRaw, yearLoading }),
+    [fleet, t, setT, playing, speed, year, yearLoading],
   );
   return <FleetCtx.Provider value={value}>{children}</FleetCtx.Provider>;
 }
@@ -58,22 +89,21 @@ export function useFleet() {
   return c;
 }
 
-const chunkCache = new Map<number, Promise<JobChunk>>();
+const chunkCache = new Map<string, Promise<JobChunk>>();
 function loadWeek(w: number) {
-  if (!chunkCache.has(w)) {
-    chunkCache.set(
-      w,
-      fetch(`/data/jobs/w${String(w).padStart(2, "0")}.json`).then((r) => r.json()),
-    );
+  const key = `${DATA_PATH}:${w}`;
+  if (!chunkCache.has(key)) {
+    chunkCache.set(key, fetch(`${DATA_PATH}/jobs/w${String(w).padStart(2, "0")}.json`).then((r) => r.json()));
   }
-  return chunkCache.get(w)!;
+  return chunkCache.get(key)!;
 }
 
 /** Jobs that can be live at hour t: they arrived within the last 168 h (J2 deadline). */
 export function useJobsAround(t: number, site?: number) {
+  const { fleet } = useFleet();
   const w = Math.floor(t / 168);
   const [state, setState] = useState<{ key: string; jobs: Job[] } | null>(null);
-  const key = `${w}:${site ?? "all"}`;
+  const key = `${fleet?.meta.year ?? 0}:${w}:${site ?? "all"}`;
   const reqRef = useRef(key);
 
   useEffect(() => {
@@ -110,12 +140,14 @@ export function liveQueue(jobs: Job[], t: number) {
 }
 
 export function useSiteSlots(id: string | undefined) {
-  const [slots, setSlots] = useState<{ id: string; slots: number[][] } | null>(null);
+  const { fleet } = useFleet();
+  const [slots, setSlots] = useState<{ key: string; slots: number[][] } | null>(null);
+  const key = `${fleet?.meta.year ?? 0}:${id}`;
   useEffect(() => {
     if (!id) return;
-    fetch(`/data/sites/${id}.json`)
+    fetch(`${DATA_PATH}/sites/${id}.json`)
       .then((r) => r.json())
-      .then(setSlots);
-  }, [id]);
-  return slots && slots.id === id ? slots.slots : null;
+      .then((d) => setSlots({ key, slots: d.slots }));
+  }, [id, key]);
+  return slots && slots.key === key ? slots.slots : null;
 }

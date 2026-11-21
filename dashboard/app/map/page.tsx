@@ -463,7 +463,7 @@ function BottomCards({ fleet, t }: { fleet: Fleet; t: number }) {
       <Card className="col-span-4 shadow-[0_20px_50px_-24px_rgba(60,40,20,0.4)]">
         <div className="flex items-center justify-between">
           <div className="text-[16px] font-semibold">Coverage trend, all sites</div>
-          <span className="rounded-full px-2.5 py-0.5 text-[11px] ring-1 ring-line">2025</span>
+          <span className="rounded-full px-2.5 py-0.5 text-[11px] ring-1 ring-line">{fleet.meta.year}</span>
         </div>
         <svg viewBox="0 0 365 110" preserveAspectRatio="none" className="mt-3 h-[118px] w-full">
           {daily.map((x, i) => (

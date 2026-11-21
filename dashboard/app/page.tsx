@@ -1,519 +1,407 @@
 "use client";
 
-import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import clsx from "clsx";
-import { Map as MapIcon, Pause, Play, RotateCcw, Terminal, TrendingDown, TrendingUp } from "lucide-react";
-import { useFleet, useJobsAround, liveQueue } from "@/lib/store";
-import {
-  DEFAULT_T,
-  H,
-  dayLetter,
-  fleetNow,
-  fmtDate,
-  fmtDay,
-  fmtTime,
-  jobProgress,
-  nf,
-  siteNow,
-  type Fleet,
-  type Job,
-} from "@/lib/data";
-import { ArrowBadge, Card, CardTitle, Chip, JobIcon, Loading, STATE_LABEL, Unit } from "@/components/ui";
+import { MapPinPlus, Pause, Play, RotateCcw, Snowflake, Square, Sun } from "lucide-react";
+import { useFleet } from "@/lib/store";
+import { fmtDate, fmtDay, fmtTime, hourDate } from "@/lib/data";
+import { DEFAULT_SITES, KIND_LABEL, KIND_SERVERS, plainSite, useSchedule, type Kind, type Schedule, type SiteIn } from "@/lib/schedule";
+import { Card, Loading } from "@/components/ui";
+
+const SitesMap = dynamic(() => import("@/components/SitesMap").then((m) => m.SitesMap), { ssr: false });
+
+const WINTER_T = 14 * 24 + 6; // 15 Jan, 06:00
+const SUMMER_T = 195 * 24 + 6; // 15 Jul, 06:00
+const STORE = "dh.sites.v1";
 
 export default function Overview() {
-  const { fleet, t } = useFleet();
-  const jobs = useJobsAround(t);
-  if (!fleet) return <Loading />;
+  const { t, setT, playing, setPlaying, speed, year } = useFleet();
+  const [sites, setSites] = useState<SiteIn[]>(DEFAULT_SITES);
+  const [selected, setSelected] = useState(1);
+  const [adding, setAdding] = useState(false);
+
+  useEffect(() => {
+    let saved: SiteIn[] | null = null;
+    try {
+      saved = JSON.parse(localStorage.getItem(STORE) || "null");
+    } catch {}
+    if (Array.isArray(saved) && saved.length) Promise.resolve(saved).then(setSites);
+  }, []);
+  const save = (next: SiteIn[]) => {
+    setSites(next);
+    try {
+      localStorage.setItem(STORE, JSON.stringify(next));
+    } catch {}
+  };
+
+  const { data, loading, error } = useSchedule(sites, year);
+  const base = useSchedule(DEFAULT_SITES, year).data;
+  if (!data && !error) return <Loading />;
+
+  const setServers = (i: number, n: number) => save(sites.map((s, j) => (j === i ? { ...s, servers: Math.max(0, Math.min(40, n)) } : s)));
+  const addSite = (kind: Kind, lat: number, lon: number) => {
+    const k = sites.filter((s) => s.added).length + 1;
+    save([...sites, { id: `NEW-${k}`, kind, name: `${KIND_LABEL[kind]} ${k}`, lat: +lat.toFixed(4), lon: +lon.toFixed(4), servers: KIND_SERVERS[kind], added: true }]);
+    setAdding(false);
+    setSelected(sites.length);
+  };
+  const removeSite = (i: number) => {
+    save(sites.filter((_, j) => j !== i));
+    setSelected(1);
+  };
+  const changed = JSON.stringify(sites) !== JSON.stringify(DEFAULT_SITES);
+  const month = hourDate(t).getUTCMonth();
+  const winter = month < 3 || month > 9;
+  const go = (to: number) => {
+    setT(to);
+    setPlaying(true);
+  };
+  const S = data && data.sites.length === sites.length ? data : null;
+  const sel = Math.min(selected, sites.length - 1);
+
   return (
     <div className="h-full overflow-auto p-6 scroll-thin">
-      <Header fleet={fleet} />
-      <Kpis fleet={fleet} t={t} jobs={jobs} />
-      <div className="mt-4 grid grid-cols-12 gap-4">
-        <HeatWeek fleet={fleet} t={t} className="col-span-12 xl:col-span-6" />
-        <LatestDecision fleet={fleet} t={t} jobs={jobs} className="col-span-6 xl:col-span-3" />
-        <DueNext fleet={fleet} t={t} jobs={jobs} className="col-span-6 xl:col-span-3 xl:row-span-1" />
-        <SitesNow fleet={fleet} t={t} jobs={jobs} className="col-span-12 xl:col-span-5" />
-        <Coverage fleet={fleet} t={t} className="col-span-6 xl:col-span-4" />
-        <YearReplay fleet={fleet} className="col-span-6 xl:col-span-3" />
-      </div>
-    </div>
-  );
-}
+      <h1 className="font-display text-[40px] font-semibold leading-none">Fleet overview</h1>
+      {error && <div className="mt-3 rounded-xl bg-amber-soft px-4 py-2 text-[13px] text-rust-deep">Scheduler error: {error}</div>}
 
-function Header({ fleet }: { fleet: Fleet }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <div className="flex flex-wrap items-end justify-between gap-4">
-      <div>
-        <h1 className="font-display text-[40px] font-semibold leading-none">Fleet overview</h1>
-        <p className="mt-2.5 text-[15px] text-muted">
-          {fleet.totals.sites} houses · {fleet.totals.servers} servers · 10 Swiss cities. Servers run only when a house can
-          use the heat.
-        </p>
-      </div>
-      <div className="flex gap-3">
-        <Link
-          href="/map"
-          className="flex items-center gap-2 rounded-full bg-ink px-5 py-3 text-[15px] font-semibold text-cream hover:bg-ink-2"
-        >
-          <MapIcon size={18} /> Open fleet map
-        </Link>
-        <button
-          onClick={() => {
-            navigator.clipboard?.writeText("python3 scripts/build_fleet_scenario.py");
-            setCopied(true);
-            setTimeout(() => setCopied(false), 1600);
-          }}
-          className="flex items-center gap-2 rounded-full px-5 py-3 text-[15px] font-semibold ring-[1.5px] ring-ink hover:bg-card"
-        >
-          <Terminal size={17} /> {copied ? "Command copied" : "Reproduce run"}
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function Delta({ v, unit = "", invert = false, dark = false }: { v: number; unit?: string; invert?: boolean; dark?: boolean }) {
-  const up = v > 0;
-  const good = invert ? !up : up;
-  return (
-    <span
-      className={clsx(
-        "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-semibold ring-1",
-        dark ? "text-amber ring-amber/50" : good ? "text-ink ring-ink/30" : "text-rust ring-rust/40",
+      {S && (
+        <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1fr_1.6fr]">
+          <ServersCard s={S} t={t} />
+          <PriceCard s={S} base={base} changed={changed} reset={() => save(DEFAULT_SITES)} />
+          <JobsCard s={S} t={t} />
+        </div>
       )}
-    >
-      {v === 0 ? "±0" : `${up ? "+" : "−"}${nf(Math.abs(v), unit === "kWh" ? 1 : 0)}`}
-      {up ? <TrendingUp size={12} /> : v < 0 ? <TrendingDown size={12} /> : null}
-    </span>
-  );
-}
 
-function Kpis({ fleet, t, jobs }: { fleet: Fleet; t: number; jobs: Job[] | null }) {
-  const now = fleetNow(fleet, t);
-  const prev = fleetNow(fleet, Math.max(0, t - 1));
-  const q = jobs ? liveQueue(jobs, t) : null;
-  const qPrev = jobs ? liveQueue(jobs, t - 1) : null;
-  const qHours = q ? q.reduce((s, j) => s + fleet.meta.job_types[j.type].units / 2 * (1 - jobProgress(fleet, j, t)), 0) : 0;
-  const dayStart = Math.floor(t / 24) * 24;
-  const refusedToday = jobs ? jobs.filter((j) => (j.status === 1 || j.status === 2) && j.arrive >= dayStart && j.arrive <= t).length : null;
-  const refusedYday = jobs
-    ? jobs.filter((j) => (j.status === 1 || j.status === 2) && j.arrive >= dayStart - 24 && j.arrive <= t - 24).length
-    : 0;
-  const cover = now.demand ? now.served / now.demand : 0;
-
-  return (
-    <div className="mt-6 grid grid-cols-2 gap-4 xl:grid-cols-4">
-      <div className="grain relative overflow-hidden rounded-[24px] p-5 text-cream">
-        <div className="flex items-center justify-between">
-          <h3 className="text-[17px] font-semibold">Servers running</h3>
-          <ArrowBadge dark />
+      <Card className="mt-4">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="text-[15px] font-semibold">
+            {fmtDate(t)} · {fmtTime(t)}
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setAdding(!adding)}
+              className={clsx(
+                "flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-semibold ring-1",
+                adding ? "bg-rust text-cream ring-rust" : "ring-ink/30 hover:bg-paper",
+              )}
+            >
+              <MapPinPlus size={15} /> {adding ? "Cancel" : "Add site"}
+            </button>
+            <Season active={winter} onClick={() => go(WINTER_T)} icon={<Snowflake size={15} />}>
+              Winter
+            </Season>
+            <Season active={!winter} onClick={() => go(SUMMER_T)} icon={<Sun size={15} />}>
+              Summer
+            </Season>
+            <button
+              onClick={() => setPlaying(!playing)}
+              aria-label={playing ? "Pause" : "Play"}
+              className="grid size-10 place-items-center rounded-full bg-ink text-cream hover:bg-ink-2"
+            >
+              {playing ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
+            </button>
+          </div>
         </div>
-        <div className="mt-3 font-display text-[52px] font-semibold leading-none text-amber">
-          {now.running}
-          <span className="text-[24px] text-cream/50"> / {now.servers}</span>
-        </div>
-        <div className="mt-4 flex items-center gap-2 text-[12.5px] text-cream/75">
-          <Delta v={now.running - prev.running} dark /> heat permit allows {now.permit}
-        </div>
-      </div>
-
-      <Card>
-        <CardTitle right={<ArrowBadge />}>Heat delivered</CardTitle>
-        <div className="mt-3 font-display text-[52px] font-semibold leading-none">
-          {nf(now.served, 1)}
-          <Unit>kWh</Unit>
-        </div>
-        <div className="mt-4 flex items-center gap-2 text-[12.5px] text-muted">
-          <Delta v={now.served - prev.served} unit="kWh" /> this hour · {Math.round(cover * 100)}% of {nf(now.demand)} kWh demand
-        </div>
+        <SitesMap
+          sites={sites}
+          schedule={S}
+          t={t}
+          dur={Math.min(1100, (1000 / speed) * 0.9)}
+          selected={sel}
+          setSelected={setSelected}
+          setServers={setServers}
+          adding={adding}
+          onAdd={addSite}
+          onRemove={removeSite}
+          busy={loading}
+        />
       </Card>
 
-      <Card>
-        <CardTitle right={<ArrowBadge />}>Job queue</CardTitle>
-        <div className="mt-3 font-display text-[52px] font-semibold leading-none">
-          {q ? nf(q.length) : "…"}
-          <Unit>jobs</Unit>
+      {S && (
+        <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-[1.4fr_1fr]">
+          <Steps s={S} i={sel} t={t} />
+          <RealJob sites={sites} site={sites[sel]} t={t} year={year} />
         </div>
-        <div className="mt-4 flex items-center gap-2 text-[12.5px] text-muted">
-          {q && qPrev && <Delta v={q.length - qPrev.length} />} {nf(qHours)} server-h left · 0 missed
-        </div>
-      </Card>
-
-      <Card>
-        <CardTitle right={<ArrowBadge />}>Refused today</CardTitle>
-        <div className="mt-3 font-display text-[52px] font-semibold leading-none">
-          {refusedToday ?? "…"}
-          <Unit>jobs</Unit>
-        </div>
-        <div className="mt-4 flex items-center gap-2 text-[12.5px] text-muted">
-          <Delta v={(refusedToday ?? 0) - refusedYday} invert /> not enough heat before due
-        </div>
-      </Card>
+      )}
     </div>
   );
 }
 
-function HeatWeek({ fleet, t, className }: { fleet: Fleet; t: number; className?: string }) {
-  const today = Math.floor(t / 24);
-  const days = Array.from({ length: 7 }, (_, i) => today - 3 + i).filter((d) => d >= 0 && d < 365);
-  const data = days.map((d) => {
-    let demand = 0,
-      served = 0,
-      demandSoFar = 0;
-    const end = d === today ? t + 1 : (d + 1) * 24;
-    for (let i = 0; i < fleet.sites.length; i++) {
-      const h = fleet.hourly[i];
-      for (let x = d * 24; x < (d + 1) * 24; x++) demand += h.demand[x];
-      for (let x = d * 24; x < end; x++) {
-        served += h.served[x];
-        demandSoFar += h.demand[x];
-      }
-    }
-    // share covered so far; for today the bar fills only the hours already played
-    return { d, demand: demand / 10, served: served / 10, share: demandSoFar ? served / demandSoFar : 0, played: (end - d * 24) / 24 };
-  });
-  const max = Math.max(...data.map((x) => x.demand)) * 1.05;
+function Season({ active, onClick, icon, children }: { active: boolean; onClick: () => void; icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <Card className={className}>
-      <CardTitle
-        right={
-          <div className="flex items-center gap-4 text-[12px] text-muted">
-            <span className="flex items-center gap-1.5">
-              <i className="size-2.5 rounded-full bg-rust" /> Server heat
-            </span>
-            <span className="flex items-center gap-1.5">
-              <i className="hatch size-2.5 rounded-full bg-paper ring-1 ring-line" /> Backup heater / ahead
-            </span>
-          </div>
-        }
-      >
-        Heat this week
-      </CardTitle>
-      <div className="mt-5 flex h-[196px] items-end justify-between gap-3 px-2">
-        {data.map((x) => {
-          const hDemand = (x.demand / max) * 170;
-          const share = x.share;
-          const future = x.d > today;
-          const isToday = x.d === today;
-          return (
-            <div key={x.d} className="group relative flex flex-1 flex-col items-center gap-2">
-              {isToday && (
-                <div className="absolute -top-1 z-10 rounded-md bg-card px-1.5 py-0.5 text-[10px] font-semibold ring-1 ring-line"
-                  style={{ bottom: hDemand + 30 }}>
-                  {Math.round(share * 100)}%
-                </div>
-              )}
-              <div
-                className={clsx("relative w-full max-w-[58px] overflow-hidden rounded-full", future ? "hatch bg-paper ring-1 ring-line" : "hatch bg-paper")}
-                style={{ height: Math.max(18, hDemand) }}
-                title={`${fmtDay(x.d * 24)}: ${nf(x.served)} of ${nf(x.demand)} kWh from servers`}
-              >
-                {!future && (
-                  <div
-                    className={clsx("absolute inset-x-0 bottom-0 rounded-full", isToday ? "bg-amber" : x.d === today - 1 ? "bg-rust-deep" : "bg-rust")}
-                    style={{ height: `${Math.min(1, share) * x.played * 100}%` }}
-                  />
-                )}
-              </div>
-              <div className={clsx("text-[12px]", isToday ? "font-semibold text-ink" : "text-muted")}>{dayLetter(x.d)}</div>
-            </div>
-          );
-        })}
-      </div>
-      <div className="mt-2 text-[12px] text-faint">
-        Fleet heat demand per day. Today counts up to {fmtTime(t)}, and the days ahead show the forecast demand.
-      </div>
-    </Card>
+    <button
+      onClick={onClick}
+      className={clsx("flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-semibold ring-1", active ? "bg-ink text-cream ring-ink" : "ring-ink/30 hover:bg-paper")}
+    >
+      {icon} {children}
+    </button>
   );
 }
 
-const REASON = ["", "not enough heat before due", "would push an admitted job late"];
+/* ---------- cards ---------- */
 
-function LatestDecision({ fleet, t, jobs, className }: { fleet: Fleet; t: number; jobs: Job[] | null; className?: string }) {
-  const latest = useMemo(() => {
-    if (!jobs) return null;
-    let best: Job | null = null;
-    for (const j of jobs) if ((j.status === 1 || j.status === 2) && j.arrive <= t && (!best || j.arrive >= best.arrive)) best = j;
-    return best;
-  }, [jobs, t]);
-  const { setT } = useFleet();
-  if (!latest) {
-    const today = Math.floor(t / 24);
-    let last = -1;
-    for (let d = today - 1; d >= 0; d--)
-      if (fleet.daily_jobs.refused[d] > 0) {
-        last = d;
-        break;
-      }
-    return (
-      <Card className={clsx("flex flex-col", className)}>
-        <CardTitle>Latest refusal</CardTitle>
-        <div className="mt-4 font-display text-[24px] font-semibold leading-[1.15]">Nothing refused this week</div>
-        <div className="mt-2 text-[13.5px] leading-snug text-muted">
-          {jobs ? "Every house can take all the heat its servers make, so all offered work fits before its deadline." : "Loading…"}
-          {last >= 0 && ` Last refusals: ${fmtDay(last * 24)}, ${nf(fleet.daily_jobs.refused[last])} jobs.`}
+function ServersCard({ s, t }: { s: Schedule; t: number }) {
+  const total = s.sites.reduce((a, x) => a + x.servers, 0);
+  const run = s.series.reduce((a, x) => a + x.running[t], 0);
+  return (
+    <div className="grain flex items-center gap-6 rounded-[24px] p-5 text-cream">
+      <div>
+        <h3 className="text-[17px] font-semibold">Servers running</h3>
+        <div className="mt-3 font-display text-[52px] font-semibold leading-none text-amber">
+          {run}
+          <span className="text-[24px] text-cream/50"> / {total}</span>
         </div>
-        {last >= 0 && (
-          <button
-            onClick={() => setT(last * 24 + 12)}
-            className="mt-auto flex items-center justify-center gap-2 rounded-full bg-ink py-3 text-[14px] font-semibold text-cream hover:bg-ink-2"
-          >
-            Jump to {fmtDay(last * 24)}
-          </button>
-        )}
-      </Card>
-    );
-  }
-  const jt = fleet.meta.job_types[latest.type];
-  const site = fleet.sites[latest.site];
-  return (
-    <Card className={clsx("flex flex-col", className)}>
-      <CardTitle>Latest refusal</CardTitle>
-      <div className="mt-4 font-display text-[24px] font-semibold leading-[1.15] text-rust-deep">
-        {jt.id} {jt.name} for {site.id}
       </div>
-      <div className="mt-2 text-[13.5px] leading-snug text-muted">
-        {fmtDay(latest.arrive)}, {fmtTime(latest.arrive)} · needs {nf(jt.units / 2, 1)} server-h before due, only{" "}
-        {nf(latest.free / 2, 1)} free. Reason: {REASON[latest.status]}.
-      </div>
-      <Link
-        href={`/sites/${site.id}`}
-        className="mt-auto flex items-center justify-center gap-2 rounded-full bg-ink py-3 text-[14px] font-semibold text-cream hover:bg-ink-2"
-      >
-        Open {site.id} · {site.city}
-      </Link>
-    </Card>
-  );
-}
-
-function DueNext({ fleet, t, jobs, className }: { fleet: Fleet; t: number; jobs: Job[] | null; className?: string }) {
-  const [type, setType] = useState<number | null>(null);
-  const list = useMemo(() => {
-    if (!jobs) return [];
-    return liveQueue(jobs, t)
-      .filter((j) => type === null || j.type === type)
-      .sort((a, b) => a.arrive + fleet.meta.job_types[a.type].due_h - (b.arrive + fleet.meta.job_types[b.type].due_h))
-      .slice(0, 5);
-  }, [jobs, t, type, fleet]);
-  return (
-    <Card className={className}>
-      <CardTitle
-        right={
-          <button
-            onClick={() => setType(type === null ? 1 : type === 1 ? 0 : null)}
-            className="rounded-full px-3 py-1 text-[12.5px] font-medium ring-1 ring-ink/70 hover:bg-paper"
-          >
-            {type === null ? "All types" : fleet.meta.job_types[type].id}
-          </button>
-        }
-      >
-        Due next
-      </CardTitle>
-      <div className="mt-3 flex flex-col gap-3">
-        {list.map((j) => {
-          const jt = fleet.meta.job_types[j.type];
-          const due = j.arrive + jt.due_h;
-          const p = jobProgress(fleet, j, t);
-          return (
-            <Link key={j.id} href={`/sites/${fleet.sites[j.site].id}`} className="flex items-center gap-3 rounded-xl hover:bg-paper/50">
-              <JobIcon type={j.type} />
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-[14px] font-medium">
-                  {jt.name} · {fleet.sites[j.site].id}
-                </div>
-                <div className="text-[11.5px] text-faint">
-                  due in {due - t} h · {p > 0 ? `${Math.round(p * 100)}% done` : "queued"}
-                </div>
-              </div>
-            </Link>
-          );
-        })}
-        {!jobs && <div className="text-[13px] text-muted">Loading queue…</div>}
-      </div>
-    </Card>
-  );
-}
-
-function SitesNow({ fleet, t, jobs, className }: { fleet: Fleet; t: number; jobs: Job[] | null; className?: string }) {
-  const rows = useMemo(() => {
-    const r = fleet.sites.map((_, i) => siteNow(fleet, i, t));
-    const order = { throttled: 0, running: 1, "idle-work": 2, "idle-heat": 3 };
-    return r.sort((a, b) => order[a.state] - order[b.state] || b.running - a.running);
-  }, [fleet, t]);
-  const mainJob = (si: number) => {
-    if (!jobs) return null;
-    const q = liveQueue(jobs, t).filter((j) => j.site === si && j.start >= 0 && j.start <= t);
-    if (!q.length) return null;
-    const j2 = q.filter((j) => j.type === 1).length;
-    return j2 >= q.length / 2 ? 1 : 0;
-  };
-  return (
-    <Card className={className}>
-      <CardTitle
-        right={
-          <Link href="/map" className="rounded-full px-3 py-1 text-[12.5px] font-medium ring-1 ring-ink/70 hover:bg-paper">
-            All sites on map
-          </Link>
-        }
-      >
-        Sites right now
-      </CardTitle>
-      <div className="mt-3 max-h-[262px] overflow-auto pr-1 scroll-thin">
-        {rows.map((r) => {
-          const si = fleet.sites.indexOf(r.site);
-          const mj = mainJob(si);
-          const st = STATE_LABEL[r.state];
-          return (
-            <Link
-              key={r.site.id}
-              href={`/sites/${r.site.id}`}
-              className="flex items-center gap-3 border-b border-line/60 py-2.5 last:border-0 hover:bg-paper/40"
-            >
-              <span
-                className={clsx(
-                  "grid size-10 shrink-0 place-items-center rounded-full font-display text-[12px] font-semibold",
-                  r.running ? "bg-ink text-amber" : "bg-paper text-muted ring-1 ring-line",
-                )}
-              >
-                {r.site.id.slice(0, 2)}
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className="text-[14.5px] font-medium">
-                  {r.site.id} · {r.site.city} {r.site.district}
-                </div>
-                <div className="truncate text-[12px] text-faint">
-                  {r.running > 0 ? (
-                    <>
-                      {r.running} of {r.site.servers} servers on{" "}
-                      <b className="font-medium text-ink-2">{mj === null ? "queued work" : fleet.meta.job_types[mj].name}</b>
-                    </>
-                  ) : r.state === "idle-heat" ? (
-                    "House needs no heat and the tank is full"
-                  ) : (
-                    `Heat for ${r.permit} servers, no admitted work`
-                  )}
-                </div>
-              </div>
-              <Chip tone={st.tone}>{st.label}</Chip>
-            </Link>
-          );
-        })}
-      </div>
-    </Card>
-  );
-}
-
-function Coverage({ fleet, t, className }: { fleet: Fleet; t: number; className?: string }) {
-  const { served, demand } = useMemo(() => {
-    let s = 0,
-      d = 0;
-    for (const h of fleet.hourly) {
-      for (let x = 0; x <= t; x++) {
-        s += h.served[x];
-        d += h.demand[x];
-      }
-    }
-    return { served: s / 10, demand: d / 10 };
-  }, [fleet, t]);
-  const share = served / demand;
-  // semicircle gauge
-  const R = 92,
-    W = 26,
-    cx = 130,
-    cy = 120;
-  const arc = (a0: number, a1: number) => {
-    const p = (a: number) => [cx + R * Math.cos(Math.PI * (1 - a)), cy - R * Math.sin(Math.PI * (1 - a))];
-    const [x0, y0] = p(a0);
-    const [x1, y1] = p(a1);
-    return `M${x0},${y0} A${R},${R} 0 0 1 ${x1},${y1}`;
-  };
-  return (
-    <Card className={className}>
-      <CardTitle>Heat covered, year to date</CardTitle>
-      <svg viewBox="0 0 260 140" className="mx-auto mt-2 w-full max-w-[300px]">
-        <defs>
-          <pattern id="hatchG" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-            <rect width="7" height="7" fill="#efebe2" />
-            <line x1="0" y1="0" x2="0" y2="7" stroke="#141412" strokeOpacity="0.35" strokeWidth="2.5" />
-          </pattern>
-        </defs>
-        <path d={arc(0, 1)} stroke="url(#hatchG)" strokeWidth={W} fill="none" strokeLinecap="round" />
-        <path d={arc(0, share)} stroke="#c0653a" strokeWidth={W} fill="none" strokeLinecap="round" />
-        <text x={cx} y={cy - 12} textAnchor="middle" className="font-display" fontSize="44" fontWeight="600" fill="#141412">
-          {Math.round(share * 100)}%
-        </text>
-        <text x={cx} y={cy + 10} textAnchor="middle" fontSize="12" fill="#6b675e">
-          from server heat
-        </text>
-      </svg>
-      <div className="mt-1 flex justify-center gap-5 text-[12.5px] text-muted">
-        <span className="flex items-center gap-1.5">
-          <i className="size-3 rounded-full bg-rust" /> Servers {nf(served / 1000)} MWh
-        </span>
-        <span className="flex items-center gap-1.5">
-          <i className="hatch size-3 rounded-full bg-paper ring-1 ring-line" /> Backup {nf((demand - served) / 1000)} MWh
-        </span>
-      </div>
-      <div className="mt-2 text-center text-[12px] text-faint">0 kWh dumped · 0 deadlines missed</div>
-    </Card>
-  );
-}
-
-function YearReplay({ fleet, className }: { fleet: Fleet; className?: string }) {
-  const { t, setT, playing, setPlaying } = useFleet();
-  const daily = useMemo(() => {
-    const out = new Array(365).fill(0);
-    for (const h of fleet.hourly) for (let x = 0; x < H; x++) out[Math.floor(x / 24)] += h.demand[x];
-    const m = Math.max(...out);
-    return out.map((v) => v / m);
-  }, [fleet]);
-  const day = Math.floor(t / 24);
-  return (
-    <div className={clsx("grain relative flex flex-col overflow-hidden rounded-[24px] p-5 text-cream", className)}>
-      <h3 className="text-[17px] font-semibold">Year replay</h3>
-      <div className="mt-3 font-display text-[52px] font-semibold leading-none tabular-nums">{fmtTime(t)}</div>
-      <div className="mt-1 text-[13px] text-cream/60">{fmtDate(t, true)}</div>
-      {/* 365 days of fleet heat demand: click to jump */}
-      <div
-        className="relative mt-4 flex h-[56px] cursor-pointer items-end gap-px"
-        onClick={(e) => {
-          const r = e.currentTarget.getBoundingClientRect();
-          setT(Math.floor(((e.clientX - r.left) / r.width) * 365) * 24 + (t % 24));
-        }}
-        title="Fleet heat demand per day, 2025. Click to jump."
-      >
-        {daily.map((v, i) => (
-          <div key={i} className="flex-1 rounded-t-[1px]" style={{ height: `${8 + v * 92}%`, background: i === day ? "#f6f3ec" : i < day ? "#c0653a" : "rgba(242,166,90,0.35)" }} />
+      <div className="ml-auto flex flex-col gap-1.5">
+        {s.sites.map((x, i) => (
+          <div key={x.id} className="flex gap-[2px]">
+            {Array.from({ length: x.servers }, (_, k) => (
+              <i key={k} className={clsx("h-2.5 w-[5px] rounded-[1px]", k < s.series[i].running[t] ? "bg-teal" : "bg-white/15")} />
+            ))}
+          </div>
         ))}
       </div>
-      <div className="mt-1 flex justify-between text-[10px] text-cream/45">
-        <span>Jan</span>
-        <span>Apr</span>
-        <span>Jul</span>
-        <span>Oct</span>
-        <span>Dec</span>
-      </div>
-      <div className="mt-auto flex items-center justify-center gap-3 pt-4">
-        <button
-          onClick={() => setPlaying(!playing)}
-          aria-label={playing ? "Pause replay" : "Play replay"}
-          className="grid size-12 place-items-center rounded-full bg-cream text-ink hover:bg-amber"
-        >
-          {playing ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
-        </button>
-        <button
-          onClick={() => {
-            setPlaying(false);
-            setT(DEFAULT_T);
-          }}
-          aria-label="Back to 21 Nov"
-          className="grid size-12 place-items-center rounded-full bg-rust text-cream hover:bg-rust-deep"
-        >
-          <RotateCcw size={19} />
-        </button>
-      </div>
     </div>
+  );
+}
+
+function PriceCard({ s, base, changed, reset }: { s: Schedule; base: Schedule | null; changed: boolean; reset: () => void }) {
+  const p = s.fleet.price_chf_per_server_h ?? 0;
+  const d = base?.fleet.price_chf_per_server_h != null ? p - base.fleet.price_chf_per_server_h : 0;
+  return (
+    <Card>
+      <h3 className="text-[17px] font-semibold">Estimated price of compute</h3>
+      <div key={p.toFixed(4)} className="mt-3 animate-[pop_0.5s_ease-out] whitespace-nowrap font-display text-[44px] font-semibold leading-none">
+        CHF {p.toFixed(2)}
+        <span className="ml-1 text-[16px] font-medium text-muted">/ server-h</span>
+      </div>
+      {changed && (
+        <button onClick={reset} className="mt-3 flex items-center gap-1.5 text-[13px] text-muted hover:text-ink">
+          <span className={clsx("font-semibold", d > 0 ? "text-rust" : "text-[#2f6e75]")}>
+            {d >= 0 ? "+" : "−"}
+            {Math.abs(d * 100).toFixed(1)} Rp
+          </span>
+          <RotateCcw size={13} /> reset
+        </button>
+      )}
+    </Card>
+  );
+}
+
+function Gauge({ value, max, color }: { value: number; max: number; color: string }) {
+  const R = 40;
+  const v = max ? Math.min(1, value / max) : 0;
+  const pt = (a: number) => `${50 + R * Math.cos(Math.PI * (1 - a))},${48 - R * Math.sin(Math.PI * (1 - a))}`;
+  return (
+    <svg viewBox="0 0 100 54" className="w-[100px] shrink-0">
+      <path d={`M${pt(0)} A${R},${R} 0 0 1 ${pt(1)}`} stroke="#e8e4da" strokeWidth={10} fill="none" strokeLinecap="round" />
+      {v > 0 && <path d={`M${pt(0)} A${R},${R} 0 0 1 ${pt(v)}`} stroke={color} strokeWidth={10} fill="none" strokeLinecap="round" />}
+      <text x={50} y={46} textAnchor="middle" fontSize="15" fontWeight="600" fill="#141412">
+        {value.toFixed(0)} kW
+      </text>
+    </svg>
+  );
+}
+
+function JobsCard({ s, t }: { s: Schedule; t: number }) {
+  const total = s.sites.reduce((a, x) => a + x.servers, 0);
+  const rr = s.series.reduce((a, x) => a + x.rerank_sh[t], 0);
+  const em = s.series.reduce((a, x) => a + x.embed_sh[t], 0);
+  const open = s.deadline_jobs.filter((j) => j[2] <= t && j[6] > t).sort((a, b) => a[3] - b[3]);
+  const cur = open[0];
+  const embedDue = t + s.job_types.embed.due_h;
+  const rows = [
+    { name: "Embed", kw: em, color: "#5fa8b0", job: `#${s.embed_ids[t]}`, due: `${fmtDay(embedDue)}, ${fmtTime(embedDue)}` },
+    { name: "Rerank", kw: rr, color: "#f2a65a", job: cur ? `#${cur[0]}` : "–", due: cur ? fmtTime(cur[3]) : "–" },
+  ];
+  return (
+    <Card>
+      <h3 className="text-[17px] font-semibold">Job types</h3>
+      <div className="mt-2 grid grid-cols-2 gap-4">
+        {rows.map((r) => (
+          <div key={r.name} className="flex items-center gap-3">
+            <Gauge value={r.kw} max={total} color={r.color} />
+            <div className="text-[13px] leading-relaxed">
+              <div className="text-[15px] font-semibold">{r.name}</div>
+              <div className="text-muted">
+                Job <b className="text-ink">{r.job}</b>
+              </div>
+              <div className="text-muted">
+                Due <b className="text-ink">{r.due}</b>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+/* ---------- the scheduler's calculation for one site and hour ---------- */
+
+const f1 = (v: number) => v.toFixed(1);
+
+function Steps({ s, i, t }: { s: Schedule; i: number; t: number }) {
+  const site = s.sites[i];
+  const x = s.series[i];
+  const C = site.tank_kwh;
+  const N = site.servers;
+  const d = x.demand[t];
+  const soc0 = t > 0 ? x.soc[t - 1] : 0;
+  const room = C - soc0;
+  const U = x.reserve_u[t];
+  const heat = 0.8 * x.running[t];
+  const rr = s.deadline_jobs.filter((j) => j[4] === i && j[5] === t);
+  const y = site.year;
+  const rows: [string, React.ReactNode][] = [
+    ["Heat signal", <>demand {f1(d)} kW · tank {f1(soc0)} of {C} kWh · room {f1(room)} kWh</>],
+    ["Heat permit", <>min({N}, ⌊({f1(d)} + {f1(room)}) ÷ 0.8⌋) = <b>{x.permit[t]}</b> servers</>],
+    ["Deadline reserve", <>tank ≤ {f1(U)} kWh after this hour → min({x.permit[t]}, ⌊({f1(U)} + {f1(d)} − {f1(soc0)}) ÷ 0.8⌋) = <b>{x.limit[t]}</b></>],
+    [
+      "Jobs",
+      <>
+        {rr.length
+          ? rr.map((j) => (
+              <span key={j[0]} className="mr-2">
+                rerank #{j[0]}
+                {j[1] !== i ? ` from ${s.sites[j[1]].name}` : ""} due {fmtTime(j[3])}
+                {j[8] ? " (forced)" : ""}
+              </span>
+            ))
+          : "no rerank · "}
+        embed {x.embed_sh[t].toFixed(2)} server-h · {x.started[t]} started · {x.moved_in[t]} moved in
+      </>,
+    ],
+    ["No heat", <>{x.paused[t]} paused (SIGSTOP) · {x.checkpointed[t]} checkpointed (SIGTERM) · {x.forced[t]} forced</>],
+    ["Heat balance", <>0.8 × {x.running[t]} = {f1(heat)} kW · used {f1(x.served[t])} · tank {f1(soc0)} → {f1(x.soc[t])} kWh · dumped {f1(x.dumped[t])}</>],
+  ];
+  return (
+    <Card>
+      <h3 className="text-[17px] font-semibold">
+        Scheduler · {site.name} · {fmtTime(t)}
+      </h3>
+      <ol className="mt-3 space-y-2">
+        {rows.map(([k, v], n) => (
+          <li key={k} className="flex gap-3 text-[13px]">
+            <span className="grid size-6 shrink-0 place-items-center rounded-full bg-ink text-[11px] font-semibold text-cream">{n + 1}</span>
+            <span className="w-[118px] shrink-0 pt-0.5 font-semibold">{k}</span>
+            <span className="pt-0.5 font-mono text-[12.5px] text-ink-2">{v}</span>
+          </li>
+        ))}
+      </ol>
+      <div className="mt-4 grid grid-cols-5 gap-2 border-t border-line pt-3 text-center">
+        {[
+          [`${Math.round(y.coverage * 100)}%`, "heat covered"],
+          [`${Math.round(y.dumped_kwh)} kWh`, "dumped"],
+          [`${Math.round(y.utilisation * 100)}%`, "utilisation"],
+          [`${y.missed_pct.toFixed(1)}%`, "missed"],
+          [`${(y.break_even_chf_per_server_h ?? 0).toFixed(3)}`, "break-even CHF/h"],
+        ].map(([v, k]) => (
+          <div key={k}>
+            <div className="font-display text-[18px] font-semibold">{v}</div>
+            <div className="text-[11px] text-muted">{k}</div>
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+/* ---------- the real job ---------- */
+
+type Live = {
+  alive: boolean;
+  state: string;
+  site: { id: string; name: string };
+  start_t: number;
+  job: { state: string; items_done: number | null; rate: number | null };
+  now?: { t: number; demand: number; soc: number; permit: number; running: number; server_runs: boolean; decision: string; reason: string };
+  events: { t: number; text: string }[];
+};
+
+function RealJob({ sites, site, t, year }: { sites: SiteIn[]; site: SiteIn; t: number; year: number }) {
+  const [live, setLive] = useState<Live | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const poll = () =>
+    fetch("/api/realjob")
+      .then((r) => r.json())
+      .then(setLive)
+      .catch(() => {});
+  useEffect(() => {
+    poll();
+    const id = setInterval(poll, 1000);
+    return () => clearInterval(id);
+  }, []);
+  const start = async () => {
+    setErr(null);
+    const r = await fetch("/api/realjob", {
+      method: "POST",
+      body: JSON.stringify({ op: "start", year, day: Math.floor(t / 24), hour: t % 24, site: site.id, sites: sites.map(plainSite) }),
+    });
+    if (!r.ok) setErr((await r.json()).error);
+  };
+  const stop = () => fetch("/api/realjob", { method: "POST", body: JSON.stringify({ op: "stop" }) });
+  const running = live?.alive;
+  const st = live?.job.state ?? "not started";
+  return (
+    <Card>
+      <div className="flex items-center justify-between">
+        <h3 className="text-[17px] font-semibold">Real job</h3>
+        {running ? (
+          <button onClick={stop} className="flex items-center gap-1.5 rounded-full bg-ink px-4 py-2 text-[13px] font-semibold text-cream">
+            <Square size={13} fill="currentColor" /> Stop
+          </button>
+        ) : (
+          <button onClick={start} className="flex items-center gap-1.5 rounded-full bg-rust px-4 py-2 text-[13px] font-semibold text-cream hover:bg-rust-deep">
+            <Play size={13} fill="currentColor" /> Run on {site.name}
+          </button>
+        )}
+      </div>
+      {err && <div className="mt-2 text-[12px] text-rust">{err}</div>}
+      {live ? (
+        <>
+          <div className="mt-3 flex items-center gap-3">
+            <span
+              className={clsx(
+                "rounded-full px-3 py-1 text-[13px] font-semibold",
+                st === "running" ? "bg-teal text-cream" : st === "paused" ? "bg-amber text-ink" : "bg-paper text-ink ring-1 ring-line",
+              )}
+            >
+              {st}
+            </span>
+            <span className="text-[13px] text-muted">
+              {live.site.name} · {live.now ? `${fmtDay(live.now.t)} ${fmtTime(live.now.t)}` : ""}
+            </span>
+          </div>
+          <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+            <div>
+              <div className="font-display text-[20px] font-semibold">{(live.job.items_done ?? 0).toLocaleString("de-CH")}</div>
+              <div className="text-[11px] text-muted">abstracts embedded</div>
+            </div>
+            <div>
+              <div className="font-display text-[20px] font-semibold">{live.now ? `${live.now.running}` : "–"}</div>
+              <div className="text-[11px] text-muted">servers with heat</div>
+            </div>
+            <div>
+              <div className="font-display text-[20px] font-semibold">{live.now ? f1(live.now.soc) : "–"}</div>
+              <div className="text-[11px] text-muted">tank kWh</div>
+            </div>
+          </div>
+          <ul className="mt-3 space-y-1 font-mono text-[12px] text-ink-2">
+            {live.events
+              .slice(-5)
+              .reverse()
+              .map((e, k) => (
+                <li key={k}>
+                  <span className="text-faint">{fmtTime(e.t)}</span> {e.text}
+                </li>
+              ))}
+          </ul>
+        </>
+      ) : (
+        <p className="mt-3 text-[13px] text-muted">Runs a real embedding job on this laptop. The scheduler pauses and resumes it on {site.name}&apos;s heat signal.</p>
+      )}
+    </Card>
   );
 }
