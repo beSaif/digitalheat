@@ -4,12 +4,21 @@ import { useEffect, useRef, useState } from "react";
 import * as maplibregl from "maplibre-gl";
 import type { StyleSpecification } from "maplibre-gl";
 import clsx from "clsx";
-import { ArrowDown, ArrowUp, Building2, Hospital, House, Leaf, Minus, Pause, Plus, Save, Waves, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Briefcase, Building2, FlaskConical, Hospital, House, Leaf, Minus, Pause, Plus, Save, Users, Waves, X } from "lucide-react";
 import { KIND_LABEL, KIND_SERVERS, type Kind, type Schedule, type SiteIn } from "@/lib/schedule";
 
 maplibregl.setWorkerUrl("/maplibre-gl-worker.mjs");
 
-const ICON: Record<Kind, typeof House> = { house: House, cityhouse: Building2, hospital: Hospital, spa: Waves, greenhouse: Leaf };
+const ICON: Record<Kind, typeof House> = {
+  house: House,
+  family: Users,
+  cityhouse: Building2,
+  hospital: Hospital,
+  spa: Waves,
+  greenhouse: Leaf,
+  office: Briefcase,
+  pharma: FlaskConical,
+};
 const SWISS: [[number, number], [number, number]] = [
   [5.95, 45.82],
   [10.49, 47.81],

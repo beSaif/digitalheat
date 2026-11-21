@@ -1,0 +1,396 @@
+{
+ "physics": {
+  "reference house": {
+   "servers": 4,
+   "coverage": 0.5803,
+   "utilisation": 0.6465,
+   "run_server_h": 22654,
+   "served_kwh": 18123,
+   "dumped_kwh": 0.0,
+   "fan_kwh": 0.0
+  },
+  "services fleet": {
+   "servers": 56,
+   "coverage": 0.7283,
+   "utilisation": 0.8264,
+   "run_server_h": 405395,
+   "served_kwh": 324316,
+   "dumped_kwh": 0.0,
+   "fan_kwh": 0.0
+  },
+  "services fleet + dry cooler": {
+   "servers": 56,
+   "coverage": 0.7283,
+   "utilisation": 0.9683,
+   "run_server_h": 475022.0,
+   "served_kwh": 324316,
+   "dumped_kwh": 55701.6,
+   "fan_kwh": 1114.0
+  }
+ },
+ "catalogue": [
+  {
+   "id": "embed",
+   "name": "Local embeddings / RAG indexing",
+   "unit": "1M tokens",
+   "aws_usd_per_unit": 0.02,
+   "gcp_usd_per_unit": 0.15,
+   "premium": 0.25,
+   "units_per_server_h": 2945.624159301925,
+   "throughput_source": "measured items/server-h (workloads.catalog) x tokens_per_abstract; price and tokens from data/prices_2026.json",
+   "price_source": "data/prices_2026.json (Titan Text Embeddings V2); Google: research, Vertex Gemini Embedding",
+   "buyers": "law firms, insurers, hospitals, cantonal administration (documents that must not leave)",
+   "aws_service": "Amazon Titan Text Embeddings V2 on Bedrock",
+   "aws_chf": 0.0168,
+   "gcp_chf": 0.126,
+   "our_chf": 0.020999999999999998,
+   "revenue_per_server_h": 61.858107345340414
+  },
+  {
+   "id": "rerank",
+   "name": "Search reranking",
+   "unit": "1,000 queries (100 docs each)",
+   "aws_usd_per_unit": 2.0,
+   "gcp_usd_per_unit": 1.0,
+   "premium": 0.25,
+   "units_per_server_h": 54.55935813275345,
+   "throughput_source": "measured pairs/server-h (workloads.catalog) / rerank_docs_per_query; from data/prices_2026.json",
+   "price_source": "data/prices_2026.json (Cohere Rerank 3.5 on Bedrock); Google: research, Ranking API",
+   "buyers": "same as embeddings: the second step of a private search/RAG pipeline",
+   "aws_service": "Cohere Rerank 3.5 on Amazon Bedrock",
+   "aws_chf": 1.68,
+   "gcp_chf": 0.84,
+   "our_chf": 2.1,
+   "revenue_per_server_h": 114.57465207878225
+  },
+  {
+   "id": "tagging",
+   "name": "Image tagging",
+   "unit": "1,000 images",
+   "aws_usd_per_unit": 1.2,
+   "gcp_usd_per_unit": 1.5,
+   "premium": 0.25,
+   "units_per_server_h": 1000,
+   "throughput_source": "our assumption: ~280 images/s with a CLIP ViT-B/32-class model on a 128-core CPU server (order of magnitude, not measured)",
+   "price_source": "research: Rekognition DetectLabels Frankfurt; Google Vision labels",
+   "buyers": "museums and archives (collection photos), retailers, pharma lab imaging",
+   "aws_chf": 1.008,
+   "gcp_chf": 1.26,
+   "our_chf": 1.26,
+   "revenue_per_server_h": 1260.0
+  },
+  {
+   "id": "people",
+   "name": "People counting (video)",
+   "unit": "video minute",
+   "aws_usd_per_unit": 0.12,
+   "gcp_usd_per_unit": 0.1,
+   "premium": 0.25,
+   "units_per_server_h": 6000,
+   "throughput_source": "our assumption: 100 real-time streams sampled at 5 fps per server (small detector on CPU)",
+   "price_source": "research: Rekognition Video Frankfurt; Google Video Intelligence person detection",
+   "buyers": "public transport (SBB, BVB, BLT), venues, retail, municipalities",
+   "aws_chf": 0.10079999999999999,
+   "gcp_chf": 0.084,
+   "our_chf": 0.12599999999999997,
+   "revenue_per_server_h": 755.9999999999999
+  },
+  {
+   "id": "transcribe",
+   "name": "Transcription",
+   "unit": "audio minute",
+   "aws_usd_per_unit": 0.006,
+   "gcp_usd_per_unit": 0.016,
+   "premium": 0.25,
+   "units_per_server_h": 3000,
+   "throughput_source": "our assumption: 50 audio-hours per server-hour (Whisper-small class, int8, CPU, batched)",
+   "price_source": "research: AWS Transcribe batch Zurich (USD 0.006, not the older 0.024); Google STT V2 standard",
+   "buyers": "hospitals (patient conversations), courts, cantonal administration, bodycam audio",
+   "aws_chf": 0.00504,
+   "gcp_chf": 0.01344,
+   "our_chf": 0.0063,
+   "revenue_per_server_h": 18.9
+  },
+  {
+   "id": "sim",
+   "name": "Simulations (CFD, molecular dynamics, Monte Carlo)",
+   "unit": "c7a.48xlarge-hour (same chips as our server)",
+   "aws_usd_per_unit": 11.244,
+   "gcp_usd_per_unit": null,
+   "premium": 0.25,
+   "units_per_server_h": 1,
+   "throughput_source": "data/prices_2026.json: our reference server (2x EPYC 9654) = AWS c7a.48xlarge",
+   "price_source": "data/prices_2026.json: c7a.48xlarge on-demand, Frankfurt",
+   "buyers": "pharma and biotech R&D, engineering offices, universities (sciCORE)",
+   "aws_chf": 9.44496,
+   "gcp_chf": null,
+   "our_chf": 11.8062,
+   "revenue_per_server_h": 11.8062
+  },
+  {
+   "id": "video",
+   "name": "Video compression (HD)",
+   "unit": "output minute",
+   "aws_usd_per_unit": 0.017,
+   "gcp_usd_per_unit": 0.03,
+   "premium": 0.25,
+   "units_per_server_h": 600,
+   "throughput_source": "our assumption: 10x real-time HD x264 encodes on 128 cores",
+   "price_source": "research: MediaConvert Basic HD (legacy SKU, conservative); Google Transcoder HD",
+   "buyers": "broadcasters, event venues, bodycam archives",
+   "aws_chf": 0.014280000000000001,
+   "gcp_chf": 0.025199999999999997,
+   "our_chf": 0.01785,
+   "revenue_per_server_h": 10.71
+  }
+ ],
+ "price_points": {
+  "spot parity": 2.74,
+  "spot + premium (base case)": 3.42,
+  "on-demand parity": 9.45,
+  "on-demand + premium": 11.81
+ },
+ "base_price": 3.42,
+ "discount": 0.3,
+ "redundancy": [
+  {
+   "copies": 1,
+   "price_multiplier": 1.0,
+   "aws_multiplier": null,
+   "revenue": 3.42,
+   "server_h_used": 1,
+   "margin_spare_capacity": 0.0,
+   "margin_sold_out": 0.0
+  },
+  {
+   "copies": 2,
+   "price_multiplier": 1.5,
+   "aws_multiplier": 2.0,
+   "revenue": 5.13,
+   "server_h_used": 2,
+   "margin_spare_capacity": 1.71,
+   "margin_sold_out": -1.71
+  },
+  {
+   "copies": 3,
+   "price_multiplier": 2.0,
+   "aws_multiplier": null,
+   "revenue": 6.84,
+   "server_h_used": 3,
+   "margin_spare_capacity": 3.42,
+   "margin_sold_out": -3.42
+  },
+  {
+   "copies": 4,
+   "price_multiplier": 2.5,
+   "aws_multiplier": null,
+   "revenue": 8.55,
+   "server_h_used": 4,
+   "margin_spare_capacity": 5.13,
+   "margin_sold_out": -5.13
+  }
+ ],
+ "homeowner": {
+  "heat_pump_chf_per_kwh_heat": 0.133,
+  "served_kwh": 18123,
+  "server_kwh": 22654,
+  "rows": [
+   {
+    "discount": 0.0,
+    "heat_price_chf_kwh": 0.133,
+    "host_pays_chf": 2410,
+    "host_saves_chf": 0,
+    "host_share_of_server_power": 0.32,
+    "digitalheat_refund_chf": 5122
+   },
+   {
+    "discount": 0.3,
+    "heat_price_chf_kwh": 0.0931,
+    "host_pays_chf": 1687,
+    "host_saves_chf": 723,
+    "host_share_of_server_power": 0.224,
+    "digitalheat_refund_chf": 5845
+   },
+   {
+    "discount": 0.5,
+    "heat_price_chf_kwh": 0.0665,
+    "host_pays_chf": 1205,
+    "host_saves_chf": 1205,
+    "host_share_of_server_power": 0.16,
+    "digitalheat_refund_chf": 6327
+   },
+   {
+    "discount": 1.0,
+    "heat_price_chf_kwh": 0.0,
+    "host_pays_chf": 0,
+    "host_saves_chf": 2410,
+    "host_share_of_server_power": 0.0,
+    "digitalheat_refund_chf": 7532
+   }
+  ],
+  "owner_example": [
+   {
+    "discount": 0.3,
+    "saved_per_year": 450.0,
+    "saved_10y": 4500.0
+   },
+   {
+    "discount": 0.5,
+    "saved_per_year": 750.0,
+    "saved_10y": 7500.0
+   }
+  ],
+  "host_pays_half_heat_price": 0.2078,
+  "host_pays_half_vs_heat_pump": 1.56
+ },
+ "capex": {
+  "server: 2x EPYC 9654, 512 GB DDR5, water cooling (prices_2026.json)": 25000.0,
+  "site install (tank, plumbing, controls, network) per server": 2000.0
+ },
+ "unit": {
+  "reference house": {
+   "capex": 29000,
+   "server_h": 5664,
+   "sold_server_h": 3964,
+   "revenue": 12203,
+   "heat_income": 422,
+   "electricity": 1883,
+   "opex": 3600,
+   "ebitda": 7141,
+   "payback_years": 4.06,
+   "profit_after_depreciation": 1341,
+   "break_even_price_sh": 3.044
+  },
+  "services fleet": {
+   "capex": 26714,
+   "server_h": 7239,
+   "sold_server_h": 5067,
+   "revenue": 15598,
+   "heat_income": 539,
+   "electricity": 2407,
+   "opex": 3200,
+   "ebitda": 10530,
+   "payback_years": 2.54,
+   "profit_after_depreciation": 5187,
+   "break_even_price_sh": 2.283
+  },
+  "services fleet + dry cooler": {
+   "capex": 26950,
+   "server_h": 8483,
+   "sold_server_h": 5938,
+   "revenue": 18276,
+   "heat_income": 539,
+   "electricity": 2827,
+   "opex": 3224,
+   "ebitda": 12765,
+   "payback_years": 2.11,
+   "profit_after_depreciation": 7375,
+   "break_even_price_sh": 2.04
+  }
+ },
+ "grid": {
+  "0.50": [
+   null,
+   null,
+   null,
+   null
+  ],
+  "1.00": [
+   null,
+   null,
+   null,
+   18.46
+  ],
+  "1.50": [
+   null,
+   null,
+   11.81,
+   5.68
+  ],
+  "2.00": [
+   null,
+   18.46,
+   5.68,
+   3.35
+  ],
+  "2.74": [
+   null,
+   6.92,
+   3.21,
+   2.09
+  ],
+  "3.00": [
+   null,
+   5.68,
+   2.79,
+   1.85
+  ],
+  "3.42": [
+   53.14,
+   4.4,
+   2.29,
+   1.55
+  ],
+  "5.00": [
+   8.68,
+   2.38,
+   1.38,
+   0.97
+  ],
+  "9.45": [
+   2.59,
+   1.04,
+   0.65,
+   0.47
+  ],
+  "11.81": [
+   1.89,
+   0.8,
+   0.51,
+   0.37
+  ]
+ },
+ "grid_shares": [
+  0.25,
+  0.5,
+  0.75,
+  1.0
+ ],
+ "rollout": {
+  "servers": 1000,
+  "capex_chf": 26714000,
+  "revenue_chf_y": 15598000,
+  "ebitda_chf_y": 10530000,
+  "payback_years": 2.54,
+  "npv_chf": 15329237,
+  "sold_share": 0.7
+ },
+ "ram": {
+  "early 2025": {
+   "ram_chf": 2519,
+   "capex": 18722,
+   "payback_years": 1.65,
+   "break_even_price_sh": 1.757
+  },
+  "2026 contract (base)": {
+   "ram_chf": 10511,
+   "capex": 26714,
+   "payback_years": 2.54,
+   "break_even_price_sh": 2.283
+  },
+  "retail Nov 2026": {
+   "ram_chf": 16973,
+   "capex": 33176,
+   "payback_years": 3.36,
+   "break_even_price_sh": 2.708
+  }
+ },
+ "friend": {
+  "aws_chf": 10080,
+  "server_h": 1067,
+  "servers_at_80pct": 0.15,
+  "our_price_chf": 12600,
+  "our_price_at_base_rate_chf": 3650,
+  "customers_per_house": 15
+ }
+}

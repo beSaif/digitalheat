@@ -4,16 +4,19 @@ import { useEffect, useRef, useState } from "react";
 
 /* The scheduler's output (python -m scheduler.balance). The dashboard only displays it. */
 
-export type Kind = "house" | "cityhouse" | "hospital" | "spa" | "greenhouse";
+export type Kind = "house" | "family" | "cityhouse" | "hospital" | "spa" | "greenhouse" | "office" | "pharma";
 
 export const KIND_LABEL: Record<Kind, string> = {
   house: "House",
+  family: "Family home",
   cityhouse: "City house",
   hospital: "Hospital",
   spa: "Spa & pool",
   greenhouse: "Greenhouse",
+  office: "Office",
+  pharma: "Pharma lab",
 };
-export const KIND_SERVERS: Record<Kind, number> = { house: 4, cityhouse: 6, hospital: 15, spa: 11, greenhouse: 10 };
+export const KIND_SERVERS: Record<Kind, number> = { house: 4, family: 4, cityhouse: 6, hospital: 15, spa: 11, greenhouse: 10, office: 8, pharma: 14 };
 
 export type SiteIn = { id: string; kind: Kind; name: string; lat: number; lon: number; servers: number; added?: boolean };
 

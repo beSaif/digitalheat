@@ -29,6 +29,10 @@ def job_prices(types):
     ms = P["managed_services"]
     out = {}
     for k, t in types.items():
+        if k not in JOB_DEFAULTS:  # sim, twin: priced per server-hour only, no managed-service equivalent
+            out[k] = {"items": None, "server_h": round(t.sh, 4), "spot_chf": round(t.sh * SPOT_CHF_H, 2),
+                      "on_demand_chf": round(t.sh * ON_DEMAND_CHF_H, 2), "service_chf": None, "service": None}
+            continue
         items = JOB_DEFAULTS[k]["items_per_job"]
         if k == "embed":
             service_usd = items * P["tokens_per_abstract"]["value"] / 1e6 * ms["embed"]["usd"]

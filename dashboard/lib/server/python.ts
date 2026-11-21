@@ -29,7 +29,7 @@ export function runPython(module: string, args: string[], stdin?: string, timeou
   });
 }
 
-export const KINDS = ["house", "cityhouse", "hospital", "spa", "greenhouse"] as const;
+export const KINDS = ["house", "family", "cityhouse", "hospital", "spa", "greenhouse", "office", "pharma"] as const;
 
 export type SiteIn = {
   id: string;

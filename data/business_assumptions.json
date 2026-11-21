@@ -1,0 +1,219 @@
+{
+ "_about": "Inputs of scripts/business_case.py that are not in data/prices_2026.json (exchange rate, AWS server-hour prices, Titan/Cohere prices, hardware per server and write-off years come from there, via scheduler.pricing). Each entry: value, unit, source. 'research' = research_notes/prices_and_costs.md (read 2026-11-21, URLs there). 'our assumption' = not sourced, ours.",
+ "electricity_household_chf_kwh": {
+  "value": 0.3325,
+  "unit": "CHF/kWh",
+  "source": "ElCom 2026, IWB Basel, H4 total (data/raw/elcom_iwb_H4_2025_2026.json); research confirms"
+ },
+ "electricity_business_c3_chf_kwh": {
+  "value": 0.32427,
+  "unit": "CHF/kWh",
+  "source": "research: ElCom 2026, IWB Basel, C3"
+ },
+ "heat_pump_cop": {
+  "value": 2.5,
+  "unit": "-",
+  "source": "case brief; research: Swiss field tests measured SPF 3.19 for air-water (2.47-4.04), so 2.5 is conservative"
+ },
+ "owner_example_heating_chf_per_year": {
+  "value": 1500,
+  "unit": "CHF/year",
+  "source": "case owner, 21 Nov 2026; research: heat pump running cost CHF 1,000-1,600/yr (EnergieSchweiz)"
+ },
+ "heat_pump_install_chf": {
+  "value": 52500,
+  "unit": "CHF",
+  "source": "research: air-water heat pump CHF 45-60k installed (EnergieSchweiz), midpoint"
+ },
+ "heat_pump_subsidy_bs_chf": {
+  "value": 10500,
+  "unit": "CHF",
+  "source": "research: Basel-Stadt CHF 8,000 + 250/kW (10 kW unit), max 40 %"
+ },
+ "heat_discount_base": {
+  "value": 0.3,
+  "unit": "share",
+  "source": "our assumption; case owner: discount vs heat pump (model 30 % and 50 %), not free heat"
+ },
+ "compute_premium": {
+  "value": 0.25,
+  "unit": "share",
+  "source": "our assumption; case owner: we can charge more than Amazon (local, controlled, private, green, Swiss)"
+ },
+ "backlog_price_chf_per_server_h": {
+  "value": 0.0,
+  "unit": "CHF per server-hour",
+  "source": "our assumption, conservative: unsold server-hours run backlog work that earns nothing"
+ },
+ "redundancy_markup_per_copy": {
+  "value": 0.5,
+  "unit": "share of base price per extra copy",
+  "source": "our assumption; research: AWS charges a full 2x for RDS Multi-AZ, so +50 % per copy undercuts the cloud's redundancy price"
+ },
+ "ram_gb_per_server": {
+  "value": 512,
+  "unit": "GB",
+  "source": "research: reference configuration"
+ },
+ "ram_chf_per_gb": {
+  "value": 20.53,
+  "unit": "CHF/GB",
+  "source": "research: DDR5 64 GB RDIMM contract Q4 2026 USD 1,586 (Citi projection, low confidence). Used only as the base of the RAM sensitivity: the server price in prices_2026.json already includes 2026 memory"
+ },
+ "ram_chf_per_gb_retail": {
+  "value": 33.15,
+  "unit": "CHF/GB",
+  "source": "research: retail USD 2,561 per 64 GB, Nov 2026"
+ },
+ "ram_chf_per_gb_2025": {
+  "value": 4.92,
+  "unit": "CHF/GB",
+  "source": "research: ~USD 380 per 64 GB in early 2025"
+ },
+ "site_install_chf": {
+  "value": 16000,
+  "unit": "CHF per site",
+  "source": "research estimates: 1,000 L tank ~CHF 4,000 installed + plumbing CHF 5-15k (10k) + controls/network CHF 2,000 (our assumption)"
+ },
+ "servers_per_site_typ": {
+  "value": 8,
+  "unit": "servers",
+  "source": "our assumption: services fleet averages 56/6 = 9.3, homes 4"
+ },
+ "drycooler_kw_per_site": {
+  "value": 4,
+  "unit": "kW",
+  "source": "our assumption"
+ },
+ "drycooler_chf_per_kw": {
+  "value": 550,
+  "unit": "CHF/kW",
+  "source": "research estimate: 5-10 kW dry cooler CHF 3-5k + CHF 1,500 install, ~CHF 5,500 per 10 kW"
+ },
+ "maintenance_share_of_capex": {
+  "value": 0.1,
+  "unit": "per year",
+  "source": "research: planning value 10 % of capex (third-party 8-15 %, OEM ~20 %)"
+ },
+ "ops_chf_per_server_year": {
+  "value": 400,
+  "unit": "CHF per server-year",
+  "source": "our assumption: monitoring, software, on-call share"
+ },
+ "connectivity_chf_per_site_year": {
+  "value": 1200,
+  "unit": "CHF per site-year",
+  "source": "our assumption: business fibre ~CHF 100/month"
+ },
+ "sales_and_payment_fees_share": {
+  "value": 0.1,
+  "unit": "share of revenue",
+  "source": "our assumption"
+ },
+ "discount_rate": {
+  "value": 0.08,
+  "unit": "per year",
+  "source": "our assumption"
+ },
+ "sold_share_base": {
+  "value": 0.7,
+  "unit": "share of running server-hours sold at the full price",
+  "source": "our assumption; the rest runs backlog work, counted at zero revenue (conservative)"
+ },
+ "friend_aws_simulation_usd_per_year": {
+  "value": 12000,
+  "unit": "USD/year",
+  "source": "case owner: a friend pays ~12k/yr on AWS for simulation compute"
+ },
+ "services": [
+  {
+   "id": "embed",
+   "name": "Local embeddings / RAG indexing",
+   "unit": "1M tokens",
+   "aws_usd_per_unit": null,
+   "gcp_usd_per_unit": 0.15,
+   "premium": 0.25,
+   "units_per_server_h": null,
+   "throughput_source": "measured items/server-h (workloads.catalog) x tokens_per_abstract; price and tokens from data/prices_2026.json",
+   "price_source": "data/prices_2026.json (Titan Text Embeddings V2); Google: research, Vertex Gemini Embedding",
+   "buyers": "law firms, insurers, hospitals, cantonal administration (documents that must not leave)"
+  },
+  {
+   "id": "rerank",
+   "name": "Search reranking",
+   "unit": "1,000 queries (100 docs each)",
+   "aws_usd_per_unit": null,
+   "gcp_usd_per_unit": 1.0,
+   "premium": 0.25,
+   "units_per_server_h": null,
+   "throughput_source": "measured pairs/server-h (workloads.catalog) / rerank_docs_per_query; from data/prices_2026.json",
+   "price_source": "data/prices_2026.json (Cohere Rerank 3.5 on Bedrock); Google: research, Ranking API",
+   "buyers": "same as embeddings: the second step of a private search/RAG pipeline"
+  },
+  {
+   "id": "tagging",
+   "name": "Image tagging",
+   "unit": "1,000 images",
+   "aws_usd_per_unit": 1.2,
+   "gcp_usd_per_unit": 1.5,
+   "premium": 0.25,
+   "units_per_server_h": 1000,
+   "throughput_source": "our assumption: ~280 images/s with a CLIP ViT-B/32-class model on a 128-core CPU server (order of magnitude, not measured)",
+   "price_source": "research: Rekognition DetectLabels Frankfurt; Google Vision labels",
+   "buyers": "museums and archives (collection photos), retailers, pharma lab imaging"
+  },
+  {
+   "id": "people",
+   "name": "People counting (video)",
+   "unit": "video minute",
+   "aws_usd_per_unit": 0.12,
+   "gcp_usd_per_unit": 0.1,
+   "premium": 0.25,
+   "units_per_server_h": 6000,
+   "throughput_source": "our assumption: 100 real-time streams sampled at 5 fps per server (small detector on CPU)",
+   "price_source": "research: Rekognition Video Frankfurt; Google Video Intelligence person detection",
+   "buyers": "public transport (SBB, BVB, BLT), venues, retail, municipalities"
+  },
+  {
+   "id": "transcribe",
+   "name": "Transcription",
+   "unit": "audio minute",
+   "aws_usd_per_unit": 0.006,
+   "gcp_usd_per_unit": 0.016,
+   "premium": 0.25,
+   "units_per_server_h": 3000,
+   "throughput_source": "our assumption: 50 audio-hours per server-hour (Whisper-small class, int8, CPU, batched)",
+   "price_source": "research: AWS Transcribe batch Zurich (USD 0.006, not the older 0.024); Google STT V2 standard",
+   "buyers": "hospitals (patient conversations), courts, cantonal administration, bodycam audio"
+  },
+  {
+   "id": "sim",
+   "name": "Simulations (CFD, molecular dynamics, Monte Carlo)",
+   "unit": "c7a.48xlarge-hour (same chips as our server)",
+   "aws_usd_per_unit": 11.244,
+   "gcp_usd_per_unit": null,
+   "premium": 0.25,
+   "units_per_server_h": 1,
+   "throughput_source": "data/prices_2026.json: our reference server (2x EPYC 9654) = AWS c7a.48xlarge",
+   "price_source": "data/prices_2026.json: c7a.48xlarge on-demand, Frankfurt",
+   "buyers": "pharma and biotech R&D, engineering offices, universities (sciCORE)"
+  },
+  {
+   "id": "video",
+   "name": "Video compression (HD)",
+   "unit": "output minute",
+   "aws_usd_per_unit": 0.017,
+   "gcp_usd_per_unit": 0.03,
+   "premium": 0.25,
+   "units_per_server_h": 600,
+   "throughput_source": "our assumption: 10x real-time HD x264 encodes on 128 cores",
+   "price_source": "research: MediaConvert Basic HD (legacy SKU, conservative); Google Transcoder HD",
+   "buyers": "broadcasters, event venues, bodycam archives"
+  }
+ ],
+ "aws_redundancy_multiplier": {
+  "value": 2.0,
+  "unit": "x",
+  "source": "research: AWS RDS Multi-AZ = 2.0x Single-AZ (Zurich)"
+ }
+}

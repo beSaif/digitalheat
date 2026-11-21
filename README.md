@@ -166,3 +166,19 @@ python3 -m unittest tests.test_scheduler
 The balance also prints computing income, profit, and where the model stops paying off (price, utilisation, electricity, server cost). Prices and their sources: [`data/prices_2026.json`](data/prices_2026.json). Every assumption: [`docs/assumptions.md`](docs/assumptions.md).
 
 Data: workload catalog (embed 0.81 server-h, due 48 h; rerank 0.92 server-h, due 4 h), reference house 2025, Basel city-house gas bills (`scripts/calibrate_city_house.py`, R² 0.93), ElCom 2026 price 0.3325 CHF/kWh, and Open-Meteo hourly weather.
+
+**Beyond the reference house** (all off by default; the key figures above do not change):
+
+- Two input signals: heat (demand, tank, and the site's supply temperature: above the 60 °C server outlet, no server heat) and redundancy (copies of a job never share a site).
+- New sites: family home (4–5 people), office (office hours), pharma lab (24/7 reheat + shifts), with BDEW daily profiles.
+- New jobs: `sim` (simulations, due in 120 days, wait for winter) and `twin` (redundancy tier, 2–4 copies on different sites).
+- Options: `--partial` (servers at 30–100 % power, on 24/7), `--drycooler KW --cool-fill` (outdoor dry cooler, with its fan power), `--outage SITE:DAY:HOURS:START`.
+
+```bash
+python3 -m scheduler.balance --scenario services --monthly              # homes, office, pharma, hospital, spa
+python3 -m scheduler.balance --scenario services --drycooler 4 --cool-fill
+python3 scripts/site_studies.py      # daily curves, household size, summer options, seasons, outages
+python3 scripts/business_case.py     # service prices vs AWS/Google, homeowner offer, billing, capex/opex, payback
+```
+
+Write-up: [docs/business-model.md](docs/business-model.md) (services, no hardware rental, pricing, redundancy tier, homeowner offer, billing, customers, investor view, pitch order). Sources: [research_notes/](research_notes/), inputs: [data/business_assumptions.json](data/business_assumptions.json).
