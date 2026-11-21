@@ -1,0 +1,14 @@
+{
+ "url": "https://archive-api.open-meteo.com/v1/archive?latitude=47.69732%2C47.38615%2C47.33103%2C47.39254%2C47.55776%2C46.19278%2C47.36493%2C47.13713&longitude=8.63493%2C9.27916%2C9.40996%2C8.04422%2C8.89893%2C9.01703%2C7.34453%2C7.24608&start_date=2025-01-01&end_date=2025-12-31&hourly=temperature_2m&timezone=Europe%2FZurich&format=csv",
+ "names": [
+  "Schaffhausen",
+  "Herisau",
+  "Appenzell",
+  "Aarau",
+  "Frauenfeld",
+  "Bellinzona",
+  "Delémont",
+  "Biel"
+ ],
+ "downloaded": "2026-11-21"
+}

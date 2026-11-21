@@ -1,0 +1,14 @@
+{
+ "url": "https://archive-api.open-meteo.com/v1/archive?latitude=46.61797%2C46.82107%2C47.12849%2C47.20583%2C46.91902%2C46.63565%2C46.10276%2C46.29192&longitude=7.05690%2C8.40133%2C8.74735%2C9.35402%2C9.17242%2C8.59388%2C7.07245%2C7.53559&start_date=2025-01-01&end_date=2025-12-31&hourly=temperature_2m&timezone=Europe%2FZurich&format=csv",
+ "names": [
+  "Bulle",
+  "Engelberg",
+  "Einsiedeln",
+  "Wildhaus",
+  "Elm",
+  "Andermatt",
+  "Martigny",
+  "Sierre"
+ ],
+ "downloaded": "2026-11-21"
+}

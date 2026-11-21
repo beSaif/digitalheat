@@ -1,0 +1,15 @@
+metric,method,mean_abs_error,max_abs_error,worst_station,r2_elevation
+mean_temp_c,plain IDW,1.548,5.904,Vicosoprano,0.925
+mean_temp_c,IDW + elevation trend,0.355,1.87,Zermatt,0.925
+winter_mean_temp_c,plain IDW,1.42,5.925,Crans-Montana,0.895
+winter_mean_temp_c,IDW + elevation trend,0.47,1.52,Montreux,0.895
+hgt_20_12,plain IDW,544.645,2370.834,Vicosoprano,0.925
+hgt_20_12,IDW + elevation trend,139.809,724.566,Vicosoprano,0.925
+heating_days,plain IDW,22.772,94.849,Poschiavo,0.894
+heating_days,IDW + elevation trend,5.84,33.228,Poschiavo,0.894
+space_kwh_case,plain IDW,5105.894,22226.685,Vicosoprano,0.925
+space_kwh_case,IDW + elevation trend,1310.674,6793.193,Vicosoprano,0.925
+peak_kw_case,plain IDW,1.06,3.585,Vicosoprano,0.741
+peak_kw_case,IDW + elevation trend,0.644,2.346,Grindelwald,0.741
+summer_mean_kw_case,plain IDW,0.563,2.996,Vicosoprano,0.925
+summer_mean_kw_case,IDW + elevation trend,0.159,1.245,Poschiavo,0.925

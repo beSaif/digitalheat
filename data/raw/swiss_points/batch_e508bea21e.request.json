@@ -1,0 +1,14 @@
+{
+ "url": "https://archive-api.open-meteo.com/v1/archive?latitude=47.27818%2C47.25619%2C46.68387%2C46.72709%2C46.62396%2C46.49142%2C46.47215%2C46.47455&longitude=7.36951%2C6.99648%2C7.86638%2C8.18720%2C8.03601%2C7.56031%2C7.28685%2C7.13155&start_date=2025-01-01&end_date=2025-12-31&hourly=temperature_2m&timezone=Europe%2FZurich&format=csv",
+ "names": [
+  "Moutier",
+  "Saignelégier",
+  "Interlaken",
+  "Meiringen",
+  "Grindelwald",
+  "Adelboden",
+  "Gstaad",
+  "Château-d'Oex"
+ ],
+ "downloaded": "2026-11-21"
+}

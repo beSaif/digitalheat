@@ -1,0 +1,14 @@
+{
+ "url": "https://archive-api.open-meteo.com/v1/archive?latitude=46.75118%2C47.34999%2C47.47333%2C46.77852%2C46.38318%2C46.43301%2C47.46152%2C47.22557&longitude=7.62166%2C7.90329%2C8.30592%2C6.64115%2C6.23955%2C6.91143%2C9.04552%2C8.82228&start_date=2025-01-01&end_date=2025-12-31&hourly=temperature_2m&timezone=Europe%2FZurich&format=csv",
+ "names": [
+  "Thun",
+  "Olten",
+  "Baden",
+  "Yverdon-les-Bains",
+  "Nyon",
+  "Montreux",
+  "Wil",
+  "Rapperswil"
+ ],
+ "downloaded": "2026-11-21"
+}

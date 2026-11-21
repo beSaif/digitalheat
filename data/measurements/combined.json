@@ -1,0 +1,85 @@
+{
+ "what": "mean over team machines, written by scripts/combine_measurements.py",
+ "files": [
+  "workloads_2026-11-21_jk_apple-m1.json",
+  "workloads_2026-11-21_kamar_apple-m3.json",
+  "workloads_2026-11-21_noella_apple-m4.json"
+ ],
+ "machine": {
+  "cpu": "mean of 3 machine(s)"
+ },
+ "jobs": {
+  "embed": {
+   "item": "one abstract embedded (title + text, ~215 words, truncated at 256 tokens)",
+   "model": "sentence-transformers/all-MiniLM-L6-v2",
+   "revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+   "machines": [
+    "jk: Apple M1",
+    "kamar: Apple M3",
+    "noella: Apple M4"
+   ],
+   "stats": {
+    "items_per_s": {
+     "n": 3,
+     "mean": 78.07526474860444,
+     "min": 50.959999524765216,
+     "max": 109.5459508864838,
+     "stdev": 29.53482169817955
+    },
+    "gross_j_per_item": {
+     "n": 3,
+     "mean": 0.29294979716777614,
+     "min": 0.2616745128538583,
+     "max": 0.3222931900309212,
+     "stdev": 0.030355479885968185
+    },
+    "marginal_j_per_item": {
+     "n": 3,
+     "mean": 0.22125175967083885,
+     "min": 0.20505731567382923,
+     "max": 0.24134344215009046,
+     "stdev": 0.01845432454747145
+    }
+   },
+   "items_per_s": 78.07526474860444,
+   "gross_j_per_item": 0.29294979716777614,
+   "marginal_j_per_item": 0.22125175967083885
+  },
+  "rerank": {
+   "item": "one (query, abstract) pair scored",
+   "model": "cross-encoder/ms-marco-MiniLM-L6-v2",
+   "revision": "233902d25c440f23af6f7d6e94d2946bac0bee0a",
+   "machines": [
+    "jk: Apple M1",
+    "kamar: Apple M3",
+    "noella: Apple M4"
+   ],
+   "stats": {
+    "items_per_s": {
+     "n": 3,
+     "mean": 31.60104174219511,
+     "min": 19.497471195522188,
+     "max": 43.11860243216664,
+     "stdev": 11.821464202407773
+    },
+    "gross_j_per_item": {
+     "n": 3,
+     "mean": 0.6598318094652992,
+     "min": 0.6230067036782083,
+     "max": 0.7023841750818589,
+     "stdev": 0.03999746080034366
+    },
+    "marginal_j_per_item": {
+     "n": 3,
+     "mean": 0.4792864675724259,
+     "min": 0.34768839742759333,
+     "max": 0.5897860073214355,
+     "stdev": 0.12242007256869825
+    }
+   },
+   "items_per_s": 31.60104174219511,
+   "gross_j_per_item": 0.6598318094652992,
+   "marginal_j_per_item": 0.4792864675724259
+  }
+ }
+}

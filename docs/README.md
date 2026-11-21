@@ -6,6 +6,8 @@
 | [case-presentation.md](case-presentation.md) | Text of DigitalHeat's slide deck |
 | [DigitalHeat-case-presentation.pdf](DigitalHeat-case-presentation.pdf) | The original slide deck (from the case's Dropbox link) |
 | [assumption-limits.md](assumption-limits.md) | **Where the case's simplifications stop holding** (tank losses, server heat temperature, hot-water pattern) and how to handle them in the implementation and the pitch |
+| [workloads.md](workloads.md) | **Must-have 1:** the two real jobs, how they were measured, scaling to the 1 kW server, pause/stop/resume contract, limits |
+| [measure-on-your-machine.md](measure-on-your-machine.md) | Prompt for teammates to run and measure the jobs on their own laptops, so we can average |
 | [submission.md](submission.md) | What the platform's submission form asks for, and what to fix before submitting |
 | [event.md](event.md) | Our team, organizer announcements, where to ask questions, venue basics, schedule, mentors, perks |
 | [../data/README.md](../data/README.md) | The input data: reference-house hourly profile, weather, electricity price, MLPerf summary, real gas and electricity data of a Basel house with four apartments |
@@ -42,4 +44,5 @@ Pitch must open with those key figures, then demo a January day, a July day, and
 - **City house data (new 21 Nov):** downloaded and summarised, not used in any model yet. The case allows testing other houses on top of the reference house.
 - **Repo is private:** must be opened up for the jury before submitting (see [submission.md](submission.md)).
 - **Unverified numbers in [assumption-limits.md](assumption-limits.md):** tank losses and server outlet temperatures are general engineering ranges; check them against the sources named there before using them in the pitch.
+- **Jobs per day: decided.** Embeddings are an unlimited backlog (stated); reranking is a fixed stream of 4 per house per day with a 4 h deadline, swept 1/4/16. See [workloads.md](workloads.md#jobs-per-day). Optional, not done: sourced deadlines, a server-efficiency source, trace-based arrival rates ([workloads.md](workloads.md#optional-improvements-not-done)).
 - **Not collected yet:** cloud on-demand and spot prices; MLPerf power measurements (the summary sheet has throughput only).
