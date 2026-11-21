@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: blob:; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
+<title>DigitalHeat: heat demand across Switzerland, 2025</title>
+<style>
+  :root, [data-theme="light"] {
+    --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+    --grid: #e1e0d9; --axis: #c3c2b7; --ring: rgba(11,11,11,.10); --lake: #d9e7f5; --land: #f0efec;
+    --noest: #d6d5ce; --sel: #0b0b0b; --tile: #ffffff; --hover: #f3f2ee; --warn-bg: #fff4e0; --warn: #7a4a00;
+    --temp: #eb6834; --heat: #2a78d6; color-scheme: light;
+  }
+  [data-theme="dark"] {
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --ring: rgba(255,255,255,.10); --lake: #1f3550; --land: #262624;
+    --noest: #3a3a37; --sel: #f0efec; --tile: #222221; --hover: #2a2a28; --warn-bg: #3a2c10; --warn: #fab219;
+    --temp: #d95926; --heat: #3987e5; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); background: var(--page); }
+  header { padding: 12px 18px 4px; }
+  h1 { font-size: 18px; margin: 0 0 2px; font-weight: 600; }
+  header p { margin: 0; color: var(--ink-2); max-width: 1150px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 8px 18px; border-bottom: 1px solid var(--grid); }
+  .controls label { color: var(--ink-2); display: inline-flex; gap: 6px; align-items: center; max-width: 100%; }
+  .controls select { max-width: 100%; min-width: 0; }
+  select, button, input { font: inherit; color: var(--ink); background: var(--tile); border: 1px solid var(--axis); border-radius: 6px; padding: 3px 8px; }
+  button { cursor: pointer; }
+  button:hover, select:hover { background: var(--hover); }
+  :focus-visible { outline: 2px solid var(--heat); outline-offset: 1px; }
+  .seg { display: inline-flex; border: 1px solid var(--axis); border-radius: 6px; overflow: hidden; }
+  .seg button { border: 0; border-radius: 0; }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+  #hour { width: 170px; padding: 0; }
+  #hourLabel { font-variant-numeric: tabular-nums; font-weight: 600; min-width: 200px; }
+  .timeonly[hidden], .monthonly[hidden] { display: none !important; }
+  main { display: grid; grid-template-columns: minmax(0, 1fr) 400px; }
+  #mapWrap { position: relative; padding: 8px 12px; background: var(--surface); }
+  #map { width: 100%; height: auto; display: block; touch-action: manipulation; }
+  #map .border { fill: none; stroke: var(--ink-2); stroke-width: 1.2px; vector-effect: non-scaling-stroke; }
+  #map .land { fill: var(--land); }
+  #map .lake { fill: var(--surface); stroke: var(--axis); stroke-width: 0.8px; vector-effect: non-scaling-stroke; }  /* neutral, so lakes never read as a data value */
+  #map .st { stroke: var(--surface); stroke-width: 1.5px; vector-effect: non-scaling-stroke; }
+  #map .st.selected { stroke: var(--sel); stroke-width: 2.5px; }
+  #map .hit { fill: transparent; cursor: pointer; }
+  #map .lbl { fill: var(--ink); font-weight: 600; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; pointer-events: none; }
+  #map .pick { fill: none; stroke: var(--sel); stroke-width: 2px; vector-effect: non-scaling-stroke; }
+  #tip { position: absolute; pointer-events: none; background: var(--tile); border: 1px solid var(--grid); border-radius: 6px; padding: 4px 8px; font-size: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.12); display: none; white-space: nowrap; z-index: 2; }
+  #tip b { font-variant-numeric: tabular-nums; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center; font-size: 12px; color: var(--ink-2); margin: 6px 4px; }
+  .legend .bar { width: 260px; height: 10px; border-radius: 3px; border: 1px solid var(--ring); }
+  .legend .ticks { display: flex; justify-content: space-between; width: 260px; font-variant-numeric: tabular-nums; }
+  .sw { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 5px; vertical-align: -2px; border: 1px solid var(--ring); }
+  .note { font-size: 12px; color: var(--warn); background: var(--warn-bg); border-radius: 6px; padding: 6px 10px; margin: 6px 4px; }
+  #banner { display: none; font-weight: 600; }
+  aside { padding: 12px 16px; border-left: 1px solid var(--grid); background: var(--surface); max-height: calc(100vh - 120px); overflow-y: auto; }
+  h2 { font-size: 16px; margin: 0; }
+  h3 { font-size: 12px; margin: 16px 0 6px; color: var(--ink-2); font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+  .sub { color: var(--muted); font-size: 12px; }
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+  .tile { border: 1px solid var(--grid); border-radius: 8px; padding: 6px 9px; background: var(--tile); }
+  .tile .v { font-size: 19px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .tile .k { font-size: 11.5px; color: var(--ink-2); }
+  .explain { margin-top: 8px; color: var(--ink-2); font-size: 13px; background: var(--hover); border-radius: 8px; padding: 7px 10px; }
+  .chart { position: relative; }
+  .chart svg { display: block; width: 100%; height: 110px; overflow: visible; }
+  .chart .ctip { position: absolute; pointer-events: none; background: var(--tile); border: 1px solid var(--grid); border-radius: 6px; padding: 2px 7px; font-size: 12px; display: none; white-space: nowrap; }
+  table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; font-size: 13px; }
+  th, td { text-align: right; padding: 3px 5px; border-bottom: 1px solid var(--grid); }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: var(--ink-2); font-weight: 600; font-size: 12px; cursor: pointer; user-select: none; position: sticky; top: 0; background: var(--surface); }
+  tbody tr { cursor: pointer; }
+  tbody tr:hover { background: var(--hover); }
+  tbody tr.sel { outline: 2px solid var(--heat); outline-offset: -2px; }
+  dl { display: grid; grid-template-columns: auto auto; gap: 2px 10px; margin: 0; font-size: 13px; }
+  dt { color: var(--ink-2); } dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+  footer { color: var(--muted); font-size: 12px; padding: 10px 18px 16px; }
+  footer p { margin: 4px 0; max-width: 1150px; }
+  @media (max-width: 900px) {
+    main { grid-template-columns: 1fr; }
+    aside { border-left: 0; border-top: 1px solid var(--grid); max-height: none; }
+    #hourLabel { min-width: 0; }
+    .legend .bar, .legend .ticks { width: 200px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>How much heat does the DigitalHeat reference house need across Switzerland? (weather 2025)</h1>
+  <p>The same house at 93 places. Heat per hour = 10 kW × (20 − T) / 25.6 on heating days (daily mean below 12 °C) + 0.5 kW hot water.
+  Each server gives 0.8 kW of usable heat, so servers needed = heat ÷ 0.8. Colours between the dots are estimated (see the note below the map).</p>
+</header>
+
+<div class="controls" role="group" aria-label="Map settings">
+  <span class="seg" role="group" aria-label="Time mode">
+    <button id="modeHour" aria-pressed="true">One hour</button><button id="modeMonth" aria-pressed="false">One month</button><button id="modeYear" aria-pressed="false">Whole year 2025</button>
+  </span>
+  <label>Show <select id="metric"></select></label>
+  <label class="timeonly">Date <input type="date" id="date" min="2025-01-01" max="2025-12-31"></label>
+  <button class="timeonly" id="prevDay" aria-label="Previous day">◀</button>
+  <button class="timeonly" id="nextDay" aria-label="Next day">▶</button>
+  <label class="timeonly">Hour <input type="range" id="hour" min="0" max="23" step="1" aria-describedby="hourLabel"></label>
+  <span class="timeonly" id="hourLabel" aria-live="polite"></span>
+  <button class="monthonly" id="prevMonth" aria-label="Previous month">◀</button>
+  <label class="monthonly">Month <select id="month"></select></label>
+  <button class="monthonly" id="nextMonth" aria-label="Next month">▶</button>
+  <button class="timeonly monthonly" id="play" aria-pressed="false">▶ Play</button>
+  <label title="How the house is sized: the same house everywhere (case constant 25.6, from Basel) or a house that reaches 10 kW at the local coldest hour">House <select id="sizing">
+    <option value="case">same as Basel (25.6)</option><option value="local">sized for local coldest hour</option></select></label>
+  <label>Heat recovered <select id="recovery"><option value="80">80 % (case)</option><option value="85">85 % (sensitivity)</option></select></label>
+  <label>Theme <select id="theme"><option value="auto">auto</option><option value="light">light</option><option value="dark">dark</option></select></label>
+</div>
+
+<main>
+  <div id="mapWrap">
+    <div class="note" id="banner" role="alert"></div>
+    <svg id="map" role="img" aria-labelledby="mapTitle">
+      <title id="mapTitle">Map of Switzerland coloured by the selected value</title>
+      <defs><clipPath id="clipCH"><path id="clipPath"></path></clipPath></defs>
+      <path class="land" id="land"></path>
+      <image id="surface" preserveAspectRatio="none" clip-path="url(#clipCH)"></image>
+      <g id="lakes" clip-path="url(#clipCH)"></g>
+      <path class="border" id="borderPath"></path>
+      <rect id="hitArea" fill="transparent"></rect>
+      <g id="stations"></g>
+      <g id="labels"></g>
+      <circle class="pick" id="pick" r="0"></circle>
+    </svg>
+    <div id="tip"></div>
+    <div class="legend" id="legend" aria-label="Legend"></div>
+    <div class="note" id="interpNote"></div>
+  </div>
+  <aside>
+    <h2 id="pName"></h2>
+    <div class="sub" id="pMeta"></div>
+    <div class="tiles" id="pTiles"></div>
+    <div class="explain" id="pExplain"></div>
+    <div id="pCharts">
+      <h3>This day, hour by hour</h3>
+      <div class="chart" id="chartTemp"><svg aria-label="Temperature by hour"></svg><div class="ctip"></div></div>
+      <div class="chart" id="chartHeat"><svg aria-label="Heat demand by hour"></svg><div class="ctip"></div></div>
+    </div>
+    <div id="pMonth"><h3 id="pMonthTitle">Month by month</h3><div class="chart" id="chartMonths"><svg aria-label="Value per month" style="height:130px"></svg><div class="ctip"></div></div></div>
+    <div id="pYear"><h3>Year 2025 at this place</h3><dl id="pYearList"></dl></div>
+    <h3 id="tTitle">All places</h3>
+    <table>
+      <thead><tr><th data-sort="name" scope="col">Place</th><th data-sort="elev" scope="col">m</th><th data-sort="value" scope="col" id="thValue">Value</th><th data-sort="zone" scope="col">Zone</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </aside>
+</main>
+<footer id="footer"></footer>
+
+<script>
+"use strict";
+const DATA = __DATA__;
+const C = DATA.case;
+
+// ---------------------------------------------------------------- decode data
+function decodeI16(b64) {
+  const bin = atob(b64), u8 = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+  return new Int16Array(u8.buffer);
+}
+const N_HOURS = DATA.times.length;
+const dayOf = new Int16Array(N_HOURS);
+DATA.dateStart.forEach((s, d) => { const e = DATA.dateStart[d + 1] ?? N_HOURS; for (let i = s; i < e; i++) dayOf[i] = d; });
+const ST = DATA.stations.map(s => ({ ...s, T: decodeI16(s.t), heatDays: s.heat }));
+const byName = Object.fromEntries(ST.map(s => [s.name, s]));
+
+// Heat demand per hour, from the case formula (same as src/load_data.py; checked against Python below).
+function demandSeries(st, sizing) {
+  const key = "d_" + sizing;
+  if (st[key]) return st[key];
+  const spread = sizing === "local" ? st.spreadLocal : C.spreadCase, out = new Float64Array(N_HOURS);
+  for (let i = 0; i < N_HOURS; i++) {
+    const T = st.T[i] / 10;
+    const space = st.heatDays[dayOf[i]] === "1" ? Math.max(0, C.designPowerKw * (C.indoorC - T) / spread) : 0;
+    out[i] = space + C.hotWaterKw;
+  }
+  return (st[key] = out);
+}
+// Self-check: the browser's yearly totals must equal the Python totals for every place.
+const mismatches = [];
+for (const st of ST) for (const sz of ["case", "local"]) {
+  const d = demandSeries(st, sz); let sum = 0; for (let i = 0; i < N_HOURS; i++) sum += d[i];
+  if (Math.abs(sum - st.s["demand_kwh_" + sz]) > 0.05) mismatches.push(`${st.name} (${sz})`);
+}
+
+// ---------------------------------------------------------------- metrics
+const fmt = (x, d = 1) => x == null || Number.isNaN(x) ? "–" : x.toLocaleString("en-CH", { minimumFractionDigits: d, maximumFractionDigits: d });
+const HOUR_METRICS = {
+  temp:    { label: "Temperature", unit: "°C", dec: 1, scale: "div", domain: [-25, 35],
+             about: "Outdoor air temperature at 2 m in this hour. Grey = 12 °C, the heating limit." },
+  demand:  { label: "Heat demand", unit: "kW", dec: 2, scale: "seq", domain: [0, 18],
+             about: "Heat the house needs in this hour: space heating (heating days only) + 0.5 kW hot water." },
+  servers: { label: "Servers needed", unit: "servers", dec: 1, scale: "seq", domain: [0, 23],
+             about: "Heat demand ÷ usable heat per server (0.8 kW, or 0.85 kW)." },
+};
+const YEAR_METRICS = {
+  mean_temp_c:        { label: "Mean temperature", unit: "°C", dec: 1, scale: "div", about: "Average of all hours of 2025. Grey = 12 °C." },
+  winter_mean_temp_c: { label: "Winter mean temperature (Jan–Mar, Oct–Dec)", unit: "°C", dec: 1, scale: "div", about: "Average of the winter months of 2025." },
+  summer_mean_temp_c: { label: "Summer mean temperature (Apr–Sep)", unit: "°C", dec: 1, scale: "div", about: "Average of April to September 2025." },
+  heating_days:       { label: "Heating days", unit: "days", dec: 0, scale: "seq", about: "Days whose mean temperature is below 12 °C." },
+  hgt_20_12:          { label: "Heating degree days HGT 20/12", unit: "Kd", dec: 0, scale: "seq", about: "Sum over heating days of (20 °C − daily mean). Swiss/German convention, same 12 °C limit as the case." },
+  hdd_18_15:          { label: "Heating degree days (Eurostat 18/15)", unit: "Kd", dec: 0, scale: "seq", about: "Sum over days with mean ≤ 15 °C of (18 °C − daily mean). For comparison only." },
+  space_kwh:          { label: "Space heating per year", unit: "kWh", dec: 0, scale: "seq", sized: true, about: "Sum of hourly space heating over 2025 (without hot water)." },
+  demand_kwh:         { label: "Total heat demand per year", unit: "kWh", dec: 0, scale: "seq", sized: true, about: "Space heating + 4,380 kWh hot water." },
+  peak_kw:            { label: "Peak heat demand", unit: "kW", dec: 1, scale: "seq", sized: true, about: "Highest hourly demand of 2025." },
+  hours_over_5kw:     { label: "Hours above 5 kW", unit: "h", dec: 0, scale: "seq", sized: true, about: "Hours of 2025 in which the house needs more than 5 kW." },
+  winter_servers_mean:{ label: "Servers absorbed in winter (average)", unit: "servers", dec: 1, scale: "seq", sized: true, rec: true, about: "Mean winter demand ÷ heat per server. Assumes storage shifts heat within the day." },
+  summer_servers_mean:{ label: "Servers absorbed in summer (average)", unit: "servers", dec: 2, scale: "seq", sized: true, rec: true, about: "Mean Apr–Sep demand ÷ heat per server. 0.63 = hot water only." },
+  winter_servers_firm:{ label: "Servers that run every day Dec–Feb", unit: "servers", dec: 1, scale: "seq", sized: true, rec: true, about: "Lowest daily mean demand in December–February ÷ heat per server: servers that could run 24 h on every core-winter day without dumping heat (the tank evens out the hours of a day)." },
+  zone:               { label: "Climate zone (Part B)", unit: "", dec: 0, scale: "zone", about: "Zones from HGT 20/12; boundaries derived from 4, 5 and 6 server-years (docs/criteria.md)." },
+};
+const MONTH_METRICS = {
+  mean_temp_c:   { label: "Mean temperature", unit: "°C", dec: 1, scale: "div", about: "Average of all hours of the month. Grey = 12 °C." },
+  min_temp_c:    { label: "Coldest hour of the month", unit: "°C", dec: 1, scale: "div", about: "Lowest hourly temperature in the month." },
+  heating_days:  { label: "Heating days", unit: "days", dec: 0, scale: "seq", domain: [0, 31], about: "Days of the month whose mean temperature is below 12 °C." },
+  hgt_20_12:     { label: "Heating degree days HGT 20/12", unit: "Kd", dec: 0, scale: "seq", about: "Sum over the month's heating days of (20 °C − daily mean)." },
+  space_kwh:     { label: "Space heating in the month", unit: "kWh", dec: 0, scale: "seq", sized: true, about: "Sum of hourly space heating in the month (without hot water)." },
+  demand_kwh:    { label: "Total heat demand in the month", unit: "kWh", dec: 0, scale: "seq", sized: true, about: "Space heating + hot water (12 kWh per day)." },
+  mean_kw:       { label: "Average heat demand", unit: "kW", dec: 2, scale: "seq", sized: true, about: "Mean hourly demand in the month." },
+  peak_kw:       { label: "Peak heat demand", unit: "kW", dec: 1, scale: "seq", sized: true, about: "Highest hourly demand in the month." },
+  servers_mean:  { label: "Servers absorbed (average)", unit: "servers", dec: 1, scale: "seq", sized: true, rec: true, about: "Average demand of the month ÷ heat per server. Assumes storage shifts heat within the day." },
+  servers_firm:  { label: "Servers that run every day of the month", unit: "servers", dec: 1, scale: "seq", sized: true, rec: true, about: "Lowest daily mean demand in the month ÷ heat per server: servers that could run 24 h on every day of the month without dumping heat (the tank evens out the hours of a day)." },
+};
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const LISTS = { hour: () => HOUR_METRICS, month: () => MONTH_METRICS, year: () => YEAR_METRICS };
+const DEFAULT_METRIC = { hour: "demand", month: "servers_mean", year: "space_kwh" };
+const ZONE_NAMES = DATA.zones.map(z => z[0]);
+const zoneOf = hgt => DATA.zones.findIndex(([, up]) => up == null || hgt < up);
+
+const state = { mode: "hour", metric: "demand", dateIdx: DATA.dates.indexOf("2025-01-13"), hour: 8,
+  month: 1, sizing: "case", recovery: "80", theme: "auto", sel: { type: "station", name: "Basel" }, sort: "value", playing: null };
+
+const hoursIn = d => (DATA.dateStart[d + 1] ?? N_HOURS) - DATA.dateStart[d];
+const idx = () => DATA.dateStart[state.dateIdx] + state.hour;
+const metricDef = () => LISTS[state.mode]()[state.metric];
+function yearKey(m, def) {
+  let k = m;
+  if (def.rec) k += "_" + state.recovery;
+  if (def.sized) k += "_" + state.sizing;
+  return k;
+}
+function stationValue(st) {
+  const def = metricDef();
+  if (state.mode === "hour") {
+    const i = idx();
+    if (state.metric === "temp") return st.T[i] / 10;
+    const d = demandSeries(st, state.sizing)[i];
+    return state.metric === "servers" ? d / C.recovery[state.recovery] : d;
+  }
+  if (state.mode === "month") return st.m[yearKey(state.metric, def)][state.month - 1];
+  if (state.metric === "zone") return st.s.hgt_20_12;
+  return st.s[yearKey(state.metric, def)];
+}
+
+// ---------------------------------------------------------------- colours
+const isDark = () => state.theme === "dark" || (state.theme === "auto" && matchMedia("(prefers-color-scheme: dark)").matches);
+const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const SEQ_LIGHT = ["#cde2fb", "#9ec5f4", "#6da7ec", "#3987e5", "#2a78d6", "#1c5cab", "#184f95", "#0d366b"].map(hex);
+const SEQ_DARK = [...SEQ_LIGHT].reverse();               // anchor flips in dark mode: low values recede
+const DIV_LIGHT = ["#104281", "#2a78d6", "#86b6ef", "#f0efec", "#f2a7a5", "#e34948", "#a82d2c"].map(hex);
+const DIV_DARK = ["#9ec5f4", "#3987e5", "#184f95", "#383835", "#8a2423", "#e66767", "#f6c3c2"].map(hex);
+const ZONE_LIGHT = ["#86b6ef", "#3987e5", "#1c5cab", "#0d366b"].map(hex);
+const ZONE_DARK = ["#184f95", "#256abf", "#5598e7", "#9ec5f4"].map(hex);
+function ramp(stops, t) {
+  t = Math.max(0, Math.min(1, t)) * (stops.length - 1);
+  const i = Math.min(Math.floor(t), stops.length - 2), f = t - i;
+  return stops[i].map((c, k) => Math.round(c + (stops[i + 1][k] - c) * f));
+}
+let domain = [0, 1];
+function colourFor(v) {
+  const def = metricDef(), dark = isDark();
+  if (def.scale === "zone") return (dark ? ZONE_DARK : ZONE_LIGHT)[zoneOf(v)];
+  if (def.scale === "div") {
+    // two arms meeting at 12 °C (the heating limit)
+    const mid = C.heatingLimitC, [lo, hi] = domain;
+    const t = v < mid ? 0.5 * (v - lo) / (mid - lo) : 0.5 + 0.5 * (v - mid) / (hi - mid);
+    return ramp(dark ? DIV_DARK : DIV_LIGHT, t);
+  }
+  return ramp(dark ? SEQ_DARK : SEQ_LIGHT, (v - domain[0]) / (domain[1] - domain[0]));
+}
+const css = rgb => `rgb(${rgb.join(",")})`;
+function updateDomain() {
+  const def = metricDef();
+  if (def.domain) { domain = def.domain; return; }
+  const vals = state.mode === "month" ? ST.flatMap(st => st.m[yearKey(state.metric, def)]) : ST.map(stationValue);
+  domain = [Math.min(...vals), Math.max(...vals)];
+  if (def.scale === "div") domain = [Math.min(domain[0], C.heatingLimitC - 1), Math.max(domain[1], C.heatingLimitC + 1)];
+}
+
+// ---------------------------------------------------------------- map geometry
+const G = DATA.grid, KX = 111.32 * Math.cos(46.8 * Math.PI / 180), KY = 110.57;
+const LAT_TOP = G.bbox.lat_max, LON_LEFT = G.bbox.lon_min;
+const W = G.ncol * G.dlon * KX, H = G.nrow * G.dlat * KY;
+const px = lon => (lon - LON_LEFT) * KX, py = lat => (LAT_TOP - lat) * KY;
+const svg = document.getElementById("map");
+svg.setAttribute("viewBox", `0 0 ${W.toFixed(1)} ${H.toFixed(1)}`);
+const ringPath = r => "M" + r.map(([x, y]) => `${px(x).toFixed(2)},${py(y).toFixed(2)}`).join("L") + "Z";
+const borderD = DATA.border.map(ringPath).join("");
+["clipPath", "land", "borderPath"].forEach(id => document.getElementById(id).setAttribute("d", borderD));
+const NS = "http://www.w3.org/2000/svg";
+function el(name, attrs, parent) { const e = document.createElementNS(NS, name); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+DATA.lakes.forEach(r => el("path", { d: ringPath(r), class: "lake" }, document.getElementById("lakes")));
+const surface = document.getElementById("surface");
+for (const id of ["surface", "hitArea"]) Object.entries({ x: 0, y: 0, width: W, height: H }).forEach(([k, v]) => document.getElementById(id).setAttribute(k, v));
+
+// Grid cells inside Switzerland with terrain elevation; precompute the nearest places and IDW weights.
+const cellElev = decodeI16(G.elev), CELLS = [], CELL_AT = new Map();
+for (let r = 0, k = 0; r < G.nrow; r++) for (let c = 0; c < G.ncol; c++) {
+  if (G.mask[r * G.ncol + c] !== "1") continue;
+  const cell = { r, c, lat: LAT_TOP - (r + 0.5) * G.dlat, lon: LON_LEFT + (c + 0.5) * G.dlon, z: cellElev[k++] };
+  CELLS.push(cell); CELL_AT.set(r * G.ncol + c, cell);
+}
+const stXY = ST.map(s => [px(s.lon), py(s.lat)]);
+for (const cell of CELLS) {
+  const x = px(cell.lon), y = py(cell.lat);
+  const d = stXY.map(([sx, sy], j) => [Math.hypot(sx - x, sy - y), j]).sort((a, b) => a[0] - b[0]).slice(0, DATA.idw.neighbours);
+  cell.nb = d.map(p => p[1]);
+  cell.w = d.map(p => 1 / Math.max(p[0], 0.5) ** DATA.idw.power);
+  cell.wsum = cell.w.reduce((a, b) => a + b, 0);
+  cell.nearest = d[0];
+  cell.above = cell.z > G.maxStationElev;
+}
+
+// Elevation-detrended IDW (same method as interpolate() in scripts/build_swiss_map.py).
+function fitTrend(vals) {
+  const z = ST.map(s => s.elev), n = vals.length;
+  const mz = z.reduce((a, b) => a + b, 0) / n, mv = vals.reduce((a, b) => a + b, 0) / n;
+  let sxy = 0, sxx = 0;
+  for (let i = 0; i < n; i++) { sxy += (z[i] - mz) * (vals[i] - mv); sxx += (z[i] - mz) ** 2; }
+  const b = sxx ? sxy / sxx : 0, a = mv - b * mz;
+  return { a, b, resid: vals.map((v, i) => v - a - b * z[i]), min: Math.min(...vals), max: Math.max(...vals) };
+}
+function cellValue(cell, tr) {
+  let r = 0;
+  for (let k = 0; k < cell.nb.length; k++) r += cell.w[k] * tr.resid[cell.nb[k]];
+  return Math.max(tr.min, Math.min(tr.max, tr.a + tr.b * cell.z + r / cell.wsum));
+}
+
+// ---------------------------------------------------------------- stations and labels
+const LABELS = ["Basel", "Zürich", "Bern", "Genève", "Lausanne", "Luzern", "St. Gallen", "Chur", "Sion", "Lugano", "St. Moritz", "Davos", "Zermatt", "La Brévine", "Juf"];
+const gSt = document.getElementById("stations"), gLb = document.getElementById("labels");
+ST.forEach((st, j) => {
+  const [x, y] = stXY[j];
+  st.dot = el("circle", { cx: x, cy: y, class: "st" }, gSt);
+  st.hit = el("circle", { cx: x, cy: y, class: "hit", tabindex: 0, role: "button", "aria-label": `${st.name}, ${st.elev} m` }, gSt);
+  st.hit.addEventListener("click", ev => { ev.stopPropagation(); select({ type: "station", name: st.name }); });
+  st.hit.addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); select({ type: "station", name: st.name }); } });
+  st.hit.addEventListener("pointermove", ev => showTip(ev, stationTip(st)));
+  st.hit.addEventListener("pointerleave", hideTip);
+  if (LABELS.includes(st.name)) { st.lbl = el("text", { class: "lbl" }, gLb); st.lbl.textContent = st.name; st.lx = x; st.ly = y; }
+});
+// Keep dots and labels a readable size in screen pixels, whatever the map width (mobile too).
+function applyScale() {
+  const k = W / (svg.getBoundingClientRect().width || W);  // km per screen pixel
+  for (const st of ST) {
+    st.dot.setAttribute("r", 4.5 * k); st.hit.setAttribute("r", 12 * k);
+    if (st.lbl) {
+      const right = st.lx > W * 0.8;   // labels near the east edge go to the left of the dot so they are not cut off
+      st.lbl.setAttribute("x", right ? st.lx - 7 * k : st.lx + 7 * k); st.lbl.setAttribute("text-anchor", right ? "end" : "start");
+      st.lbl.setAttribute("y", st.ly + 4 * k); st.lbl.setAttribute("font-size", 11 * k);
+    }
+  }
+  document.getElementById("pick").setAttribute("r", state.sel.type === "cell" ? 6 * k : 0);
+}
+
+// ---------------------------------------------------------------- tooltip
+const tip = document.getElementById("tip");
+function showTip(ev, node) {
+  const box = document.getElementById("mapWrap").getBoundingClientRect();
+  tip.replaceChildren(node); tip.style.display = "block";
+  const x = ev.clientX - box.left + 14, y = ev.clientY - box.top + 14;
+  tip.style.left = Math.max(4, Math.min(x, box.width - tip.offsetWidth - 6)) + "px"; tip.style.top = y + "px";
+}
+function hideTip() { tip.style.display = "none"; }
+function valueText(v) {
+  const def = metricDef();
+  return def.scale === "zone" ? `${ZONE_NAMES[zoneOf(v)]} (HGT ${fmt(v, 0)} Kd)` : `${fmt(v, def.dec)} ${def.unit}`;
+}
+function tipNode(value, label) {
+  const d = document.createElement("div"), b = document.createElement("b");
+  b.textContent = value; d.append(b, document.createTextNode(" " + label)); return d;
+}
+const stationTip = st => tipNode(valueText(stationValue(st)), `· ${st.name}, ${st.elev} m (computed)`);
+function cellAt(ev) {
+  const pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+  const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+  const r = Math.floor(p.y / (G.dlat * KY)), c = Math.floor(p.x / (G.dlon * KX));
+  return r >= 0 && c >= 0 && c < G.ncol ? CELL_AT.get(r * G.ncol + c) : undefined;
+}
+const hitArea = document.getElementById("hitArea");
+hitArea.addEventListener("pointermove", ev => {
+  const cell = cellAt(ev);
+  if (!cell) return hideTip();
+  showTip(ev, cell.above ? tipNode("not estimated", `· ${cell.z} m, above the highest place (${fmt(G.maxStationElev, 0)} m)`)
+                         : tipNode(valueText(cellValue(cell, trend)), `· estimated, terrain ${cell.z} m`));
+});
+hitArea.addEventListener("pointerleave", hideTip);
+hitArea.addEventListener("click", ev => { const cell = cellAt(ev); if (cell) select({ type: "cell", cell }); });
+
+// ---------------------------------------------------------------- render
+let trend = null;
+// The surface is drawn 4x finer than the grid, blending the 4 surrounding cells (bilinear), so it looks continuous.
+const UP = 4, canvas = document.createElement("canvas");
+canvas.width = G.ncol * UP; canvas.height = G.nrow * UP;
+function renderSurface() {
+  const vals = ST.map(stationValue);
+  trend = fitTrend(vals);
+  const V = new Float64Array(G.nrow * G.ncol).fill(NaN), ABOVE = new Uint8Array(G.nrow * G.ncol);
+  for (const cell of CELLS) { const k = cell.r * G.ncol + cell.c; if (cell.above) ABOVE[k] = 1; else V[k] = cellValue(cell, trend); }
+  const ctx = canvas.getContext("2d"), img = ctx.createImageData(canvas.width, canvas.height);
+  const noest = hex(getComputedStyle(document.documentElement).getPropertyValue("--noest").trim());
+  for (let y = 0; y < canvas.height; y++) {
+    const fy = (y + 0.5) / UP - 0.5, r0 = Math.floor(fy), ty = fy - r0;
+    for (let x = 0; x < canvas.width; x++) {
+      const fx = (x + 0.5) / UP - 0.5, c0 = Math.floor(fx), tx = fx - c0;
+      let sum = 0, wv = 0, wa = 0;
+      for (const [dr, dc, w] of [[0, 0, (1 - ty) * (1 - tx)], [0, 1, (1 - ty) * tx], [1, 0, ty * (1 - tx)], [1, 1, ty * tx]]) {
+        const r = r0 + dr, c = c0 + dc;
+        if (r < 0 || c < 0 || r >= G.nrow || c >= G.ncol || w === 0) continue;
+        const k = r * G.ncol + c;
+        if (ABOVE[k]) wa += w; else if (!Number.isNaN(V[k])) { sum += w * V[k]; wv += w; }
+      }
+      if (wv + wa === 0) continue;
+      const rgb = wa > wv ? noest : colourFor(sum / wv), o = 4 * (y * canvas.width + x);
+      img.data[o] = rgb[0]; img.data[o + 1] = rgb[1]; img.data[o + 2] = rgb[2]; img.data[o + 3] = 255;
+    }
+  }
+  ctx.putImageData(img, 0, 0);
+  surface.setAttribute("href", canvas.toDataURL());
+  ST.forEach((st, j) => { st.dot.setAttribute("fill", css(colourFor(vals[j]))); st.dot.classList.toggle("selected", state.sel.type === "station" && state.sel.name === st.name); });
+}
+
+function renderLegend() {
+  const def = metricDef(), box = document.getElementById("legend"); box.replaceChildren();
+  const title = document.createElement("strong"); title.textContent = def.label + (def.unit ? ` (${def.unit})` : ""); box.appendChild(title);
+  if (def.scale === "zone") {
+    DATA.zones.forEach(([name, up], k) => {
+      const lo = k ? DATA.zones[k - 1][1] : null, s = document.createElement("span"), sw = document.createElement("span");
+      sw.className = "sw"; sw.style.background = css((isDark() ? ZONE_DARK : ZONE_LIGHT)[k]);
+      s.append(sw, document.createTextNode(`${name}: HGT ${lo == null ? "< " + fmt(up, 0) : up == null ? "≥ " + fmt(lo, 0) : fmt(lo, 0) + "–" + fmt(up, 0)} Kd`));
+      box.appendChild(s);
+    });
+  } else {
+    const wrap = document.createElement("span"), bar = document.createElement("div"), ticks = document.createElement("div");
+    bar.className = "bar"; ticks.className = "ticks";
+    const stops = []; for (let i = 0; i <= 20; i++) stops.push(css(colourFor(domain[0] + (domain[1] - domain[0]) * i / 20)));
+    bar.style.background = `linear-gradient(to right, ${stops.join(",")})`;
+    const tv = def.scale === "div" ? [domain[0], C.heatingLimitC, domain[1]] : [domain[0], (domain[0] + domain[1]) / 2, domain[1]];
+    tv.forEach(v => { const s = document.createElement("span"); s.textContent = fmt(v, def.dec === 0 ? 0 : 1); ticks.appendChild(s); });
+    wrap.append(bar, ticks); box.appendChild(wrap);
+  }
+  const ne = document.createElement("span"), sw = document.createElement("span");
+  sw.className = "sw"; sw.style.background = "var(--noest)";
+  ne.append(sw, document.createTextNode(`above ${fmt(G.maxStationElev, 0)} m: not estimated`)); box.appendChild(ne);
+  const dot = document.createElement("span"); dot.textContent = `● dots = the ${ST.length} computed places; colour between them = estimate`; box.appendChild(dot);
+}
+
+function select(sel) { state.sel = sel; render(); }
+function tile(v, k) {
+  const t = document.createElement("div"), a = document.createElement("div"), b = document.createElement("div");
+  t.className = "tile"; a.className = "v"; b.className = "k"; a.textContent = v; b.textContent = k;
+  t.append(a, b); return t;
+}
+function renderPanel() {
+  const def = metricDef(), tiles = document.getElementById("pTiles"), sel = state.sel, rec = C.recovery[state.recovery];
+  tiles.replaceChildren();
+  if (sel.type === "cell") {
+    const cell = sel.cell, near = ST[cell.nearest[1]], pick = document.getElementById("pick");
+    pick.setAttribute("cx", px(cell.lon)); pick.setAttribute("cy", py(cell.lat));
+    document.getElementById("pName").textContent = `Estimated point ${cell.lat.toFixed(2)} N, ${cell.lon.toFixed(2)} E`;
+    document.getElementById("pMeta").textContent = `Terrain ${cell.z} m. Nearest computed place: ${near.name} (${fmt(cell.nearest[0], 0)} km away, ${near.elev} m).`;
+    tiles.append(tile(cell.above ? "–" : valueText(cellValue(cell, trend)), def.label + " (estimate)"));
+    const dz = Math.abs(cell.z - near.elev);
+    document.getElementById("pExplain").textContent = cell.above
+      ? `This point is higher than every computed place, so nothing is estimated here.`
+      : `Estimated from the ${DATA.idw.neighbours} nearest places, corrected for elevation (trend across all places right now: ${fmt(trend.b * 100, 2)} ${def.unit} per 100 m). ` +
+        (dz > 300 ? `Uncertain: this point is ${fmt(dz, 0)} m higher or lower than ${near.name}. ` : "") + "Click a dot for computed values.";
+    document.getElementById("pCharts").hidden = true; document.getElementById("pYear").hidden = true; document.getElementById("pMonth").hidden = true;
+    return;
+  }
+  const st = byName[sel.name], i = idx(), di = state.dateIdx;
+  const dem = demandSeries(st, state.sizing), T = st.T[i] / 10, heating = st.heatDays[di] === "1";
+  document.getElementById("pName").textContent = st.name;
+  document.getElementById("pMeta").textContent = `${st.canton} · ${st.region} · ${st.elev} m (weather model) / ${st.geoElev} m (GeoNames)${st.capital ? " · cantonal capital" : ""}`;
+  document.getElementById("pCharts").hidden = state.mode !== "hour"; document.getElementById("pYear").hidden = false;
+  document.getElementById("pMonth").hidden = state.mode !== "month";
+  if (state.mode === "hour") {
+    tiles.append(tile(`${fmt(T)} °C`, "temperature"), tile(`${fmt(dem[i], 2)} kW`, "heat demand"), tile(fmt(dem[i] / rec, 1), `servers at ${state.recovery} %`));
+    const s0 = DATA.dateStart[di], n = hoursIn(di);
+    let meanT = 0; for (let h = s0; h < s0 + n; h++) meanT += st.T[h] / 10; meanT /= n;
+    const spread = state.sizing === "local" ? st.spreadLocal : C.spreadCase;
+    document.getElementById("pExplain").textContent = heating
+      ? `Heating day: the mean of this day is ${fmt(meanT)} °C (below 12 °C). At ${fmt(T)} °C the house needs 10 × (20 − ${fmt(T)}) / ${fmt(spread)} = ${fmt(dem[i] - C.hotWaterKw, 2)} kW for the rooms + 0.5 kW hot water: the heat of ${fmt(dem[i] / rec, 1)} servers. ` +
+        `Each degree colder adds ${fmt(10 / spread, 2)} kW (${fmt(10 / spread / rec, 2)} servers).`
+      : `No heating today: the day's mean is ${fmt(meanT)} °C (12 °C or warmer). Only hot water: 0.5 kW, the heat of ${fmt(0.5 / rec, 2)} server.`;
+    const labels = DATA.times.slice(s0, s0 + n);
+    dayChart("chartTemp", Array.from(st.T.slice(s0, s0 + n), v => v / 10), labels, { title: "Temperature (°C)", unit: "°C", color: "var(--temp)", min: -25, max: 35, ticks: [-20, 0, 12, 30] });
+    dayChart("chartHeat", Array.from(dem.slice(s0, s0 + n)), labels, { title: "Heat demand (kW = kWh per hour)", unit: "kW", color: "var(--heat)", min: 0, max: 18, ticks: [0, 5, 10, 15] });
+  } else if (state.mode === "month") {
+    const m = state.month - 1, z = state.sizing, r = state.recovery, M = st.m;
+    tiles.append(tile(`${fmt(M.mean_temp_c[m])} °C`, "mean temperature"), tile(`${fmt(M["demand_kwh_" + z][m], 0)} kWh`, "heat demand"),
+                 tile(fmt(M[`servers_mean_${r}_${z}`][m], 1), `servers on average (${r} %)`));
+    const days = M.heating_days[m];
+    document.getElementById("pExplain").textContent =
+      `${MONTH_NAMES[m]}: ${days} heating day${days === 1 ? "" : "s"}, mean ${fmt(M.mean_temp_c[m])} °C, coldest hour ${fmt(M.min_temp_c[m])} °C. ` +
+      `The house needs ${fmt(M["space_kwh_" + z][m], 0)} kWh for the rooms + ${fmt(M.hot_water_kwh[m], 0)} kWh hot water, on average ${fmt(M["mean_kw_" + z][m], 2)} kW: ` +
+      `the heat of ${fmt(M[`servers_mean_${r}_${z}`][m], 1)} servers. ${fmt(M[`servers_firm_${r}_${z}`][m], 1)} servers could run 24 h on every day of the month without dumping heat. ` +
+      `Shown on the map: ${def.label.toLowerCase()}. ${def.about}`;
+    document.getElementById("pMonthTitle").textContent = `Month by month: ${def.label}` + (def.unit ? ` (${def.unit})` : "");
+    monthChart(st);
+  } else {
+    tiles.append(tile(valueText(stationValue(st)), def.label));
+    document.getElementById("pExplain").textContent = def.about;
+  }
+  const s = st.s, z = state.sizing, r = state.recovery, list = document.getElementById("pYearList");
+  list.replaceChildren();
+  const rows = [
+    ["Climate zone", s.zone], ["Mean / winter / summer °C", `${fmt(s.mean_temp_c)} / ${fmt(s.winter_mean_temp_c)} / ${fmt(s.summer_mean_temp_c)}`],
+    ["Coldest hour", `${fmt(s.coldest_c)} °C, ${s.coldest_time}`], ["Heating days (of them Apr–Sep)", `${s.heating_days} (${s.summer_heating_days})`],
+    ["HGT 20/12 · Eurostat 18/15", `${fmt(s.hgt_20_12, 0)} · ${fmt(s.hdd_18_15, 0)} Kd`],
+    ["Space heating per year", `${fmt(s["space_kwh_" + z], 0)} kWh`], ["Total heat per year", `${fmt(s["demand_kwh_" + z], 0)} kWh`],
+    ["Peak demand", `${fmt(s["peak_kw_" + z], 1)} kW = ${fmt(s[`peak_servers_${r}_${z}`], 1)} servers`],
+    ["Hours above 5 kW", fmt(s["hours_over_5kw_" + z], 0)],
+    ["Servers Oct–Mar average · every day Dec–Feb", `${fmt(s[`winter_servers_mean_${r}_${z}`], 1)} · ${fmt(s[`winter_servers_firm_${r}_${z}`], 1)}`],
+    ["Servers Apr–Sep average · every day", `${fmt(s[`summer_servers_mean_${r}_${z}`], 2)} · ${fmt(s[`summer_servers_firm_${r}_${z}`], 2)}`],
+    ["Hot water Apr–Sep", `${fmt(s.summer_hot_water_kwh, 0)} kWh`], ["Space heating Apr–Sep", `${fmt(s["summer_space_kwh_" + z], 0)} kWh`],
+  ];
+  for (const [k, v] of rows) { const dt = document.createElement("dt"), dd = document.createElement("dd"); dt.textContent = k; dd.textContent = v; list.append(dt, dd); }
+}
+
+function dayChart(boxId, values, labels, o) {
+  const box = document.getElementById(boxId), cs = box.querySelector("svg"), ctip = box.querySelector(".ctip");
+  cs.replaceChildren();
+  const Wc = cs.clientWidth || 360, Hc = 110, L = 30, R = 6, T = 22, B = 16, n = values.length;
+  const x = i => L + (Wc - L - R) * i / (n - 1), y = v => T + (Hc - T - B) * (1 - (v - o.min) / (o.max - o.min));
+  el("text", { x: 0, y: 11, "font-size": 12, fill: "var(--ink-2)" }, cs).textContent = o.title;
+  for (const g of o.ticks) {
+    el("line", { x1: L, x2: Wc - R, y1: y(g), y2: y(g), stroke: "var(--grid)" }, cs);
+    el("text", { x: L - 4, y: y(g) + 3.5, "font-size": 10, fill: "var(--muted)", "text-anchor": "end" }, cs).textContent = g;
+  }
+  [0, 6, 12, 18, n - 1].forEach(i => el("text", { x: x(i), y: Hc - 3, "font-size": 10, fill: "var(--muted)", "text-anchor": "middle" }, cs).textContent = labels[i].slice(11, 16));
+  el("path", { d: values.map((v, i) => `${i ? "L" : "M"}${x(i)},${y(v)}`).join(""), fill: "none", stroke: o.color, "stroke-width": 2, "stroke-linejoin": "round" }, cs);
+  el("line", { x1: x(state.hour), x2: x(state.hour), y1: T, y2: Hc - B, stroke: "var(--ink)", "stroke-dasharray": "3 2" }, cs);
+  el("circle", { cx: x(state.hour), cy: y(values[state.hour]), r: 4, fill: o.color, stroke: "var(--surface)", "stroke-width": 2 }, cs);
+  const cross = el("line", { y1: T, y2: Hc - B, stroke: "var(--muted)", visibility: "hidden" }, cs);
+  const hit = el("rect", { x: L, y: 0, width: Wc - L - R, height: Hc, fill: "transparent" }, cs);
+  const near = ev => Math.max(0, Math.min(n - 1, Math.round((ev.clientX - cs.getBoundingClientRect().left - L) / (Wc - L - R) * (n - 1))));
+  hit.addEventListener("pointermove", ev => {
+    const i = near(ev); cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("visibility", "visible");
+    ctip.replaceChildren(tipNode(`${fmt(values[i], 1)} ${o.unit}`, `at ${labels[i].slice(11, 16)}`));
+    ctip.style.display = "block"; ctip.style.left = Math.min(x(i) + 8, Wc - 120) + "px"; ctip.style.top = "14px";
+  });
+  hit.addEventListener("pointerleave", () => { cross.setAttribute("visibility", "hidden"); ctip.style.display = "none"; });
+  hit.addEventListener("click", ev => { state.hour = near(ev); render(); });
+}
+
+function monthChart(st) {
+  const def = metricDef(), box = document.getElementById("chartMonths"), cs = box.querySelector("svg"), ctip = box.querySelector(".ctip");
+  const vals = st.m[yearKey(state.metric, def)];
+  cs.replaceChildren();
+  const Wc = cs.clientWidth || 360, Hc = 130, L = 36, R = 4, T = 8, B = 18, n = 12, slot = (Wc - L - R) / n, bw = slot - 4;
+  const lo = Math.min(0, ...vals), hi = Math.max(...vals, lo + 1e-9);
+  const y = v => T + (Hc - T - B) * (1 - (v - lo) / (hi - lo));
+  for (const g of [lo, (lo + hi) / 2, hi]) {
+    el("line", { x1: L, x2: Wc - R, y1: y(g), y2: y(g), stroke: "var(--grid)" }, cs);
+    el("text", { x: L - 4, y: y(g) + 3.5, "font-size": 10, fill: "var(--muted)", "text-anchor": "end" }, cs).textContent = fmt(g, def.dec === 0 || hi > 100 ? 0 : 1);
+  }
+  vals.forEach((v, m) => {
+    const x = L + m * slot + 2, y0 = y(Math.max(0, lo)), yv = y(v), top = Math.min(y0, yv), h = Math.max(1, Math.abs(y0 - yv));
+    const bar = el("path", { d: `M${x},${top + h}V${top + Math.min(4, h)}q0,-${Math.min(4, h)} ${Math.min(4, bw / 2)},-${Math.min(4, h)}H${x + bw - Math.min(4, bw / 2)}q${Math.min(4, bw / 2)},0 ${Math.min(4, bw / 2)},${Math.min(4, h)}V${top + h}Z`,
+      fill: css(colourFor(v)), stroke: m === state.month - 1 ? "var(--sel)" : "none", "stroke-width": 2 }, cs);
+    el("text", { x: x + bw / 2, y: Hc - 4, "font-size": 10, fill: m === state.month - 1 ? "var(--ink)" : "var(--muted)", "text-anchor": "middle", "font-weight": m === state.month - 1 ? 600 : 400 }, cs).textContent = MONTH_NAMES[m][0];
+    const hit = el("rect", { x: L + m * slot, y: 0, width: slot, height: Hc, fill: "transparent", style: "cursor:pointer" }, cs);
+    hit.addEventListener("pointermove", () => { ctip.replaceChildren(tipNode(valueText(v), MONTH_NAMES[m])); ctip.style.display = "block"; ctip.style.left = Math.min(x, Wc - 130) + "px"; ctip.style.top = "0px"; bar.setAttribute("opacity", 0.8); });
+    hit.addEventListener("pointerleave", () => { ctip.style.display = "none"; bar.removeAttribute("opacity"); });
+    hit.addEventListener("click", () => setMonth(m + 1));
+  });
+}
+
+function renderTable() {
+  const def = metricDef(), body = document.getElementById("rows"); body.replaceChildren();
+  document.getElementById("thValue").textContent = def.unit || "HGT Kd";
+  document.getElementById("tTitle").textContent = `All ${ST.length} places: ${def.label}` + (state.mode === "hour" ? `, ${DATA.dates[state.dateIdx]} ${DATA.times[idx()].slice(11, 16)}` : state.mode === "month" ? `, ${MONTH_NAMES[state.month - 1]} 2025` : ", 2025");
+  const rows = ST.map(st => ({ st, name: st.name, elev: st.elev, value: stationValue(st), zone: ZONE_NAMES.indexOf(st.s.zone) }));
+  rows.sort((a, b) => state.sort === "name" ? a.name.localeCompare(b.name) : b[state.sort] - a[state.sort]);
+  for (const r of rows) {
+    const tr = document.createElement("tr");
+    if (state.sel.type === "station" && state.sel.name === r.name) tr.className = "sel";
+    const td0 = document.createElement("td"), sw = document.createElement("span");
+    sw.className = "sw"; sw.style.background = css(colourFor(r.value)); td0.append(sw, document.createTextNode(r.name));
+    tr.appendChild(td0);
+    for (const v of [fmt(r.elev, 0), fmt(r.value, def.dec), r.st.s.zone]) { const td = document.createElement("td"); td.textContent = v; tr.appendChild(td); }
+    tr.addEventListener("click", () => select({ type: "station", name: r.name }));
+    body.appendChild(tr);
+  }
+}
+
+function render() {
+  document.documentElement.dataset.theme = isDark() ? "dark" : "light";
+  document.querySelectorAll(".timeonly, .monthonly").forEach(e => e.hidden = !e.classList.contains(state.mode === "hour" ? "timeonly" : "monthonly"));
+  document.getElementById("modeHour").setAttribute("aria-pressed", state.mode === "hour");
+  document.getElementById("modeMonth").setAttribute("aria-pressed", state.mode === "month");
+  document.getElementById("month").value = state.month;
+  document.getElementById("modeYear").setAttribute("aria-pressed", state.mode === "year");
+  if (state.mode === "hour") {
+    const s = document.getElementById("hour"); s.max = hoursIn(state.dateIdx) - 1; s.value = state.hour;
+    document.getElementById("date").value = DATA.dates[state.dateIdx];
+    const t = DATA.times[idx()];
+    document.getElementById("hourLabel").textContent = `${DATA.dates[state.dateIdx]} ${t.slice(11, 16)} (UTC${t.slice(16)})`;
+  }
+  updateDomain(); renderSurface(); renderLegend(); renderPanel(); renderTable(); applyScale();
+}
+
+// ---------------------------------------------------------------- controls
+function fillMetrics() {
+  const sel = document.getElementById("metric"), list = LISTS[state.mode]();
+  sel.replaceChildren();
+  for (const [k, d] of Object.entries(list)) { const o = document.createElement("option"); o.value = k; o.textContent = d.label; sel.appendChild(o); }
+  if (!list[state.metric]) state.metric = DEFAULT_METRIC[state.mode];
+  sel.value = state.metric;
+}
+function setMode(m) {
+  if (state.playing) document.getElementById("play").click();   // stop playing when the mode changes
+  state.mode = m; fillMetrics(); if (state.sel.type === "cell") state.sel = { type: "station", name: "Basel" }; render(); }
+document.getElementById("modeHour").onclick = () => setMode("hour");
+document.getElementById("modeYear").onclick = () => setMode("year");
+document.getElementById("modeMonth").onclick = () => setMode("month");
+MONTH_NAMES.forEach((n, i) => { const o = document.createElement("option"); o.value = i + 1; o.textContent = n; document.getElementById("month").appendChild(o); });
+function setMonth(m) { state.month = ((m - 1 + 12) % 12) + 1; render(); }
+document.getElementById("month").onchange = e => setMonth(+e.target.value);
+document.getElementById("prevMonth").onclick = () => setMonth(state.month - 1);
+document.getElementById("nextMonth").onclick = () => setMonth(state.month + 1);
+document.getElementById("metric").onchange = e => { state.metric = e.target.value; render(); };
+document.getElementById("sizing").onchange = e => { state.sizing = e.target.value; render(); };
+document.getElementById("recovery").onchange = e => { state.recovery = e.target.value; render(); };
+document.getElementById("theme").onchange = e => { state.theme = e.target.value; render(); };
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", render);
+function setDate(d, h) { state.dateIdx = Math.max(0, Math.min(DATA.dates.length - 1, d)); state.hour = Math.min(h ?? state.hour, hoursIn(state.dateIdx) - 1); render(); }
+document.getElementById("date").onchange = e => { const d = DATA.dates.indexOf(e.target.value); if (d >= 0) setDate(d); };
+document.getElementById("prevDay").onclick = () => setDate(state.dateIdx - 1);
+document.getElementById("nextDay").onclick = () => setDate(state.dateIdx + 1);
+document.getElementById("hour").oninput = e => { state.hour = +e.target.value; render(); };
+document.getElementById("play").onclick = e => {
+  const b = e.currentTarget;
+  if (state.playing) { clearInterval(state.playing); state.playing = null; b.textContent = "▶ Play"; b.setAttribute("aria-pressed", "false"); return; }
+  b.textContent = "❚❚ Pause"; b.setAttribute("aria-pressed", "true");
+  state.playing = state.mode === "month"
+    ? setInterval(() => setMonth(state.month + 1), 900)
+    : setInterval(() => state.hour + 1 < hoursIn(state.dateIdx) ? (state.hour++, render()) : setDate((state.dateIdx + 1) % DATA.dates.length, 0), 250);
+};
+document.querySelectorAll("th[data-sort]").forEach(th => th.onclick = () => { state.sort = th.dataset.sort; renderTable(); });
+window.addEventListener("resize", () => { applyScale(); renderPanel(); });
+
+// Link to a view, e.g. #mode=year&metric=zone or #mode=month&month=7&metric=servers_mean or #date=2025-07-14&hour=12&place=Lugano&theme=dark
+(function fromHash() {
+  const p = new URLSearchParams(location.hash.slice(1));
+  if (["year", "month"].includes(p.get("mode"))) state.mode = p.get("mode");
+  if (+p.get("month") >= 1 && +p.get("month") <= 12) state.month = +p.get("month");
+  if (p.get("theme")) state.theme = p.get("theme");
+  if (p.get("sizing")) state.sizing = p.get("sizing");
+  if (p.get("recovery")) state.recovery = p.get("recovery");
+  const d = DATA.dates.indexOf(p.get("date") || ""); if (d >= 0) state.dateIdx = d;
+  if (p.has("hour")) state.hour = Math.max(0, Math.min(+p.get("hour") || 0, hoursIn(state.dateIdx) - 1));
+  if (byName[p.get("place")]) state.sel = { type: "station", name: p.get("place") };
+  fillMetrics();
+  if (LISTS[state.mode]()[p.get("metric")]) state.metric = p.get("metric");
+  document.getElementById("metric").value = state.metric;
+  ["sizing", "recovery", "theme"].forEach(k => document.getElementById(k).value = state[k]);
+})();
+
+// Footer: sources, method, checks
+(function footer() {
+  const f = document.getElementById("footer");
+  const loo = DATA.loo.filter(r => r.method !== "plain IDW").map(r => `${r.metric}: mean error ${fmt(r.mean_abs_error, 1)}, worst ${fmt(r.max_abs_error, 1)} (${r.worst_station})`).join("; ");
+  const lines = [
+    "Weather: Open-Meteo historical archive, 2025, hourly temperature_2m, timezone Europe/Zurich, default model. Place coordinates: GeoNames via the Open-Meteo geocoding API (see README).",
+    "Border and lakes: Natural Earth 1:10m (public domain). Terrain for the surface: Open-Meteo elevation API (Copernicus DEM GLO-90).",
+    `Surface method: for each value, a straight-line trend with elevation over all ${ST.length} places, plus inverse-distance weighting (power ${DATA.idw.power}, ${DATA.idw.neighbours} nearest places) of what the trend misses; clamped to the range of the places. Leave-one-out test (each place predicted from the others): ${loo}.`,
+    mismatches.length ? `Formula check FAILED for: ${mismatches.join(", ")}` : `Formula check passed: the browser recomputed the hourly demand of all ${ST.length} places for both house sizings and matches the Python totals.`,
+    "The official DigitalHeat key figures stay on the Basel reference house (206 heating days, 26,851 kWh space heating). Everything else here is an extension.",
+  ];
+  for (const t of lines) { const p = document.createElement("p"); p.textContent = t; f.appendChild(p); }
+  document.getElementById("interpNote").textContent = "Colours between the dots are estimates. Mountains make them uncertain: a valley and the slope above it can differ by many degrees, and in winter cold air collects in valleys (inversions), which breaks the elevation trend. Trust the dots; read the surface as a rough picture.";
+  if (mismatches.length) { const b = document.getElementById("banner"); b.style.display = "block"; b.textContent = `Warning: the browser formula does not match Python for ${mismatches.length} places.`; }
+})();
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+ "url": "https://archive-api.open-meteo.com/v1/archive?latitude=46.77413%2C46.70341%2C46.55178%2C46.72215%2C46.77793%2C46.86881%2C46.69862%2C46.79671&longitude=9.20461%2C8.85090%2C9.32217%2C9.55905%2C9.67621%2C9.88151%2C10.09268%2C10.29804&start_date=2025-01-01&end_date=2025-12-31&hourly=temperature_2m&timezone=Europe%2FZurich&format=csv",
+ "names": [
+  "Ilanz",
+  "Disentis",
+  "Splügen",
+  "Lenzerheide",
+  "Arosa",
+  "Klosters",
+  "Zernez",
+  "Scuol"
+ ],
+ "downloaded": "2026-11-21"
+}

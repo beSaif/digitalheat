@@ -3,3 +3,6 @@ __pycache__/
 
 # Scanned building plans of the city house (20 MB); download link in data/README.md
 data/raw/city_house/plans/
+
+# Natural Earth source files (19 MB); re-downloaded by src/swiss_geo.py
+data/raw/natural_earth/

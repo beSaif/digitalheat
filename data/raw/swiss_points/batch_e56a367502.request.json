@@ -1,0 +1,14 @@
+{
+ "url": "https://archive-api.open-meteo.com/v1/archive?latitude=47.21526%2C46.82192%2C47.65051%2C47.05619%2C46.98055%2C46.82203%2C46.60798%2C47.41728&longitude=7.79607%2C6.93817%2C9.17504%2C6.74913%2C6.60639%2C6.50283%2C6.23236%2C7.07573&start_date=2025-01-01&end_date=2025-12-31&hourly=temperature_2m&timezone=Europe%2FZurich&format=csv",
+ "names": [
+  "Langenthal",
+  "Payerne",
+  "Kreuzlingen",
+  "Le Locle",
+  "La Brévine",
+  "Sainte-Croix",
+  "Le Sentier",
+  "Porrentruy"
+ ],
+ "downloaded": "2026-11-21"
+}
