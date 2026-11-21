@@ -102,3 +102,37 @@ The case requires the number of jobs arriving per day and its source, or a clear
 - **Whole-system meter:** display, editor and background tasks are inside both idle and load. The gross figure is therefore a little pessimistic, and the marginal figure assumes background load stayed steady.
 - **CPU only**, small models (22 M parameters). Larger models (LLM batch inference, transcription) would have very different energy per item but the same heat per server-hour.
 - **Reranking pairs are not real top-k retrieval** (see above). This affects relevance, not cost.
+
+## Apple M4 battery-gauge diagnostic
+
+On 2026-11-21, an Apple M4 MacBook Pro running macOS 26.6.2 started this embedding diagnostic on battery at 92%. All three snapshots showed `ExternalConnected = No`. The diagnostic followed the supplied command below, with a battery-power check before launch and SIGTERM sent directly to the embedding process ID in place of `pkill`. The job checkpointed after 22,624 items and exited with code 75.
+
+```sh
+cd digitalheat && (.venv/bin/python -m workloads.run embed --job-dir runs/diag --items 100000000 --no-outputs >/dev/null &) ; sleep 30; for i in 1 2 3; do date +%T; ioreg -rn AppleSmartBattery | grep -oE '"(ExternalConnected|UpdateTime|Voltage|InstantAmperage|Amperage|SystemLoad|AccumulatedSystemLoad|SystemLoadAccumulatorCount|BatteryPower|AccumulatedBatteryPower|BatteryPowerAccumulatorCount)" ?= ?[A-Za-z0-9]+'; sleep 60; done; pkill -f "workloads.run embed --job-dir runs/diag"
+```
+
+Raw `ioreg` values are shown below. Each snapshot printed the same `UpdateTime` twice and two `Voltage` values, listed in output order. Times are local to Zurich (CET).
+
+| Field | 11:10:57 | 11:11:57 | 11:12:57 |
+|---|---:|---:|---:|
+| `ExternalConnected` | No | No | No |
+| `UpdateTime` | 1795255842 | 1795255902 | 1795255966 |
+| `Voltage` (first) | 12618 | 12255 | 12205 |
+| `Voltage` (second) | 12343 | 12257 | 12206 |
+| `Amperage` | 18446744073709548773 | 18446744073709548762 | 18446744073709548671 |
+| `InstantAmperage` | 18446744073709548773 | 18446744073709548762 | 18446744073709548671 |
+| `SystemLoad` | 18446744073709520941 | 18446744073709521447 | 18446744073709522026 |
+| `AccumulatedSystemLoad` | 4334438273 | 4332676855 | 4330769464 |
+| `SystemLoadAccumulatorCount` | 1733117 | 1733176 | 1733240 |
+| `BatteryPower` | 30675 | 30169 | 29590 |
+| `AccumulatedBatteryPower` | 674894820 | 676656238 | 678563629 |
+| `BatteryPowerAccumulatorCount` | 36989 | 37048 | 37112 |
+
+In all three snapshots, interpreting `SystemLoad` as a signed 64-bit integer gives the exact negative of `BatteryPower`. Dividing the change in each power accumulator by the change in its sample count gives the following interval averages.
+
+| Interval | Samples | System-load average | Battery-power average |
+|---|---:|---:|---:|
+| 11:10:57 to 11:11:57 | 59 | −29.85454 W | +29.85454 W |
+| 11:11:57 to 11:12:57 | 64 | −29.80298 W | +29.80298 W |
+
+The benchmark uses the system-load accumulator. This diagnostic reproduces the negative readings under embedding load and covers no idle or reranking windows. The Apple M4 benchmark entry contains throughput only. [Apple M4 workload measurement](../data/measurements/workloads_2026-11-21_noella_apple-m4.json)
