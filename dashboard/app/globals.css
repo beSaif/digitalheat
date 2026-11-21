@@ -91,3 +91,13 @@ body {
   0% { color: var(--color-rust); transform: translateY(-2px); }
   100% { color: inherit; transform: none; }
 }
+
+/* a job moving to the site that has heat */
+.move-path {
+  animation: move-dash 1s linear infinite;
+}
+@keyframes move-dash {
+  to {
+    stroke-dashoffset: -28;
+  }
+}

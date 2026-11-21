@@ -25,8 +25,7 @@ from scheduler.weather import H, temperatures
 
 ROOT = Path(__file__).resolve().parent.parent
 ELCOM = ROOT / "data" / "raw" / "elcom_iwb_H4_2025_2026.json"
-HW_CHF_PER_SERVER = 4000.0  # our assumption, not sourced; written off over HW_YEARS
-HW_YEARS = 5
+from scheduler.pricing import HW_CHF_PER_SERVER, HW_YEARS, ON_DEMAND_CHF_H, SELL_CHF_H, SPOT_CHF_H, job_prices, pays_off
 
 DEFAULT_SITES = [
     {"id": "BS-H1", "kind": "hospital", "name": "Hospital", "lat": 47.5535, "lon": 7.5705},
@@ -45,20 +44,28 @@ def electricity_price():
     raise LookupError("ElCom 2026 Basel H4 not in " + str(ELCOM))
 
 
-def run(sites_in, year=2025, pool=True, hw_chf=HW_CHF_PER_SERVER, series=True):
+def run(sites_in, year=2025, pool=True, hw_chf=HW_CHF_PER_SERVER, series=True, sell=SELL_CHF_H):
     t0 = time.time()
     sites = [Site.from_dict(s) for s in sites_in]
     dem = [demand(s, temperatures(s.lat, s.lon, year)) for s in sites]
     types = job_types()
     sch = Scheduler(sites, dem, types, pool=pool)
     keys = ("demand", "soc", "served", "dumped", "permit", "reserve_u", "limit", "running", "forced",
-            "rerank_sh", "embed_sh", "paused", "checkpointed", "moved_in", "started", "finished")
+            "rerank_sh", "embed_sh", "paused", "checkpointed", "moved_in", "started", "finished",
+            "paused_now", "waiting_now")
     ser = [{k: [0] * H for k in keys} for _ in sites]
     embed_started = [0] * H
     tot = [{"run": 0, "served": 0.0, "demand": 0.0, "dumped": 0.0, "forced": 0, "paused": 0,
             "checkpointed": 0, "moved": 0} for _ in sites]
     for t in range(H):
-        for s, h in enumerate(sch.step(t)):
+        step = sch.step(t)
+        # jobs standing still at the end of this hour: paused in memory, or saved and waiting
+        for j in sch.open:
+            if j.site >= 0 and j.state == "paused":
+                ser[j.site]["paused_now"][t] += 1
+            elif j.site >= 0 and j.state == "checkpointed":
+                ser[j.site]["waiting_now"][t] += 1
+        for s, h in enumerate(step):
             x, a = ser[s], tot[s]
             x["demand"][t] = round(h.demand, 3)
             x["soc"][t] = round(h.soc, 3)
@@ -112,7 +119,7 @@ def run(sites_in, year=2025, pool=True, hw_chf=HW_CHF_PER_SERVER, series=True):
         elec = run_sh * price
         hv = served * heat_value
         hw = n * hw_chf / HW_YEARS
-        return {
+        f = {
             "servers": n,
             "demand_kwh": round(dem_),
             "served_kwh": round(served),
@@ -134,13 +141,17 @@ def run(sites_in, year=2025, pool=True, hw_chf=HW_CHF_PER_SERVER, series=True):
             "break_even_chf_per_server_h": round((elec - hv) / run_sh, 4) if run_sh else None,
             "price_chf_per_server_h": round((elec - hv + hw) / run_sh, 4) if run_sh else None,
         }
+        f["money"] = pays_off(f, price, heat_value, sell, hw_chf)
+        return f
 
     out = {
         "year": year,
         "pool": pool,
         "constants": {"server_kw": 1.0, "heat_recovery": REC, "electricity_chf_kwh": price,
                       "heat_value_chf_kwh": round(heat_value, 4), "hardware_chf_per_server": hw_chf,
-                      "hardware_years": HW_YEARS},
+                      "hardware_years": HW_YEARS, "sell_chf_per_server_h": sell,
+                      "aws_spot_chf_h": SPOT_CHF_H, "aws_on_demand_chf_h": ON_DEMAND_CHF_H},
+        "job_prices": job_prices(types),
         "job_types": {k: {"server_h": v.sh, "due_h": v.due_h, "arrival_hours": list(v.arrival_hours),
                           "backlog": not v.deadline_job} for k, v in types.items()},
         "sites": [dict(s.to_dict(), label=KINDS[s.kind]["label"], year=figures([i])) for i, s in enumerate(sites)],
@@ -173,6 +184,15 @@ def print_figures(r):
     for k, v in r["jobs_by_type"].items():
         print(f"  {k:<7} done {v['done']:>6}  missed {v['missed']:>3}  open {v['open']:>3}  forced {v['forced']:>3}"
               f"  paused {v['pauses']:>5}  checkpointed {v['checkpoints']:>5}  moved {v['moves']:>5}")
+    for name, f in rows:
+        m = f["money"]
+        if not m:
+            continue
+        print(f"{name[:23]:<24}income {m['income_chf']:>9.0f}  hardware {f['hardware_chf']:>7.0f}  profit {m['profit_chf']:>9.0f} CHF/yr"
+              f"  at CHF {m['sell_chf_per_server_h']}/server-h  ->  {'pays off' if m['pays_off'] else 'DOES NOT pay off'}")
+        print(f"{'':<24}stops paying off below CHF {m['min_price_chf_per_server_h']}/server-h, below "
+              f"{(m['min_utilisation'] or 0) * 100:.0f}% utilisation, above CHF {m['max_electricity_chf_kwh']}/kWh or "
+              f"above CHF {m['max_hardware_chf_per_server']:,} per server")
 
 
 def main():

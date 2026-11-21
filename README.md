@@ -158,7 +158,11 @@ python3 -m scheduler.balance --fleet         # house + hospital + spa
 python3 -m scheduler.balance --year 2023     # any year 1950–2025 (Open-Meteo weather)
 python3 -m scheduler.balance --sweep 1-12    # servers vs coverage and price
 python3 -m scheduler.live --fleet            # the scheduler runs a real embed job: pause/resume/checkpoint
+python3 -m scheduler.pricing                 # price of one server-hour and one job vs AWS
+python3 -m scheduler.assumptions --md        # regenerate docs/assumptions.md
 python3 -m unittest tests.test_scheduler
 ```
+
+The balance also prints computing income, profit, and where the model stops paying off (price, utilisation, electricity, server cost). Prices and their sources: [`data/prices_2026.json`](data/prices_2026.json). Every assumption: [`docs/assumptions.md`](docs/assumptions.md).
 
 Data: workload catalog (embed 0.81 server-h, due 48 h; rerank 0.92 server-h, due 4 h), reference house 2025, Basel city-house gas bills (`scripts/calibrate_city_house.py`, R² 0.93), ElCom 2026 price 0.3325 CHF/kWh, and Open-Meteo hourly weather.

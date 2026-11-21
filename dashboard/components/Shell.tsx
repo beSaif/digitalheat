@@ -18,6 +18,8 @@ import {
   Search,
   Thermometer,
   X,
+  Coins,
+  ListChecks,
 } from "lucide-react";
 import { Logo } from "./Logo";
 import { useFleet } from "@/lib/store";
@@ -26,6 +28,8 @@ import { YEARS, cityTemp, fmtDate, fmtTime, siteNow } from "@/lib/data";
 const NAV = [
   { href: "/", label: "Overview", icon: LayoutGrid, match: (p: string) => p === "/" },
   { href: "/replay", label: "Swiss replay", icon: Flame, match: (p: string) => p.startsWith("/replay") },
+  { href: "/money", label: "Money", icon: Coins, match: (p: string) => p.startsWith("/money") },
+  { href: "/assumptions", label: "Assumptions", icon: ListChecks, match: (p: string) => p.startsWith("/assumptions") },
   { href: "/map", label: "Fleet map", icon: MapIcon, match: (p: string) => p.startsWith("/map") },
   { href: "/sites/BS-01", label: "Sites", icon: Building2, match: (p: string) => p.startsWith("/sites") },
 ];

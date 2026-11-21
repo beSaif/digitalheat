@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import * as maplibregl from "maplibre-gl";
 import type { StyleSpecification } from "maplibre-gl";
 import clsx from "clsx";
-import { ArrowDown, ArrowUp, Building2, Hospital, House, Leaf, Minus, Plus, Waves, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Building2, Hospital, House, Leaf, Minus, Pause, Plus, Save, Waves, X } from "lucide-react";
 import { KIND_LABEL, KIND_SERVERS, type Kind, type Schedule, type SiteIn } from "@/lib/schedule";
 
 maplibregl.setWorkerUrl("/maplibre-gl-worker.mjs");
@@ -56,6 +56,9 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
   const map = useRef<maplibregl.Map | null>(null);
   const [pts, setPts] = useState<{ x: number; y: number }[] | null>(null);
   const [zoom, setZoom] = useState(13);
+  const [hover, setHover] = useState<number | null>(null);
+  const [pinned, setPinned] = useState<number | null>(null);
+  const card = hover ?? pinned;
   const [pick, setPick] = useState<{ lat: number; lon: number; x: number; y: number } | null>(null);
   const sitesRef = useRef(sites);
   const addingRef = useRef(adding);
@@ -176,12 +179,19 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
           const up = d - prev > 0.05;
           const down = prev - d > 0.05;
           const Icon = ICON[s.kind];
+          const paused = x ? x.paused_now[t] : 0;
+          const waiting = x ? x.waiting_now[t] : 0;
+          const movedIn = S ? S.deadline_jobs.filter((j) => j[4] === i && j[5] === t && j[1] !== i).length + (x?.moved_in[t] ?? 0) : 0;
           if (zoom < 11)
             return (
               <button
                 key={s.id}
-                onClick={() => setSelected(i)}
-                title={s.name}
+                onClick={() => {
+                  setSelected(i);
+                  setPinned(pinned === i ? null : i);
+                }}
+                onMouseEnter={() => setHover(i)}
+                onMouseLeave={() => setHover(null)}
                 className={clsx(
                   "absolute flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-full bg-card py-1 pl-1 pr-2 text-[12px] font-semibold shadow",
                   selected === i ? "ring-2 ring-rust" : "ring-1 ring-line",
@@ -192,12 +202,18 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
                   <Icon size={13} />
                 </span>
                 {run}/{n}
+                {paused > 0 && <Pause size={11} className="text-rust" fill="currentColor" />}
               </button>
             );
           return (
             <div key={s.id} className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: spots[i].x, top: spots[i].y }}>
               <div
-                onClick={() => setSelected(i)}
+                onClick={() => {
+                  setSelected(i);
+                  setPinned(pinned === i ? null : i);
+                }}
+                onMouseEnter={() => setHover(i)}
+                onMouseLeave={() => setHover(null)}
                 className={clsx(
                   "relative flex cursor-pointer items-center gap-3 rounded-2xl bg-card px-3 py-2.5 shadow-lg",
                   selected === i ? "ring-2 ring-rust" : "ring-1 ring-line",
@@ -260,9 +276,74 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
                   <i key={k} className={clsx("h-3 w-2 rounded-[2px]", k < rr ? "bg-amber" : k < run ? "bg-teal" : "bg-line")} />
                 ))}
               </div>
+              {(paused > 0 || waiting > 0 || movedIn > 0) && (
+                <div className="mx-auto mt-1 flex w-fit gap-1 text-[11px] font-semibold">
+                  {paused > 0 && (
+                    <span className="flex items-center gap-1 rounded-full bg-ink px-2 py-0.5 text-cream">
+                      <Pause size={10} fill="currentColor" /> {paused} paused
+                    </span>
+                  )}
+                  {waiting > 0 && (
+                    <span className="flex items-center gap-1 rounded-full bg-ink px-2 py-0.5 text-cream">
+                      <Save size={10} /> {waiting} saved
+                    </span>
+                  )}
+                  {movedIn > 0 && <span className="rounded-full bg-amber px-2 py-0.5 text-ink">{movedIn} moved in</span>}
+                </div>
+              )}
             </div>
           );
         })}
+
+      {spots && S && (
+        <svg key={`mv${t}`} className="pointer-events-none absolute inset-0 h-full w-full overflow-visible">
+          <defs>
+            <marker id="mv-head" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#f2a65a" />
+            </marker>
+          </defs>
+          {[...new Set(S.deadline_jobs.filter((j) => j[5] === t && j[1] !== j[4] && j[4] >= 0).map((j) => `${j[1]}-${j[4]}`))].map((k) => {
+            const [a, b] = k.split("-").map(Number);
+            if (!spots[a] || !spots[b]) return null;
+            // start and end at the card edges, not under the cards
+            const r = zoom < 11 ? 22 : 70;
+            const dx = spots[b].x - spots[a].x,
+              dy = spots[b].y - spots[a].y,
+              len = Math.hypot(dx, dy);
+            if (len < 2 * r + 10) return null;
+            const A = { x: spots[a].x + (dx / len) * r, y: spots[a].y + (dy / len) * r },
+              B = { x: spots[b].x - (dx / len) * r, y: spots[b].y - (dy / len) * r };
+            const mx = (A.x + B.x) / 2 - (B.y - A.y) * 0.25,
+              my = (A.y + B.y) / 2 + (B.x - A.x) * 0.25;
+            return (
+              <path
+                key={k}
+                d={`M${A.x},${A.y} Q${mx},${my} ${B.x},${B.y}`}
+                className="move-path"
+                stroke="#f2a65a"
+                strokeWidth={3}
+                fill="none"
+                strokeDasharray="8 6"
+                markerEnd="url(#mv-head)"
+              />
+            );
+          })}
+        </svg>
+      )}
+
+      {spots && S && card !== null && card < sites.length && spots[card] && (
+        <SiteHour
+          x={spots[card].x}
+          y={spots[card].y}
+          name={sites[card].name}
+          demand={S.series[card].demand[t]}
+          heat={S.series[card].running[t] * S.constants.heat_recovery}
+          served={S.series[card].served[t]}
+          soc={S.series[card].soc[t]}
+          tank={S.sites[card].tank_kwh}
+          high={zoom >= 11}
+        />
+      )}
 
       {showPick && (
         <div className="absolute z-10 w-[230px] -translate-x-1/2 rounded-2xl bg-card p-3 shadow-xl ring-1 ring-line" style={{ left: Math.max(pick.x, 125), top: Math.min(pick.y + 14, 300) }}>
@@ -303,6 +384,12 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
         <span className="flex items-center gap-1.5">
           <ArrowUp size={12} className="text-rust" /> heat demand rising
         </span>
+        <span className="flex items-center gap-1.5">
+          <Pause size={11} fill="currentColor" /> no heat: paused
+        </span>
+        <span className="flex items-center gap-1.5">
+          <i className="h-0 w-4 border-t-2 border-dashed border-amber" /> moved to heat
+        </span>
       </div>
     </div>
   );
@@ -321,4 +408,39 @@ function spread(pts: { x: number; y: number }[], w: number, h: number) {
     out.push(q);
   }
   return out;
+}
+
+/** What a site needs this hour, and where the heat comes from. */
+function SiteHour(p: { x: number; y: number; name: string; demand: number; heat: number; served: number; soc: number; tank: number; high: boolean }) {
+  const backup = Math.max(0, p.demand - p.served);
+  const rows = [
+    { l: "Needs", v: `${p.demand.toFixed(1)} kW` },
+    { l: "Servers give", v: `${p.heat.toFixed(1)} kW` },
+    { l: "Backup heater", v: `${backup.toFixed(1)} kW`, hot: backup > 0.05 },
+  ];
+  return (
+    <div
+      className="pointer-events-none absolute z-20 w-[210px] -translate-x-1/2 rounded-2xl bg-ink p-3.5 text-cream shadow-xl"
+      style={{ left: p.x, top: p.y - (p.high ? 58 : 22), transform: "translate(-50%, -100%)" }}
+    >
+      <div className="text-[13px] font-semibold">{p.name}</div>
+      <div className="mt-2 space-y-1 text-[13px]">
+        {rows.map((r) => (
+          <div key={r.l} className="flex justify-between">
+            <span className="text-cream/60">{r.l}</span>
+            <b className={clsx("tabular-nums", r.hot && "text-amber")}>{r.v}</b>
+          </div>
+        ))}
+      </div>
+      <div className="mt-2.5 flex justify-between text-[13px]">
+        <span className="text-cream/60">Tank</span>
+        <b className="tabular-nums">
+          {p.soc.toFixed(0)} / {p.tank} kWh
+        </b>
+      </div>
+      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-cream/15">
+        <div className="h-full rounded-full bg-amber" style={{ width: `${Math.min(100, (p.soc / p.tank) * 100)}%` }} />
+      </div>
+    </div>
+  );
 }

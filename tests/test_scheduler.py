@@ -79,6 +79,20 @@ class ReferenceYear(unittest.TestCase):
         self.assertAlmostEqual(r["break_even_chf_per_server_h"], 0.3325 - REC * 0.3325 / 2.5, places=3)
         self.assertGreater(r["coverage"], 0.5)
 
+    def test_pay_off_thresholds_are_break_even_points(self):
+        from scheduler.balance import electricity_price
+        from scheduler.pricing import pays_off
+
+        f = run(REFERENCE, 2025, series=False)["fleet"]
+        m, e = f["money"], electricity_price()
+        # selling exactly at the minimum price gives zero profit
+        self.assertAlmostEqual(pays_off(f, e, e / 2.5, sell=m["min_price_chf_per_server_h"])["profit_chf"], 0, delta=5)
+        # at the maximum electricity price, profit is zero too
+        e2 = m["max_electricity_chf_kwh"]
+        h = f["run_server_h"]
+        g = dict(f, electricity_chf=h * e2, heat_value_chf=f["served_kwh"] * e2 / 2.5)
+        self.assertAlmostEqual(pays_off(g, e2, e2 / 2.5)["profit_chf"], 0, delta=50)
+
 
 if __name__ == "__main__":
     unittest.main()
