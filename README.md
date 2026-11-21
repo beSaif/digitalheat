@@ -34,6 +34,16 @@ python3 scripts/build_fleet_scenario.py   # regenerate dashboard/public/data (st
 cd dashboard && pnpm install && pnpm dev  # http://localhost:3000
 ```
 
+### Homeowner pilot estimator (website extension)
+
+The DigitalHeat site with a new «Spart mein Haus Geld und CO₂?» calculator under «Ich brauche Wärme», in [`website/`](website/README.md). It includes a cutaway of the technical room, a postcode lookup, an hourly simulation over the 2025 weather with the 35 kWh tank, Winter/Sommer/Jahr results, a server count, a tariff slider and CO₂. It runs fully in the browser.
+
+```bash
+python3 scripts/build_estimator_data.py   # weather, postcodes, terrain -> website/rechner/data (standard library)
+node website/rechner/tests/validate.mjs   # Basel benchmark, tank, heat balance, tariff slider, sizing (38 checks)
+cd website && python3 -m http.server 8765 # http://localhost:8765/#rechner
+```
+
 ## AI tools
 
 Repository set-up, data collection, analysis scripts, the dashboard and documentation were done with Claude Code. The dashboard started from the `create-next-app` template (Next.js, Tailwind).

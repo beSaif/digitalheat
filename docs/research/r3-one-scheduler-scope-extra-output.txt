@@ -1,0 +1,203 @@
+== A. Demo days at job level (seed 1): pause AND resume of the demo slot inside one day ==
+  July: demo slot = slot 1 (the last server to stop). January: highest slot with a pause-then-resume.
+  'perm' = permit level of a run where every permit is used; sat / shp = servers WITH WORK in the job-level run,
+  saturating / shaped100 offers (a pause there can mean 'no work', not 'no heat')
+
+  -- N=6, ADOPTED (A) --
+  January HEAT SIGNAL (permits of the job-level run, the signal the real job should follow): days with pause-then-resume: sat 0, shp 0, in both: 0
+  January: days with pause-then-resume: perm 0, sat 9, shp 9; in sat AND shp: 9; in all three: 0
+     2025-01-01 sat slot 6 #....################### P01 R05 | shp slot 6 #....################### P01 R05
+     2025-01-13 sat slot 6 ##############.#.......# P14 R15 | shp slot 6 ##########...##.#....... P10 R13
+     2025-01-14 sat slot 6 #############..#.###.#.. P13 R15 | shp slot 6 ##############..#.###.#. P14 R16
+  July HEAT SIGNAL (permits of the job-level run, the signal the real job should follow): days with pause-then-resume: sat 6, shp 6, in both: 0
+  July: days with pause-then-resume: perm 6, sat 6, shp 6; in sat AND shp: 0; in all three: 0
+
+  -- N=6, ADOPTED w/o restart (S3) --
+  January HEAT SIGNAL (permits of the job-level run, the signal the real job should follow): days with pause-then-resume: sat 0, shp 0, in both: 0
+  January: days with pause-then-resume: perm 0, sat 9, shp 9; in sat AND shp: 9; in all three: 0
+     2025-01-01 sat slot 4 #.###################### P01 R02 | shp slot 4 #.###################### P01 R02
+     2025-01-13 sat slot 6 ###########.##.#.......# P11 R12 | shp slot 6 ##########.#.#..#....... P10 R11
+     2025-01-14 sat slot 6 #############..#.##..#.. P13 R15 | shp slot 6 ##############..#.##..#. P14 R16
+  July HEAT SIGNAL (permits of the job-level run, the signal the real job should follow): days with pause-then-resume: sat 6, shp 6, in both: 0
+  July: days with pause-then-resume: perm 6, sat 6, shp 6; in sat AND shp: 0; in all three: 0
+
+  -- N=6, MINIMAL follow+adm(perfect) (M1) --
+  January HEAT SIGNAL (permits of the job-level run, the signal the real job should follow): days with pause-then-resume: sat 0, shp 0, in both: 0
+  January: days with pause-then-resume: perm 0, sat 9, shp 9; in sat AND shp: 9; in all three: 0
+     2025-01-01 sat slot 4 #.###################### P01 R02 | shp slot 4 #.###################### P01 R02
+     2025-01-13 sat slot 6 ###########.##.#.......# P11 R12 | shp slot 6 ##########.#.#..#....... P10 R11
+     2025-01-14 sat slot 6 #############..#.##..#.. P13 R15 | shp slot 6 ##############..#.##..#. P14 R16
+  July HEAT SIGNAL (permits of the job-level run, the signal the real job should follow): days with pause-then-resume: sat 31, shp 31, in both: 31 -> 2025-07-01, 2025-07-02, 2025-07-03, 2025-07-04, 2025-07-05, 2025-07-06, 2025-07-07, 2025-07-08
+     2025-07-01 heat sat slot 1 ##.#.##.##.#.##.##.#.##. P02 R03 (17 ev) | heat shp slot 1 ##.#.##.##.#.##.##.#.##. P02 R03 (17 ev)
+     2025-07-02 heat sat slot 1 ##.#.##.##.#.##.##.#.##. P02 R03 (17 ev) | heat shp slot 1 ##.#.##.##.#.##.##.#.##. P02 R03 (17 ev)
+     2025-07-03 heat sat slot 1 ##.#.##.##.#.##.##.#.##. P02 R03 (17 ev) | heat shp slot 1 ##.#.##.##.#.##.##.#.##. P02 R03 (17 ev)
+  July: days with pause-then-resume: perm 31, sat 31, shp 31; in sat AND shp: 31; in all three: 31
+     2025-07-01 demand  12.0 kWh | perm slot 1 ##.#.##.##.#.##.##.#.##. P02 R03 (17 ev) | satu slot 1 ##.#.##.##.#.##.##.#.##. P02 R03 (17 ev) | shap slot 1 ##.#.##.##.#.##.##.#.##. P02 R03 (17 ev)
+     2025-07-02 demand  12.0 kWh | perm slot 1 ##.#.##.##.#.##.##.#.##. P02 R03 (17 ev) | satu slot 1 ##.#.##.##.#.##.##.#.##. P02 R03 (17 ev) | shap slot 1 ##.#.##.##.#.##.##.#.##. P02 R03 (17 ev)
+     2025-07-03 demand  12.0 kWh | perm slot 1 ##.#.##.##.#.##.##.#.##. P02 R03 (17 ev) | satu slot 1 ##.#.##.##.#.##.##.#.##. P02 R03 (17 ev) | shap slot 1 ##.#.##.##.#.##.##.#.##. P02 R03 (17 ev)
+     2025-07-04 demand  12.0 kWh | perm slot 1 ##.#.##.##.#.##.##.#.##. P02 R03 (17 ev) | satu slot 1 ##.#.##.##.#.##.##.#.##. P02 R03 (17 ev) | shap slot 1 ##.#.##.##.#.##.##.#.##. P02 R03 (17 ev)
+     2025-07-05 demand  12.0 kWh | perm slot 1 ##.#.##.##.#.##.##.#.##. P02 R03 (17 ev) | satu slot 1 ##.#.##.##.#.##.##.#.##. P02 R03 (17 ev) | shap slot 1 ##.#.##.##.#.##.##.#.##. P02 R03 (17 ev)
+     2025-07-06 demand  12.0 kWh | perm slot 1 ##.#.##.##.#.##.##.#.##. P02 R03 (17 ev) | satu slot 1 ##.#.##.##.#.##.##.#.##. P02 R03 (17 ev) | shap slot 1 ##.#.##.##.#.##.##.#.##. P02 R03 (17 ev)
+
+  -- N=6, cap + 4 kWh band, ifs025+guard --
+  January HEAT SIGNAL (permits of the job-level run, the signal the real job should follow): days with pause-then-resume: sat 0, shp 0, in both: 0
+  January: days with pause-then-resume: perm 0, sat 9, shp 9; in sat AND shp: 9; in all three: 0
+     2025-01-01 sat slot 4 #.###################### P01 R02 | shp slot 4 #.###################### P01 R02
+     2025-01-13 sat slot 6 ###########.##.#.......# P11 R12 | shp slot 6 ##########.#.#..#....... P10 R11
+     2025-01-14 sat slot 6 #############..#.##..#.. P13 R15 | shp slot 6 ##############..#.##..#. P14 R16
+  July HEAT SIGNAL (permits of the job-level run, the signal the real job should follow): days with pause-then-resume: sat 23, shp 24, in both: 16 -> 2025-07-02, 2025-07-03, 2025-07-04, 2025-07-07, 2025-07-10, 2025-07-11, 2025-07-12, 2025-07-15
+     2025-07-02 heat sat slot 1 #######........######### P07 R15 (2 ev) | heat shp slot 1 ..#############........# P15 R23 (3 ev)
+     2025-07-03 heat sat slot 1 ####........############ P04 R12 (2 ev) | heat shp slot 1 ############........#### P12 R20 (2 ev)
+     2025-07-04 heat sat slot 1 ##........#############. P02 R10 (3 ev) | heat shp slot 1 ##########........###### P10 R18 (2 ev)
+  July: days with pause-then-resume: perm 23, sat 23, shp 24; in sat AND shp: 16; in all three: 16
+     2025-07-02 demand  12.0 kWh | perm slot 1 #######........######### P07 R15 (2 ev) | satu slot 1 #######........######### P07 R15 (2 ev) | shap slot 1 ..#############........# P15 R23 (3 ev)
+     2025-07-03 demand  12.0 kWh | perm slot 1 ####........############ P04 R12 (2 ev) | satu slot 1 ####........############ P04 R12 (2 ev) | shap slot 1 ############........#### P12 R20 (2 ev)
+     2025-07-04 demand  12.0 kWh | perm slot 1 ##........#############. P02 R10 (3 ev) | satu slot 1 ##........#############. P02 R10 (3 ev) | shap slot 1 ##########........###### P10 R18 (2 ev)
+     2025-07-07 demand  12.0 kWh | perm slot 1 ..#############........# P15 R23 (3 ev) | satu slot 1 ..#############........# P15 R23 (3 ev) | shap slot 1 ##........#############. P02 R10 (3 ev)
+     2025-07-10 demand  12.0 kWh | perm slot 1 #######........######### P07 R15 (2 ev) | satu slot 1 #######........######### P07 R15 (2 ev) | shap slot 1 ..#############........# P15 R23 (3 ev)
+     2025-07-11 demand  12.0 kWh | perm slot 1 ####........############ P04 R12 (2 ev) | satu slot 1 ####........############ P04 R12 (2 ev) | shap slot 1 ############........#### P12 R20 (2 ev)
+
+  -- N=6, cap + 2 kWh band, ifs025+guard --
+  January HEAT SIGNAL (permits of the job-level run, the signal the real job should follow): days with pause-then-resume: sat 0, shp 0, in both: 0
+  January: days with pause-then-resume: perm 0, sat 9, shp 9; in sat AND shp: 9; in all three: 0
+     2025-01-01 sat slot 4 #.###################### P01 R02 | shp slot 4 #.###################### P01 R02
+     2025-01-13 sat slot 6 ###########.##.#.......# P11 R12 | shp slot 6 ##########.#.#..#....... P10 R11
+     2025-01-14 sat slot 6 #############..#.##..#.. P13 R15 | shp slot 6 ##############..#.##..#. P14 R16
+  July HEAT SIGNAL (permits of the job-level run, the signal the real job should follow): days with pause-then-resume: sat 31, shp 31, in both: 31 -> 2025-07-01, 2025-07-02, 2025-07-03, 2025-07-04, 2025-07-05, 2025-07-06, 2025-07-07, 2025-07-08
+     2025-07-01 heat sat slot 1 ...#######....######.... P10 R14 (4 ev) | heat shp slot 1 #######....#######....## P07 R11 (4 ev)
+     2025-07-02 heat sat slot 1 #######....#######....## P07 R11 (4 ev) | heat shp slot 1 ####....#######....##### P04 R08 (4 ev)
+     2025-07-03 heat sat slot 1 ####....#######....##### P04 R08 (4 ev) | heat shp slot 1 ##....######....#######. P02 R06 (5 ev)
+  July: days with pause-then-resume: perm 31, sat 31, shp 31; in sat AND shp: 31; in all three: 31
+     2025-07-01 demand  12.0 kWh | perm slot 1 ...#######....######.... P10 R14 (4 ev) | satu slot 1 ...#######....######.... P10 R14 (4 ev) | shap slot 1 #######....#######....## P07 R11 (4 ev)
+     2025-07-02 demand  12.0 kWh | perm slot 1 #######....#######....## P07 R11 (4 ev) | satu slot 1 #######....#######....## P07 R11 (4 ev) | shap slot 1 ####....#######....##### P04 R08 (4 ev)
+     2025-07-03 demand  12.0 kWh | perm slot 1 ####....#######....##### P04 R08 (4 ev) | satu slot 1 ####....#######....##### P04 R08 (4 ev) | shap slot 1 ##....######....#######. P02 R06 (5 ev)
+     2025-07-04 demand  12.0 kWh | perm slot 1 ##....######....#######. P02 R06 (5 ev) | satu slot 1 ##....######....#######. P02 R06 (5 ev) | shap slot 1 ...#######....######.... P10 R14 (4 ev)
+     2025-07-05 demand  12.0 kWh | perm slot 1 ...#######....######.... P10 R14 (4 ev) | satu slot 1 ...#######....######.... P10 R14 (4 ev) | shap slot 1 #######....#######....## P07 R11 (4 ev)
+     2025-07-06 demand  12.0 kWh | perm slot 1 #######....#######....## P07 R11 (4 ev) | satu slot 1 #######....#######....## P07 R11 (4 ev) | shap slot 1 ####....#######....##### P04 R08 (4 ev)
+
+  -- N=8, ADOPTED (A) --
+  January HEAT SIGNAL (permits of the job-level run, the signal the real job should follow): days with pause-then-resume: sat 6, shp 6, in both: 6 -> 2025-01-09, 2025-01-25, 2025-01-26, 2025-01-27, 2025-01-28, 2025-01-29
+     2025-01-09 heat sat slot 8 ########..........###### P08 R18 (2 ev) | heat shp slot 8 ########..........###### P08 R18 (2 ev)
+     2025-01-25 heat sat slot 7 ##############.....##### P14 R19 (2 ev) | heat shp slot 7 ##############.....##### P14 R19 (2 ev)
+     2025-01-26 heat sat slot 8 .....#..##.............. P06 R08 (4 ev) | heat shp slot 8 .....#..##.............. P06 R08 (4 ev)
+  January: days with pause-then-resume: perm 6, sat 11, shp 16; in sat AND shp: 10; in all three: 6
+     2025-01-09 demand 123.5 kWh | perm slot 7 ....#............####### P05 R17 (3 ev) | satu slot 8 ########..........###### P08 R18 (2 ev) | shap slot 8 ########..........###### P08 R18 (2 ev)
+     2025-01-25 demand 119.6 kWh | perm slot 7 ##############.....##### P14 R19 (2 ev) | satu slot 7 ##############.....##### P14 R19 (2 ev) | shap slot 7 ##############.....##### P14 R19 (2 ev)
+     2025-01-26 demand 128.0 kWh | perm slot 8 .....#..##.............. P06 R08 (4 ev) | satu slot 8 .....#..##.............. P06 R08 (4 ev) | shap slot 8 .....#..##.............. P06 R08 (4 ev)
+     2025-01-27 demand 124.7 kWh | perm slot 7 ##.###..#...#.....##.### P02 R03 (10 ev) | satu slot 7 ##.###..#...#.....##.### P02 R03 (10 ev) | shap slot 7 ##.###..#...#.....##.### P02 R03 (10 ev)
+     2025-01-28 demand 131.9 kWh | perm slot 8 .....##.###...........#. P07 R08 (6 ev) | satu slot 8 .....##.###...........#. P07 R08 (6 ev) | shap slot 8 .....##.###...........#. P07 R08 (6 ev)
+     2025-01-29 demand 134.6 kWh | perm slot 8 .#.......#........#.#### P02 R09 (7 ev) | satu slot 8 .#.......#........#.#### P02 R09 (7 ev) | shap slot 8 .#.......#........#.#### P02 R09 (7 ev)
+  July HEAT SIGNAL (permits of the job-level run, the signal the real job should follow): days with pause-then-resume: sat 6, shp 6, in both: 0
+  July: days with pause-then-resume: perm 6, sat 6, shp 6; in sat AND shp: 0; in all three: 0
+
+  -- N=8, ADOPTED w/o restart (S3) --
+  January HEAT SIGNAL (permits of the job-level run, the signal the real job should follow): days with pause-then-resume: sat 6, shp 6, in both: 6 -> 2025-01-09, 2025-01-25, 2025-01-26, 2025-01-27, 2025-01-28, 2025-01-29
+     2025-01-09 heat sat slot 8 ########..........###### P08 R18 (2 ev) | heat shp slot 8 ########..........###### P08 R18 (2 ev)
+     2025-01-25 heat sat slot 7 ##############.....##### P14 R19 (2 ev) | heat shp slot 7 ##############.....##### P14 R19 (2 ev)
+     2025-01-26 heat sat slot 8 .....#..##.............. P06 R08 (4 ev) | heat shp slot 8 .....#..##.............. P06 R08 (4 ev)
+  January: days with pause-then-resume: perm 6, sat 11, shp 16; in sat AND shp: 10; in all three: 6
+     2025-01-09 demand 123.5 kWh | perm slot 7 ....#............####### P05 R17 (3 ev) | satu slot 8 ########..........###### P08 R18 (2 ev) | shap slot 8 ########..........###### P08 R18 (2 ev)
+     2025-01-25 demand 119.6 kWh | perm slot 7 ##############.....##### P14 R19 (2 ev) | satu slot 7 ##############.....##### P14 R19 (2 ev) | shap slot 7 ##############.....##### P14 R19 (2 ev)
+     2025-01-26 demand 128.0 kWh | perm slot 8 .....#..##.............. P06 R08 (4 ev) | satu slot 8 .....#..##.............. P06 R08 (4 ev) | shap slot 8 .....#..##.............. P06 R08 (4 ev)
+     2025-01-27 demand 124.7 kWh | perm slot 7 ##.###..#...#.....##.### P02 R03 (10 ev) | satu slot 7 ##.###..#...#.....##.### P02 R03 (10 ev) | shap slot 7 ##.###..#...#.....##.### P02 R03 (10 ev)
+     2025-01-28 demand 131.9 kWh | perm slot 8 .....##.###...........#. P07 R08 (6 ev) | satu slot 8 .....##.###...........#. P07 R08 (6 ev) | shap slot 8 .....##.###...........#. P07 R08 (6 ev)
+     2025-01-29 demand 134.6 kWh | perm slot 8 .#.......#........#.#### P02 R09 (7 ev) | satu slot 8 .#.......#........#.#### P02 R09 (7 ev) | shap slot 8 .#.......#........#.#### P02 R09 (7 ev)
+  July HEAT SIGNAL (permits of the job-level run, the signal the real job should follow): days with pause-then-resume: sat 6, shp 6, in both: 0
+  July: days with pause-then-resume: perm 6, sat 6, shp 6; in sat AND shp: 0; in all three: 0
+
+  -- N=8, MINIMAL follow+adm(perfect) (M1) --
+  January HEAT SIGNAL (permits of the job-level run, the signal the real job should follow): days with pause-then-resume: sat 6, shp 6, in both: 6 -> 2025-01-09, 2025-01-25, 2025-01-26, 2025-01-27, 2025-01-28, 2025-01-29
+     2025-01-09 heat sat slot 8 ########..........###### P08 R18 (2 ev) | heat shp slot 8 ########..........###### P08 R18 (2 ev)
+     2025-01-25 heat sat slot 7 ##############.....##### P14 R19 (2 ev) | heat shp slot 7 ##############.....##### P14 R19 (2 ev)
+     2025-01-26 heat sat slot 8 .....#..##.............. P06 R08 (4 ev) | heat shp slot 8 .....#..##.............. P06 R08 (4 ev)
+  January: days with pause-then-resume: perm 6, sat 11, shp 16; in sat AND shp: 10; in all three: 6
+     2025-01-09 demand 123.5 kWh | perm slot 7 ....#............####### P05 R17 (3 ev) | satu slot 8 ########..........###### P08 R18 (2 ev) | shap slot 8 ########..........###### P08 R18 (2 ev)
+     2025-01-25 demand 119.6 kWh | perm slot 7 ##############.....##### P14 R19 (2 ev) | satu slot 7 ##############.....##### P14 R19 (2 ev) | shap slot 7 ##############.....##### P14 R19 (2 ev)
+     2025-01-26 demand 128.0 kWh | perm slot 8 .....#..##.............. P06 R08 (4 ev) | satu slot 8 .....#..##.............. P06 R08 (4 ev) | shap slot 8 .....#..##.............. P06 R08 (4 ev)
+     2025-01-27 demand 124.7 kWh | perm slot 7 ##.###..#...#.....##.### P02 R03 (10 ev) | satu slot 7 ##.###..#...#.....##.### P02 R03 (10 ev) | shap slot 7 ##.###..#...#.....##.### P02 R03 (10 ev)
+     2025-01-28 demand 131.9 kWh | perm slot 8 .....##.###...........#. P07 R08 (6 ev) | satu slot 8 .....##.###...........#. P07 R08 (6 ev) | shap slot 8 .....##.###...........#. P07 R08 (6 ev)
+     2025-01-29 demand 134.6 kWh | perm slot 8 .#.......#........#.#### P02 R09 (7 ev) | satu slot 8 .#.......#........#.#### P02 R09 (7 ev) | shap slot 8 .#.......#........#.#### P02 R09 (7 ev)
+  July HEAT SIGNAL (permits of the job-level run, the signal the real job should follow): days with pause-then-resume: sat 31, shp 31, in both: 31 -> 2025-07-01, 2025-07-02, 2025-07-03, 2025-07-04, 2025-07-05, 2025-07-06, 2025-07-07, 2025-07-08
+     2025-07-01 heat sat slot 1 ##.##.#.##.##.#.##.##.#. P02 R03 (17 ev) | heat shp slot 1 #.#.##.##.#.##.##.#.##.# P01 R02 (18 ev)
+     2025-07-02 heat sat slot 1 ##.##.#.##.##.#.##.##.#. P02 R03 (17 ev) | heat shp slot 1 #.#.##.##.#.##.##.#.##.# P01 R02 (18 ev)
+     2025-07-03 heat sat slot 1 ##.##.#.##.##.#.##.##.#. P02 R03 (17 ev) | heat shp slot 1 #.#.##.##.#.##.##.#.##.# P01 R02 (18 ev)
+  July: days with pause-then-resume: perm 31, sat 31, shp 31; in sat AND shp: 31; in all three: 31
+     2025-07-01 demand  12.0 kWh | perm slot 1 ##.##.#.##.##.#.##.##.#. P02 R03 (17 ev) | satu slot 1 ##.##.#.##.##.#.##.##.#. P02 R03 (17 ev) | shap slot 1 #.#.##.##.#.##.##.#.##.# P01 R02 (18 ev)
+     2025-07-02 demand  12.0 kWh | perm slot 1 ##.##.#.##.##.#.##.##.#. P02 R03 (17 ev) | satu slot 1 ##.##.#.##.##.#.##.##.#. P02 R03 (17 ev) | shap slot 1 #.#.##.##.#.##.##.#.##.# P01 R02 (18 ev)
+     2025-07-03 demand  12.0 kWh | perm slot 1 ##.##.#.##.##.#.##.##.#. P02 R03 (17 ev) | satu slot 1 ##.##.#.##.##.#.##.##.#. P02 R03 (17 ev) | shap slot 1 #.#.##.##.#.##.##.#.##.# P01 R02 (18 ev)
+     2025-07-04 demand  12.0 kWh | perm slot 1 ##.##.#.##.##.#.##.##.#. P02 R03 (17 ev) | satu slot 1 ##.##.#.##.##.#.##.##.#. P02 R03 (17 ev) | shap slot 1 #.#.##.##.#.##.##.#.##.# P01 R02 (18 ev)
+     2025-07-05 demand  12.0 kWh | perm slot 1 ##.##.#.##.##.#.##.##.#. P02 R03 (17 ev) | satu slot 1 ##.##.#.##.##.#.##.##.#. P02 R03 (17 ev) | shap slot 1 #.#.##.##.#.##.##.#.##.# P01 R02 (18 ev)
+     2025-07-06 demand  12.0 kWh | perm slot 1 ##.##.#.##.##.#.##.##.#. P02 R03 (17 ev) | satu slot 1 ##.##.#.##.##.#.##.##.#. P02 R03 (17 ev) | shap slot 1 #.#.##.##.#.##.##.#.##.# P01 R02 (18 ev)
+
+  -- N=8, cap + 4 kWh band, ifs025+guard --
+  January HEAT SIGNAL (permits of the job-level run, the signal the real job should follow): days with pause-then-resume: sat 6, shp 6, in both: 6 -> 2025-01-09, 2025-01-25, 2025-01-26, 2025-01-27, 2025-01-28, 2025-01-29
+     2025-01-09 heat sat slot 8 ########..........###### P08 R18 (2 ev) | heat shp slot 8 ########..........###### P08 R18 (2 ev)
+     2025-01-25 heat sat slot 7 ##############.....##### P14 R19 (2 ev) | heat shp slot 7 ##############.....##### P14 R19 (2 ev)
+     2025-01-26 heat sat slot 8 .....#..##.............. P06 R08 (4 ev) | heat shp slot 8 .....#..##.............. P06 R08 (4 ev)
+  January: days with pause-then-resume: perm 6, sat 11, shp 16; in sat AND shp: 10; in all three: 6
+     2025-01-09 demand 123.5 kWh | perm slot 7 ....#............####### P05 R17 (3 ev) | satu slot 8 ########..........###### P08 R18 (2 ev) | shap slot 8 ########..........###### P08 R18 (2 ev)
+     2025-01-25 demand 119.6 kWh | perm slot 7 ##############.....##### P14 R19 (2 ev) | satu slot 7 ##############.....##### P14 R19 (2 ev) | shap slot 7 ##############.....##### P14 R19 (2 ev)
+     2025-01-26 demand 128.0 kWh | perm slot 8 .....#..##.............. P06 R08 (4 ev) | satu slot 8 .....#..##.............. P06 R08 (4 ev) | shap slot 8 .....#..##.............. P06 R08 (4 ev)
+     2025-01-27 demand 124.7 kWh | perm slot 7 ##.###..#...#.....##.### P02 R03 (10 ev) | satu slot 7 ##.###..#...#.....##.### P02 R03 (10 ev) | shap slot 7 ##.###..#...#.....##.### P02 R03 (10 ev)
+     2025-01-28 demand 131.9 kWh | perm slot 8 .....##.###...........#. P07 R08 (6 ev) | satu slot 8 .....##.###...........#. P07 R08 (6 ev) | shap slot 8 .....##.###...........#. P07 R08 (6 ev)
+     2025-01-29 demand 134.6 kWh | perm slot 8 .#.......#........#.#### P02 R09 (7 ev) | satu slot 8 .#.......#........#.#### P02 R09 (7 ev) | shap slot 8 .#.......#........#.#### P02 R09 (7 ev)
+  July HEAT SIGNAL (permits of the job-level run, the signal the real job should follow): days with pause-then-resume: sat 23, shp 24, in both: 16 -> 2025-07-02, 2025-07-03, 2025-07-04, 2025-07-07, 2025-07-10, 2025-07-11, 2025-07-12, 2025-07-15
+     2025-07-02 heat sat slot 1 #######........######### P07 R15 (2 ev) | heat shp slot 1 ..#############........# P15 R23 (3 ev)
+     2025-07-03 heat sat slot 1 #####........########### P05 R13 (2 ev) | heat shp slot 1 ############........#### P12 R20 (2 ev)
+     2025-07-04 heat sat slot 1 ##........#############. P02 R10 (3 ev) | heat shp slot 1 ##########........###### P10 R18 (2 ev)
+  July: days with pause-then-resume: perm 23, sat 23, shp 24; in sat AND shp: 16; in all three: 16
+     2025-07-02 demand  12.0 kWh | perm slot 1 #######........######### P07 R15 (2 ev) | satu slot 1 #######........######### P07 R15 (2 ev) | shap slot 1 ..#############........# P15 R23 (3 ev)
+     2025-07-03 demand  12.0 kWh | perm slot 1 #####........########### P05 R13 (2 ev) | satu slot 1 #####........########### P05 R13 (2 ev) | shap slot 1 ############........#### P12 R20 (2 ev)
+     2025-07-04 demand  12.0 kWh | perm slot 1 ##........#############. P02 R10 (3 ev) | satu slot 1 ##........#############. P02 R10 (3 ev) | shap slot 1 ##########........###### P10 R18 (2 ev)
+     2025-07-07 demand  12.0 kWh | perm slot 1 ..#############........# P15 R23 (3 ev) | satu slot 1 ..#############........# P15 R23 (3 ev) | shap slot 1 ##........#############. P02 R10 (3 ev)
+     2025-07-10 demand  12.0 kWh | perm slot 1 #######........######### P07 R15 (2 ev) | satu slot 1 #######........######### P07 R15 (2 ev) | shap slot 1 ..#############........# P15 R23 (3 ev)
+     2025-07-11 demand  12.0 kWh | perm slot 1 #####........########### P05 R13 (2 ev) | satu slot 1 #####........########### P05 R13 (2 ev) | shap slot 1 ############........#### P12 R20 (2 ev)
+
+  -- N=8, cap + 2 kWh band, ifs025+guard --
+  January HEAT SIGNAL (permits of the job-level run, the signal the real job should follow): days with pause-then-resume: sat 6, shp 6, in both: 6 -> 2025-01-09, 2025-01-25, 2025-01-26, 2025-01-27, 2025-01-28, 2025-01-29
+     2025-01-09 heat sat slot 8 ########..........###### P08 R18 (2 ev) | heat shp slot 8 ########..........###### P08 R18 (2 ev)
+     2025-01-25 heat sat slot 7 ##############.....##### P14 R19 (2 ev) | heat shp slot 7 ##############.....##### P14 R19 (2 ev)
+     2025-01-26 heat sat slot 8 .....#..##.............. P06 R08 (4 ev) | heat shp slot 8 .....#..##.............. P06 R08 (4 ev)
+  January: days with pause-then-resume: perm 6, sat 11, shp 16; in sat AND shp: 10; in all three: 6
+     2025-01-09 demand 123.5 kWh | perm slot 7 ....#............####### P05 R17 (3 ev) | satu slot 8 ########..........###### P08 R18 (2 ev) | shap slot 8 ########..........###### P08 R18 (2 ev)
+     2025-01-25 demand 119.6 kWh | perm slot 7 ##############.....##### P14 R19 (2 ev) | satu slot 7 ##############.....##### P14 R19 (2 ev) | shap slot 7 ##############.....##### P14 R19 (2 ev)
+     2025-01-26 demand 128.0 kWh | perm slot 8 .....#..##.............. P06 R08 (4 ev) | satu slot 8 .....#..##.............. P06 R08 (4 ev) | shap slot 8 .....#..##.............. P06 R08 (4 ev)
+     2025-01-27 demand 124.7 kWh | perm slot 7 ##.###..#...#.....##.### P02 R03 (10 ev) | satu slot 7 ##.###..#...#.....##.### P02 R03 (10 ev) | shap slot 7 ##.###..#...#.....##.### P02 R03 (10 ev)
+     2025-01-28 demand 131.9 kWh | perm slot 8 .....##.###...........#. P07 R08 (6 ev) | satu slot 8 .....##.###...........#. P07 R08 (6 ev) | shap slot 8 .....##.###...........#. P07 R08 (6 ev)
+     2025-01-29 demand 134.6 kWh | perm slot 8 .#.......#........#.#### P02 R09 (7 ev) | satu slot 8 .#.......#........#.#### P02 R09 (7 ev) | shap slot 8 .#.......#........#.#### P02 R09 (7 ev)
+  July HEAT SIGNAL (permits of the job-level run, the signal the real job should follow): days with pause-then-resume: sat 31, shp 31, in both: 31 -> 2025-07-01, 2025-07-02, 2025-07-03, 2025-07-04, 2025-07-05, 2025-07-06, 2025-07-07, 2025-07-08
+     2025-07-01 heat sat slot 1 ...#######....#######... P10 R14 (4 ev) | heat shp slot 1 #######....#######....## P07 R11 (4 ev)
+     2025-07-02 heat sat slot 1 .######....#######....## P07 R11 (5 ev) | heat shp slot 1 ####....#######....##### P04 R08 (4 ev)
+     2025-07-03 heat sat slot 1 #####....######....##### P05 R09 (4 ev) | heat shp slot 1 ##....######....#######. P02 R06 (5 ev)
+  July: days with pause-then-resume: perm 31, sat 31, shp 31; in sat AND shp: 31; in all three: 31
+     2025-07-01 demand  12.0 kWh | perm slot 1 ...#######....#######... P10 R14 (4 ev) | satu slot 1 ...#######....#######... P10 R14 (4 ev) | shap slot 1 #######....#######....## P07 R11 (4 ev)
+     2025-07-02 demand  12.0 kWh | perm slot 1 .######....#######....## P07 R11 (5 ev) | satu slot 1 .######....#######....## P07 R11 (5 ev) | shap slot 1 ####....#######....##### P04 R08 (4 ev)
+     2025-07-03 demand  12.0 kWh | perm slot 1 #####....######....##### P05 R09 (4 ev) | satu slot 1 #####....######....##### P05 R09 (4 ev) | shap slot 1 ##....######....#######. P02 R06 (5 ev)
+     2025-07-04 demand  12.0 kWh | perm slot 1 ##....#######....######. P02 R06 (5 ev) | satu slot 1 ##....#######....######. P02 R06 (5 ev) | shap slot 1 ...#######....######.... P10 R14 (4 ev)
+     2025-07-05 demand  12.0 kWh | perm slot 1 ...#######....#######... P10 R14 (4 ev) | satu slot 1 ...#######....#######... P10 R14 (4 ev) | shap slot 1 #######....#######....## P07 R11 (4 ev)
+     2025-07-06 demand  12.0 kWh | perm slot 1 .######....#######....## P07 R11 (5 ev) | satu slot 1 .######....#######....## P07 R11 (5 ev) | shap slot 1 ####....#######....##### P04 R08 (4 ev)
+
+  real seconds from the start of the day = simulated hour x seconds per simulated hour
+     PAUSE 04:00 RESUME 20:00 -> @1.0 s/h: 4.0 s / 20.0 s, paused 16.0 s, day 24 s; @1.5 s/h: 6.0 s / 30.0 s, paused 24.0 s, day 36 s; @2.5 s/h: 10.0 s / 50.0 s, paused 40.0 s, day 60 s
+     PAUSE 05:00 RESUME 21:00 -> @1.0 s/h: 5.0 s / 21.0 s, paused 16.0 s, day 24 s; @1.5 s/h: 7.5 s / 31.5 s, paused 24.0 s, day 36 s; @2.5 s/h: 12.5 s / 52.5 s, paused 40.0 s, day 60 s
+     PAUSE 14:00 RESUME 16:00 -> @1.0 s/h: 14.0 s / 16.0 s, paused 2.0 s, day 24 s; @1.5 s/h: 21.0 s / 24.0 s, paused 3.0 s, day 36 s; @2.5 s/h: 35.0 s / 40.0 s, paused 5.0 s, day 60 s
+     PAUSE 04:00 RESUME 08:00 -> @1.0 s/h: 4.0 s / 8.0 s, paused 4.0 s, day 24 s; @1.5 s/h: 6.0 s / 12.0 s, paused 6.0 s, day 36 s; @2.5 s/h: 10.0 s / 20.0 s, paused 10.0 s, day 60 s
+     PAUSE 15:00 RESUME 19:00 -> @1.0 s/h: 15.0 s / 19.0 s, paused 4.0 s, day 24 s; @1.5 s/h: 22.5 s / 28.5 s, paused 6.0 s, day 36 s; @2.5 s/h: 37.5 s / 47.5 s, paused 10.0 s, day 60 s
+
+== B. Restart 15 min as an accounting line (seed 1, ifs025 + 2 K guard admission) ==
+  approx BE = (elec - heat value) of the run WITHOUT restart / (sold h - starts x 0.25 h)
+  N=6 saturating cap + 8 kWh band : no restart BE 0.2261, starts   460, missed 0.000% | restart in scheduler BE 0.2269, missed 0.003%, coverage 79.10% -> 79.15% | accounting line BE 0.2269 (diff +0.0000)
+  N=6 saturating plain follow     : no restart BE 0.2261, starts  1813, missed 0.000% | restart in scheduler BE 0.2294, missed 0.009%, coverage 79.13% -> 79.18% | accounting line BE 0.2295 (diff +0.0000)
+  N=6 shaped100  cap + 8 kWh band : no restart BE 0.2261, starts   896, missed 0.000% | restart in scheduler BE 0.2277, missed 0.003%, coverage 73.20% -> 73.60% | accounting line BE 0.2279 (diff +0.0002)
+  N=6 shaped100  plain follow     : no restart BE 0.2261, starts  2292, missed 0.000% | restart in scheduler BE 0.2305, missed 0.006%, coverage 73.30% -> 73.59% | accounting line BE 0.2307 (diff +0.0002)
+  N=8 saturating cap + 8 kWh band : no restart BE 0.2261, starts   921, missed 0.018% | restart in scheduler BE 0.2275, missed 0.029%, coverage 92.75% -> 92.77% | accounting line BE 0.2275 (diff +0.0000)
+  N=8 saturating plain follow     : no restart BE 0.2261, starts  2238, missed 0.013% | restart in scheduler BE 0.2296, missed 0.018%, coverage 92.75% -> 92.77% | accounting line BE 0.2296 (diff +0.0000)
+  N=8 shaped100  cap + 8 kWh band : no restart BE 0.2261, starts  1527, missed 0.000% | restart in scheduler BE 0.2284, missed 0.008%, coverage 85.73% -> 86.25% | accounting line BE 0.2287 (diff +0.0003)
+  N=8 shaped100  plain follow     : no restart BE 0.2261, starts  2866, missed 0.000% | restart in scheduler BE 0.2308, missed 0.003%, coverage 85.69% -> 86.20% | accounting line BE 0.2310 (diff +0.0003)
+
+== C. Wall time per simulated year, single process ==
+  ADOPTED (A)                        N=6: saturating 1.1 s, shaped100 0.9 s
+  ADOPTED (A)                        N=8: saturating 1.8 s, shaped100 1.0 s
+  MINIMAL follow+adm(perfect) (M1)   N=6: saturating 1.9 s, shaped100 0.7 s
+  MINIMAL follow+adm(perfect) (M1)   N=8: saturating 4.9 s, shaped100 0.8 s
+  no admission (fallback F), N=6 shaped100: 0.1 s

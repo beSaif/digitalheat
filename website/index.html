@@ -1,0 +1,979 @@
+<!doctype html>
+<html lang="de-CH">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="DigitalHeat nutzt Strom doppelt: Server verarbeiten Daten und ihre Abwärme wird als Gebäude- oder Prozesswärme nutzbar gemacht."
+    >
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <meta name="author" content="Virtual Culture GmbH">
+    <meta
+      name="keywords"
+      content="DigitalHeat, Computer-Abwärme nutzen, Server-Abwärme nutzen, Strom doppelt nutzen, Wärme ohne Wärmepumpe, Serverheizung, Server-Infrastruktur, KI-Infrastruktur, Abwärmenutzung, Gebäudewärme, Prozesswärme, souveräne Recheninfrastruktur, Schweizer Recheninfrastruktur, dezentrale Rechenleistung"
+    >
+    <meta name="theme-color" content="#080908">
+    <title>DigitalHeat | Computer-Abwärme als nutzbare Wärme</title>
+    <link rel="icon" href="https://digitalheat.ch/assets/digitalheat-logo.png" type="image/png">
+    <link rel="canonical" href="https://digitalheat.ch/">
+    <link rel="preload" as="image" href="https://digitalheat.ch/assets/digitalheat-hero-official.png" imagesrcset="https://digitalheat.ch/assets/digitalheat-hero-official.png 1672w" imagesizes="100vw">
+    <link rel="stylesheet" href="styles.css?v=sdg-grid-width-20260826">
+    <link rel="stylesheet" href="brand.css?v=dh-wordmark-png-20261024">
+    <link rel="stylesheet" href="rechner/rechner.css?v=20261121h">
+    <meta property="og:locale" content="de_CH">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="DigitalHeat">
+    <meta property="og:title" content="DigitalHeat | Computer-Abwärme als nutzbare Wärme">
+    <meta
+      property="og:description"
+      content="DigitalHeat nutzt Strom doppelt: Server verarbeiten Daten und ihre Abwärme wird als Gebäude- oder Prozesswärme nutzbar gemacht."
+    >
+    <meta property="og:url" content="https://digitalheat.ch/">
+    <meta property="og:image" content="https://digitalheat.ch/assets/digitalheat-hero-official.png">
+    <meta property="og:image:secure_url" content="https://digitalheat.ch/assets/digitalheat-hero-official.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1672">
+    <meta property="og:image:height" content="941">
+    <meta property="og:image:alt" content="DigitalHeat Serverrack mit isolierten Leitungen zu einem thermischen Speicher">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="DigitalHeat | Computer-Abwärme als nutzbare Wärme">
+    <meta
+      name="twitter:description"
+      content="DigitalHeat nutzt Strom doppelt: Server verarbeiten Daten und ihre Abwärme wird als Gebäude- oder Prozesswärme nutzbar gemacht."
+    >
+    <meta name="twitter:image" content="https://digitalheat.ch/assets/digitalheat-hero-official.png">
+    <meta name="twitter:image:alt" content="DigitalHeat Serverrack mit isolierten Leitungen zu einem thermischen Speicher">
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://digitalheat.ch/#organization",
+            "name": "Virtual Culture GmbH",
+            "logo": "https://digitalheat.ch/assets/digitalheat-logo.png",
+            "url": "https://digitalheat.ch/",
+            "email": "hello@digitalheat.ch",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Basel",
+              "addressCountry": "CH"
+            }
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://digitalheat.ch/#website",
+            "url": "https://digitalheat.ch/",
+            "name": "DigitalHeat",
+            "inLanguage": "de-CH",
+            "publisher": {
+              "@id": "https://digitalheat.ch/#organization"
+            }
+          },
+          {
+            "@type": "Service",
+            "@id": "https://digitalheat.ch/#service",
+            "name": "DigitalHeat",
+            "serviceType": "Verteilte Server-Infrastruktur mit lokaler Wärmenutzung",
+            "provider": {
+              "@id": "https://digitalheat.ch/#organization"
+            },
+            "areaServed": {
+              "@type": "Country",
+              "name": "Schweiz"
+            },
+            "description": "DigitalHeat nutzt Strom doppelt: Server verarbeiten Daten und ihre Abwärme wird als Gebäude- oder Prozesswärme nutzbar gemacht."
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <header class="site-header" data-header>
+      <a class="brand" href="#top" aria-label="DigitalHeat Startseite">
+        <span class="brand-logo"><img src="https://digitalheat.ch/assets/digitalheat-logo.png" alt="Digital Heat" width="1254" height="1254"></span>
+      </a>
+      <button class="nav-toggle" type="button" aria-label="Menü öffnen" aria-expanded="false" aria-controls="site-nav">
+        <span></span>
+        <span></span>
+      </button>
+      <nav id="site-nav" class="site-nav" aria-label="Hauptnavigation">
+        <a href="#angebot">Angebot</a>
+        <a href="#kunden">Kunden</a>
+        <a href="#partner">Partner</a>
+        <a href="#sdg">SDG</a>
+        <a href="#kontakt">Kontakt</a>
+      </nav>
+    </header>
+
+    <svg class="logo-filter" width="0" height="0" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="logo-transparency" color-interpolation-filters="sRGB">
+          <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0.2126 0.7152 0.0722 0 0" />
+        </filter>
+      </defs>
+    </svg>
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <img class="hero-image" src="https://digitalheat.ch/assets/digitalheat-hero-official.png" alt="Serverrack mit isolierten Leitungen zu einem thermischen Speicher in einem hochwertigen Kellerraum" width="1672" height="941" fetchpriority="high">
+        <div class="hero-shade" aria-hidden="true"></div>
+        <div class="hero-content">
+          <h1 id="hero-title" class="hero-brand">
+            <span class="brand-monogram" aria-hidden="true"><img src="https://digitalheat.ch/assets/digitalheat-logo.png" alt="" width="1254" height="1254"></span>
+            <span class="hero-logo"><img src="https://digitalheat.ch/assets/digitalheat-wordmark-transparent.png" alt="Digital Heat – Wärme aus Rechenleistung" width="1058" height="191" fetchpriority="high"></span>
+          </h1>
+          <p class="hero-copy">
+            Ein Server nutzt Strom für Berechnungen. Physikalisch wird dieser Strom vollständig
+            zu Wärme. DigitalHeat fängt diese Computer-Abwärme ab und speist sie als Gebäude-
+            oder Prozesswärme ein.
+          </p>
+          <div class="hero-flow" aria-label="DigitalHeat Grundprinzip">
+            <span>Strom speist Server</span>
+            <strong>Daten + Abwärme</strong>
+            <span>Heizung nutzt Wärme</span>
+          </div>
+          <div class="hero-actions" aria-label="Primäre Aktionen">
+            <a class="button secondary" href="#waerme">Ich brauche Wärme</a>
+            <a class="button secondary" href="#compute">Ich brauche Rechenleistung</a>
+            <a class="button primary" href="#partner">B2B-Partner werden</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="principle-section" id="grundprinzip" aria-labelledby="grundprinzip-title">
+        <div class="section-grid">
+          <div>
+            <p class="section-kicker">Das Grundprinzip</p>
+            <h2 id="grundprinzip-title">Strom wird nicht zusätzlich verbraucht, sondern zweifach genutzt.</h2>
+          </div>
+          <div class="lead-block">
+            <p>
+              Ein Server verhält sich elektrisch wie eine Heizquelle: Der aufgenommene Strom wird
+              physikalisch in Wärme umgewandelt. Der funktionale Unterschied liegt darin, dass die
+              Prozessoren währenddessen komplexe Datenberechnungen ausführen.
+            </p>
+            <p>
+              So entsteht ein doppelter Nutzen: Datenverarbeitung für Cloud, KI oder Datenanalyse
+              und gleichzeitig Wärme für Gebäude, Warmwasser oder Prozesse.
+            </p>
+          </div>
+        </div>
+        <div class="principle-steps" aria-label="DigitalHeat Ablauf">
+          <article>
+            <span>Schritt 1</span>
+            <h3>Stromeinspeisung: Daten verarbeiten</h3>
+            <p>
+              Elektrischer Strom speist dezentrale Serverknoten im Gebäude. Bei Cloud-, KI- und
+              Datenanalyse-Aufgaben entsteht thermische Abwärme an CPU, GPU und weiteren Komponenten.
+            </p>
+          </article>
+          <article>
+            <span>Schritt 2</span>
+            <h3>Wärmeauskopplung: Hitze abfangen</h3>
+            <p>
+              Statt die Wärme über Ventilatoren an die Raumluft abzugeben oder mit zusätzlichem
+              Strom wegzukühlen, nimmt eine Direkt-Flüssigkeitskühlung die Hitze unmittelbar an den
+              Prozessoren auf.
+            </p>
+          </article>
+          <article>
+            <span>Schritt 3</span>
+            <h3>Normale Heizung: Gebäude versorgen</h3>
+            <p>
+              Über einen Wärmetauscher wird die Energie aus dem Kühlkreis in das Gebäudenetz
+              übertragen. Sie erwärmt Brauchwasser oder speist die Raumheizung.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="intro band" id="angebot" aria-labelledby="angebot-title">
+        <div class="section-grid">
+          <div>
+            <p class="section-kicker">Was wir bieten</p>
+            <h2 id="angebot-title">Computer dort betreiben, wo ihre Abwärme gebraucht wird.</h2>
+          </div>
+          <div class="lead-block">
+            <p>
+              DigitalHeat verbindet zwei bisher getrennte Systeme: Recheninfrastruktur und
+              Wärmeversorgung. Server und Computer erzeugen beim Rechnen Abwärme. Diese Wärme
+              wird nicht einfach weggekühlt, sondern lokal in Gebäude, Warmwasser, Speicher oder
+              Prozesse eingebunden.
+            </p>
+            <p>
+              Der Wärmeabnehmer kauft keine Serverhardware. DigitalHeat stellt die Infrastruktur,
+              betreibt geeignete CPU-, GPU- und KI-Arbeitslasten und macht die entstehende Wärme
+              nutzbar. Ziel ist eine wirtschaftlich attraktive Wärmequelle mit Schweizer
+              Rechenstandort.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="market-entry" id="kunden" aria-labelledby="market-title">
+        <div class="section-heading">
+          <p class="section-kicker">Für wen</p>
+          <h2 id="market-title">Zwei Endkunden. Eine gemeinsame Infrastruktur.</h2>
+        </div>
+        <div class="market-cards">
+          <article id="waerme">
+            <span>Ich brauche Wärme</span>
+            <h3>Wärme aus der Abwärme von Computern.</h3>
+            <p>
+              Für Gebäude, Immobilienportfolios, Gewerbe, Landwirtschaft und Industrie mit
+              konstantem oder saisonalem Wärmebedarf. DigitalHeat betreibt die Rechenhardware;
+              der Standort nutzt Wärme als Dienstleistung.
+            </p>
+            <dl>
+              <div><dt>5-20 kW</dt><dd>pro installierter Einheit</dd></div>
+              <div><dt>50-70 °C</dt><dd>angestrebte Vorlauftemperatur</dd></div>
+              <div><dt>0 Server</dt><dd>kein Hardwarekauf durch den Wärmeabnehmer</dd></div>
+            </dl>
+            <div class="card-actions">
+              <a class="button primary" href="#rechner">Spart mein Haus Geld und CO₂?</a>
+              <a class="button card-secondary" href="#kontakt">Pilotstandort werden</a>
+            </div>
+          </article>
+          <article id="compute">
+            <span>Ich brauche Rechenleistung</span>
+            <h3>Rechenleistung nutzen, deren Abwärme lokal gebraucht wird.</h3>
+            <p>
+              Für Unternehmen, Forschung, Hochschulen, öffentliche Institutionen, KI-Arbeitslasten
+              und datenintensive Dienste mit Bedarf an Schweizer Recheninfrastruktur.
+            </p>
+            <dl>
+              <div><dt>CPU/GPU</dt><dd>für KI-, Daten- und Hosting-Arbeitslasten</dd></div>
+              <div><dt>Sicher</dt><dd>Architekturprinzip für sensible Anwendungen</dd></div>
+              <div><dt>Schweiz</dt><dd>Standort, Datenschutz und Betrieb</dd></div>
+            </dl>
+            <a class="button primary" href="#kontakt">Rechenleistung anfragen</a>
+          </article>
+        </div>
+      </section>
+
+      <section class="estimator" id="rechner" aria-labelledby="rechner-title">
+        <div class="section-grid">
+          <div>
+            <p class="section-kicker">Pilot-Rechner für Hausbesitzer</p>
+            <h2 id="rechner-title">Spart mein Haus Geld und CO₂?</h2>
+          </div>
+          <div class="lead-block">
+            <p>
+              In zwei Minuten zur ersten Einschätzung: wie viel Wärme Server in Ihrem Keller liefern
+              können, wie viele es dafür braucht und was das für Heizkosten und CO₂ bedeutet.
+            </p>
+            <p class="est-privacy">Ohne Kontaktangaben. Gerechnet wird in Ihrem Browser; es werden keine Eingaben übertragen.</p>
+          </div>
+        </div>
+
+        <!-- 1 · Beispielinstallation -->
+        <div class="est-block est-install" aria-labelledby="est-install-title">
+          <div class="est-block-head">
+            <div>
+              <p class="est-step">1 · Was in den Keller kommt</p>
+              <h3 id="est-install-title">So sieht eine Installation aus</h3>
+            </div>
+            <div class="est-season" role="group" aria-label="Jahreszeit anzeigen" data-season-toggle>
+              <button type="button" data-season="winter" aria-pressed="true">Winter</button>
+              <button type="button" data-season="summer" aria-pressed="false">Sommer</button>
+            </div>
+          </div>
+
+          <figure class="est-figure" data-season="winter" data-figure>
+            <div class="est-art">
+            <span class="est-badge">Beispielinstallation</span>
+            <svg class="est-svg" viewBox="0 0 1200 720" role="img" aria-labelledby="est-svg-title est-svg-desc" focusable="false">
+              <title id="est-svg-title">Schnittbild eines Technikraums mit DigitalHeat-Installation</title>
+              <desc id="est-svg-desc">Im Keller stehen ein Serverrack, ein Wärmetauscher, ein Pufferspeicher, die bestehende Heizung und ein optionaler Warmwasser-Booster, verbunden mit isolierten Leitungen. Die Wärme fliesst von den Servern über den Wärmetauscher in den Speicher und von dort über die bestehende Heizung in den Heizkreis im Wohnraum und ins Warmwasser.</desc>
+              <defs>
+                <pattern id="est-hatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                  <rect width="10" height="10" fill="#b4b8bb" />
+                  <line x1="0" y1="0" x2="0" y2="10" stroke="#9ca1a5" stroke-width="2" />
+                </pattern>
+                <pattern id="est-insul" width="8" height="8" patternUnits="userSpaceOnUse">
+                  <rect width="8" height="8" fill="#e8e3d6" />
+                  <path d="M0 4 Q2 0 4 4 T8 4" fill="none" stroke="#cfc7b2" stroke-width="1" />
+                </pattern>
+                <linearGradient id="est-wall" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#d9dbdc" />
+                  <stop offset="1" stop-color="#c7cacc" />
+                </linearGradient>
+                <linearGradient id="est-floor" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#b9bdc0" />
+                  <stop offset="1" stop-color="#9da2a6" />
+                </linearGradient>
+                <linearGradient id="est-room" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#f3f1ed" />
+                  <stop offset="1" stop-color="#e9e6e0" />
+                </linearGradient>
+                <linearGradient id="est-glass" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#dfeaed" />
+                  <stop offset="0.6" stop-color="#f4f8f8" />
+                  <stop offset="1" stop-color="#d4e2e6" />
+                </linearGradient>
+                <linearGradient id="est-cyl" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0" stop-color="#bfc5c8" />
+                  <stop offset="0.35" stop-color="#f6f7f7" />
+                  <stop offset="0.7" stop-color="#e3e6e8" />
+                  <stop offset="1" stop-color="#aab1b5" />
+                </linearGradient>
+                <linearGradient id="est-metal" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0" stop-color="#9fa6aa" />
+                  <stop offset="0.45" stop-color="#e9ebec" />
+                  <stop offset="1" stop-color="#8e969b" />
+                </linearGradient>
+                <linearGradient id="est-water-cold" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#8cc5c9" />
+                  <stop offset="1" stop-color="#3f8e96" />
+                </linearGradient>
+                <linearGradient id="est-water-warm" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#d9773a" />
+                  <stop offset="0.75" stop-color="#e6a06a" />
+                  <stop offset="1" stop-color="#e6a06a" stop-opacity="0" />
+                </linearGradient>
+                <radialGradient id="est-led" r="0.5">
+                  <stop offset="0" stop-color="#b9f3e6" />
+                  <stop offset="1" stop-color="#2fb39b" stop-opacity="0" />
+                </radialGradient>
+                <marker id="est-arrow-hot" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                  <path d="M0 0 L10 5 L0 10 z" fill="#c8743a" />
+                </marker>
+                <marker id="est-arrow-cold" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                  <path d="M0 0 L10 5 L0 10 z" fill="#3f939c" />
+                </marker>
+              </defs>
+
+              <!-- building shell -->
+              <rect x="0" y="0" width="1200" height="720" fill="#f4f5f5" />
+              <rect x="40" y="14" width="1120" height="178" fill="url(#est-room)" />
+              <rect x="40" y="232" width="1120" height="428" fill="url(#est-wall)" />
+              <g fill="#bfc2c4" opacity="0.7">
+                <circle cx="150" cy="262" r="2.5" /><circle cx="390" cy="262" r="2.5" /><circle cx="630" cy="262" r="2.5" /><circle cx="870" cy="262" r="2.5" /><circle cx="1110" cy="262" r="2.5" />
+                <circle cx="150" cy="450" r="2.5" /><circle cx="630" cy="450" r="2.5" /><circle cx="1110" cy="450" r="2.5" />
+              </g>
+              <path d="M40 346 H1160 M40 460 H1160 M40 574 H1160" stroke="#c3c6c8" stroke-width="1" />
+              <polygon points="40,660 1160,660 1160,720 40,720" fill="url(#est-floor)" />
+              <path d="M40 660 H1160" stroke="#8f9599" stroke-width="2" />
+              <rect x="0" y="0" width="1200" height="14" fill="url(#est-hatch)" />
+              <rect x="0" y="192" width="1200" height="40" fill="url(#est-hatch)" />
+              <rect x="40" y="186" width="1120" height="6" fill="#cdbfa9" />
+              <rect x="0" y="14" width="40" height="706" fill="url(#est-hatch)" />
+              <rect x="1160" y="14" width="40" height="706" fill="url(#est-hatch)" />
+              <rect x="40" y="14" width="10" height="172" fill="url(#est-insul)" />
+              <rect x="1150" y="14" width="10" height="172" fill="url(#est-insul)" />
+
+              <!-- ground floor: window, sofa, radiator (heating loop), basin (hot water) -->
+              <g class="est-room">
+                <rect x="88" y="44" width="176" height="118" fill="#ffffff" stroke="#c9cdd0" stroke-width="2" />
+                <rect x="98" y="54" width="74" height="98" fill="url(#est-glass)" />
+                <rect x="180" y="54" width="74" height="98" fill="url(#est-glass)" />
+                <rect x="80" y="160" width="192" height="8" fill="#e3e5e6" />
+                <path d="M300 186 V150 Q300 138 312 138 H452 Q464 138 464 150 V186" fill="#d5d1ca" />
+                <rect x="292" y="152" width="180" height="26" rx="8" fill="#c9c4bc" />
+                <rect x="310" y="178" width="8" height="8" fill="#9f998f" /><rect x="446" y="178" width="8" height="8" fill="#9f998f" />
+                <g class="est-radiator">
+                  <rect x="565" y="112" width="140" height="66" rx="4" class="est-radiator-body" />
+                  <g stroke="#ffffff" stroke-opacity="0.55" stroke-width="2">
+                    <path d="M577 116 V174 M589 116 V174 M601 116 V174 M613 116 V174 M625 116 V174 M637 116 V174 M649 116 V174 M661 116 V174 M673 116 V174 M685 116 V174 M697 116 V174" />
+                  </g>
+                  <g class="est-heatwaves" fill="none" stroke="#c8743a" stroke-width="2" stroke-linecap="round" opacity="0.7">
+                    <path d="M600 104 q6 -8 0 -16 q-6 -8 0 -16" /><path d="M635 104 q6 -8 0 -16 q-6 -8 0 -16" /><path d="M670 104 q6 -8 0 -16 q-6 -8 0 -16" />
+                  </g>
+                </g>
+                <path d="M900 132 H1010 Q1008 162 955 164 Q902 162 900 132 Z" fill="#ffffff" stroke="#c9cdd0" stroke-width="2" />
+                <rect x="947" y="164" width="16" height="22" fill="#e6e8e9" />
+                <path d="M925 132 V112 Q925 104 933 104 H950" fill="none" stroke="#9aa1a5" stroke-width="5" stroke-linecap="round" />
+                <path class="est-drip" d="M950 112 v6" stroke="#53a5ac" stroke-width="3" stroke-linecap="round" />
+                <text class="est-svg-label" x="635" y="40" text-anchor="middle">Heizkreis</text>
+                <text class="est-svg-label" x="955" y="40" text-anchor="middle">Warmwasser</text>
+              </g>
+
+              <!-- electrical sub-distribution -->
+              <rect x="268" y="296" width="36" height="54" rx="3" fill="#eceeef" stroke="#a9b0b4" stroke-width="1.5" />
+              <path d="M276 308 h20 M276 316 h20 M276 324 h20" stroke="#9aa1a5" stroke-width="2" />
+              <path d="M268 336 H258" stroke="#3d4347" stroke-width="3" />
+
+              <!-- pipes: insulation, then flow overlay -->
+              <g class="est-pipes" fill="none" stroke-linejoin="round" stroke-linecap="round">
+                <!-- radiator return riser (drawn first, others cross in front) -->
+                <path class="pipe" d="M705 172 H845 V645 H620 V615 H595" />
+                <path class="pipe" d="M215 300 V256 H318 V430" />
+                <path class="pipe" d="M332 560 V640 H250 V622" />
+                <path class="pipe" d="M350 452 H410 V345 H445" />
+                <path class="pipe" d="M445 615 H400 V540 H350" />
+                <path class="pipe" d="M595 360 H660 V520 H705" />
+                <path class="pipe" d="M785 380 V128 H705" />
+                <path class="pipe pipe-halo" d="M595 590 H880" />
+                <path class="pipe" d="M595 590 H880" />
+                <path class="pipe" d="M925 440 V232 V150 Q925 140 925 132" />
+
+                <path class="flow cold" data-loop="heating" d="M705 172 H845 V645 H620 V615 H595" marker-end="url(#est-arrow-cold)" />
+                <path class="flow hot" data-loop="primary" d="M215 300 V256 H318 V430" marker-end="url(#est-arrow-hot)" />
+                <path class="flow cold" data-loop="primary" d="M332 560 V640 H250 V622" marker-end="url(#est-arrow-cold)" />
+                <path class="flow hot" data-loop="secondary" d="M350 452 H410 V345 H445" marker-end="url(#est-arrow-hot)" />
+                <path class="flow cold" data-loop="secondary" d="M445 615 H400 V540 H350" marker-end="url(#est-arrow-cold)" />
+                <path class="flow hot" data-loop="heating" d="M595 360 H660 V520 H705" marker-end="url(#est-arrow-hot)" />
+                <path class="flow hot" data-loop="heating" d="M785 380 V128 H705" marker-end="url(#est-arrow-hot)" />
+                <path class="flow hot" data-loop="dhw" d="M595 590 H880" marker-end="url(#est-arrow-hot)" />
+                <path class="flow hot" data-loop="dhw" d="M925 440 V150" marker-end="url(#est-arrow-hot)" />
+              </g>
+
+              <!-- 1 server rack -->
+              <g class="est-rack">
+                <polygon points="95,300 117,290 257,290 235,300" fill="#3a4044" />
+                <polygon points="235,300 257,290 257,652 235,660" fill="#15181a" />
+                <rect x="95" y="300" width="140" height="360" fill="#23272a" />
+                <rect x="100" y="306" width="130" height="348" fill="none" stroke="#3b4246" stroke-width="2" />
+                <g data-rack-slots></g>
+                <rect x="104" y="644" width="122" height="6" fill="#1a1d1f" />
+                <path d="M224 300 v-6" stroke="#3d4347" stroke-width="3" />
+              </g>
+
+              <!-- 2 heat exchanger + circulation pump -->
+              <g class="est-hx">
+                <rect x="300" y="476" width="6" height="40" fill="#9aa1a5" />
+                <rect x="305" y="430" width="45" height="130" rx="3" fill="url(#est-metal)" stroke="#7d858a" stroke-width="1.5" />
+                <path d="M309 440 H346 M309 448 H346 M309 456 H346 M309 464 H346 M309 472 H346 M309 480 H346 M309 488 H346 M309 496 H346 M309 504 H346 M309 512 H346 M309 520 H346 M309 528 H346 M309 536 H346 M309 544 H346 M309 552 H346" stroke="#8f979c" stroke-width="1" />
+                <circle cx="400" cy="578" r="14" fill="#33424a" stroke="#1f292e" stroke-width="2" />
+                <path d="M394 572 L408 578 L394 584 Z" fill="#a6d6d7" />
+              </g>
+
+              <!-- 4 buffer tank -->
+              <g class="est-tank">
+                <rect x="463" y="644" width="22" height="16" fill="#8e969b" />
+                <rect x="555" y="644" width="22" height="16" fill="#8e969b" />
+                <rect x="445" y="296" width="150" height="352" rx="30" fill="url(#est-cyl)" stroke="#9aa2a7" stroke-width="1.5" />
+                <path d="M452 326 H588 M452 618 H588" stroke="#b8bec2" stroke-width="1.5" />
+                <rect x="478" y="340" width="84" height="268" rx="6" fill="url(#est-water-cold)" />
+                <rect class="est-tank-warm" x="478" y="340" width="84" height="200" rx="6" fill="url(#est-water-warm)" />
+                <rect x="478" y="340" width="84" height="268" rx="6" fill="none" stroke="#6f787d" stroke-width="2" />
+                <path d="M566 360 h8 M566 400 h5 M566 440 h8 M566 480 h5 M566 520 h8 M566 560 h5 M566 600 h8" stroke="#6f787d" stroke-width="1.5" />
+              </g>
+
+              <!-- 5 existing heating (boiler or heat pump indoor unit) -->
+              <g class="est-heater">
+                <rect x="722" y="232" width="16" height="148" fill="#b9bec1" />
+                <rect x="705" y="380" width="100" height="185" rx="8" fill="#f8f9f9" stroke="#c4cacd" stroke-width="2" />
+                <rect x="722" y="402" width="66" height="30" rx="3" fill="#1d2326" />
+                <text x="755" y="423" text-anchor="middle" class="est-svg-display" data-heater-display>aus</text>
+                <circle cx="790" cy="452" r="5" class="est-heater-led" />
+                <path d="M720 520 H790 M720 530 H790 M720 540 H790" stroke="#d3d8db" stroke-width="2" />
+              </g>
+
+              <!-- 6 optional hot-water booster -->
+              <g class="est-booster">
+                <rect x="896" y="645" width="16" height="15" fill="#8e969b" />
+                <rect x="938" y="645" width="16" height="15" fill="#8e969b" />
+                <rect x="880" y="436" width="90" height="212" rx="22" fill="url(#est-cyl)" stroke="#7d858a" stroke-width="2" stroke-dasharray="7 5" />
+                <path d="M905 560 l6 -10 l6 10 l6 -10 l6 10 l6 -10 l6 10" fill="none" stroke="#c8743a" stroke-width="3" stroke-linejoin="round" class="est-booster-element" />
+                <rect x="895" y="470" width="60" height="22" rx="11" fill="#ffffff" stroke="#9aa1a5" />
+                <text x="925" y="486" text-anchor="middle" class="est-svg-tag">optional</text>
+              </g>
+
+              <!-- component labels -->
+              <g class="est-svg-labels">
+                <text class="est-svg-label" x="165" y="700" text-anchor="middle">Serverrack</text>
+                <text class="est-svg-label" x="345" y="700" text-anchor="middle">Wärmetauscher</text>
+                <text class="est-svg-label" x="520" y="700" text-anchor="middle">Pufferspeicher</text>
+                <text class="est-svg-label" x="755" y="700" text-anchor="middle">Bestehende Heizung</text>
+                <text class="est-svg-label" x="925" y="700" text-anchor="middle">Warmwasser-Booster</text>
+                <text class="est-svg-label" x="500" y="250" text-anchor="middle">Isolierte Leitungen</text>
+              </g>
+            </svg>
+
+            <button type="button" class="est-hotspot" style="left:13.75%;top:65.28%" data-hotspot="1" aria-describedby="est-hs-1">1<span class="visually-hidden"> Serverrack</span></button>
+            <button type="button" class="est-hotspot" style="left:27.25%;top:68.75%" data-hotspot="2" aria-describedby="est-hs-2">2<span class="visually-hidden"> Wärmetauscher</span></button>
+            <button type="button" class="est-hotspot" style="left:22.08%;top:35.56%" data-hotspot="3" aria-describedby="est-hs-3">3<span class="visually-hidden"> Isolierte Leitungen</span></button>
+            <button type="button" class="est-hotspot" style="left:43.33%;top:65.28%" data-hotspot="4" aria-describedby="est-hs-4">4<span class="visually-hidden"> Pufferspeicher</span></button>
+            <button type="button" class="est-hotspot" style="left:62.92%;top:66.67%" data-hotspot="5" aria-describedby="est-hs-5">5<span class="visually-hidden"> Bestehende Heizung</span></button>
+            <button type="button" class="est-hotspot" style="left:77.08%;top:83.33%" data-hotspot="6" aria-describedby="est-hs-6">6<span class="visually-hidden"> Warmwasser-Booster</span></button>
+            </div>
+
+            <figcaption data-season-caption>
+              Winter: Die Server laufen viel. Ihre Wärme geht über den Wärmetauscher in den Speicher und von dort in Heizkreis und Warmwasser.
+            </figcaption>
+          </figure>
+
+          <ol class="est-hotspots">
+            <li id="est-hs-1" data-hotspot-item="1"><strong>Serverrack</strong><span>Die Server rechnen für Kunden aus der Schweiz. Ihr Strom wird dabei vollständig zu Wärme; eine Flüssigkeitskühlung nimmt sie direkt an den Prozessoren ab.</span></li>
+            <li id="est-hs-2" data-hotspot-item="2"><strong>Wärmetauscher</strong><span>Trennt den Kühlkreis der Server vom Heizungswasser. Die Wärme geht hinüber, das Wasser der beiden Kreise vermischt sich nie.</span></li>
+            <li id="est-hs-3" data-hotspot-item="3"><strong>Isolierte Leitungen</strong><span>Bringen das warme Wasser mit wenig Verlust zum Speicher und zurück. Eine kleine Pumpe hält es in Bewegung.</span></li>
+            <li id="est-hs-4" data-hotspot-item="4"><strong>Pufferspeicher</strong><span>1'000 Liter Wasser speichern rund 35 kWh Wärme. Er nimmt Überschüsse auf und gibt sie ab, wenn das Haus mehr braucht, als die Server gerade liefern.</span></li>
+            <li id="est-hs-5" data-hotspot-item="5"><strong>Bestehende Heizung</strong><span>Bleibt eingebaut und springt automatisch ein, wenn Server und Speicher nicht reichen, etwa in sehr kalten Stunden.</span></li>
+            <li id="est-hs-6" data-hotspot-item="6"><strong>Warmwasser-Booster (optional)</strong><span>Hebt das Warmwasser bei Bedarf auf über 60 °C, damit es hygienisch bleibt. Ob er nötig ist, hängt von Ihrer Anlage ab.</span></li>
+          </ol>
+
+          <div class="est-visit">
+            <h4>Was wir beim Besuch vor Ort prüfen</h4>
+            <ul>
+              <li><strong>Platz</strong><span>Stellfläche und Raumhöhe für Rack und Speicher. Ein 1'000-Liter-Speicher misst mit Dämmung rund 1 m im Durchmesser und gut 2 m in der Höhe.</span></li>
+              <li><strong>Zugang</strong><span>Einbringweg über Türen und Treppe sowie freier Zugang für Wartung und Service.</span></li>
+              <li><strong>Stromanschluss</strong><span>Jeder Server braucht rund 1 kW. Wir prüfen Hausanschluss, Sicherungen und Verteiler auf die zusätzliche Leistung<span data-visit-power></span>.</span></li>
+              <li><strong>Lärm und Raumluft</strong><span>Pumpen und Restlüfter sind hörbar, und rund 20 % der Serverwärme bleiben im Raum. Wir prüfen die Trennung zu Wohn- und Schlafräumen und die Lüftung.</span></li>
+              <li><strong>Bestehende Heizung</strong><span>Vorlauftemperatur von Heizkörpern oder Bodenheizung, Anschluss an Speicher und Heizung, Warmwasser-Hygiene und ob ein Booster nötig ist.</span></li>
+              <li><strong>Internet</strong><span>Ein stabiler Anschluss, idealerweise Glasfaser, für die Rechenaufträge.</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 2 · Eingaben -->
+        <form class="est-block est-form" id="est-form" novalidate aria-labelledby="est-form-title">
+          <div class="est-block-head">
+            <div>
+              <p class="est-step">2 · Ihr Haus</p>
+              <h3 id="est-form-title">Drei Angaben genügen für den Start</h3>
+            </div>
+            <button type="button" class="button secondary est-demo" data-load-reference>Basler Referenzhaus laden</button>
+          </div>
+
+          <div class="est-reference-banner" data-reference-banner hidden>
+            <p><strong>Basler Referenzhaus geladen.</strong> Das Haus aus der Fallstudie: Wetter Basel 2025, 10 kW Heizleistung bei −5.6 °C, 4 Personen (12 kWh Warmwasser pro Tag), heute mit einer Wärmepumpe (JAZ 2.5) beheizt.</p>
+            <button type="button" class="est-link" data-leave-reference>Eigenes Haus berechnen</button>
+          </div>
+
+          <fieldset class="est-fields" data-house-fields>
+            <legend class="visually-hidden">Angaben zum Haus</legend>
+            <div class="est-field est-field-place" data-place-mode="search">
+              <label for="est-place">Postleitzahl oder Gemeinde</label>
+              <div class="est-combo">
+                <input id="est-place" name="place" type="text" inputmode="search" autocomplete="off" placeholder="z. B. 4051 oder Riehen"
+                  role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="est-place-list" aria-describedby="est-place-hint est-place-error">
+                <ul id="est-place-list" class="est-suggestions" role="listbox" hidden></ul>
+              </div>
+              <p class="est-hint" id="est-place-hint" data-place-hint>Für das Wetter an Ihrem Standort.</p>
+              <p class="est-error" id="est-place-error" data-error="place" hidden></p>
+              <button type="button" class="est-link" data-toggle-coords>Stattdessen Koordinaten eingeben</button>
+              <div class="est-coords" data-coords hidden>
+                <label>Breitengrad (N)<input name="lat" type="number" inputmode="decimal" step="0.0001" min="45.8" max="47.9" placeholder="47.5596"></label>
+                <label>Längengrad (O)<input name="lon" type="number" inputmode="decimal" step="0.0001" min="5.9" max="10.6" placeholder="7.5886"></label>
+              </div>
+            </div>
+            <div class="est-field">
+              <label for="est-area">Beheizte Fläche (m²)</label>
+              <input id="est-area" name="area" type="number" inputmode="numeric" min="20" max="2000" step="1" placeholder="z. B. 160" aria-describedby="est-area-hint est-area-error">
+              <p class="est-hint" id="est-area-hint">Wohnfläche aller beheizten Räume.</p>
+              <p class="est-error" id="est-area-error" data-error="area" hidden></p>
+            </div>
+            <div class="est-field">
+              <label for="est-residents">Personen im Haushalt</label>
+              <input id="est-residents" name="residents" type="number" inputmode="numeric" min="1" max="20" step="1" placeholder="z. B. 4" aria-describedby="est-residents-hint est-residents-error">
+              <p class="est-hint" id="est-residents-hint">Für den Warmwasserbedarf (3 kWh pro Person und Tag).</p>
+              <p class="est-error" id="est-residents-error" data-error="residents" hidden></p>
+            </div>
+
+            <details class="est-more" data-more>
+              <summary>Genauer berechnen</summary>
+              <div class="est-more-body">
+                <div class="est-field">
+                  <label for="est-class">Baujahr oder Sanierungsstand</label>
+                  <select id="est-class" name="classKey" data-class-select></select>
+                  <p class="est-hint">Bestimmt den typischen Heizwärmebedarf pro m².</p>
+                </div>
+                <div class="est-field">
+                  <label for="est-system">Heutiges Heizsystem</label>
+                  <select id="est-system" name="system" data-system-select></select>
+                  <p class="est-hint">Nötig für Rechnung, Ersparnis und CO₂.</p>
+                </div>
+                <div class="est-field" data-eff-field hidden>
+                  <label for="est-eff" data-eff-label>Jahresnutzungsgrad</label>
+                  <input id="est-eff" name="eff" type="number" inputmode="decimal" step="0.05" min="0.3" max="6">
+                  <p class="est-hint" data-eff-hint></p>
+                </div>
+
+                <fieldset class="est-bill">
+                  <legend>Jährlicher Heizverbrauch laut Rechnung <span>(falls vorhanden)</span></legend>
+                  <div class="est-bill-amount">
+                    <label class="visually-hidden" for="est-bill-amount">Menge pro Jahr</label>
+                    <input id="est-bill-amount" name="billAmount" type="number" inputmode="decimal" min="0" step="1" placeholder="z. B. 18000">
+                    <label class="visually-hidden" for="est-bill-unit">Einheit</label>
+                    <select id="est-bill-unit" name="billUnit">
+                      <option value="kWh">kWh pro Jahr</option>
+                      <option value="l">Liter Heizöl pro Jahr</option>
+                    </select>
+                  </div>
+                  <div class="est-radio-group" role="radiogroup" aria-labelledby="est-bill-kind-label">
+                    <p id="est-bill-kind-label" class="est-radio-title">Was zeigt die Zahl?</p>
+                    <label><input type="radio" name="billKind" value="purchased" checked><span>Eingekaufte Energie<small>Heizöl, Gas, Strom für die Wärmepumpe, Pellets</small></span></label>
+                    <label><input type="radio" name="billKind" value="useful"><span>Gelieferte Nutzwärme<small>Wärmezähler, Fernwärme-Rechnung</small></span></label>
+                  </div>
+                  <div class="est-radio-group" role="radiogroup" aria-labelledby="est-bill-hw-label">
+                    <p id="est-bill-hw-label" class="est-radio-title">Ist das Warmwasser darin enthalten?</p>
+                    <label><input type="radio" name="billHw" value="ja" checked><span>Ja</span></label>
+                    <label><input type="radio" name="billHw" value="nein"><span>Nein</span></label>
+                    <label><input type="radio" name="billHw" value="unsicher"><span>Weiss nicht</span></label>
+                  </div>
+                  <p class="est-hint">Wir ziehen das Warmwasser ab, damit es nicht doppelt zählt, und nutzen den Rest, um das Gebäudemodell zu kalibrieren.</p>
+                  <p class="est-warning" data-bill-warning hidden></p>
+                </fieldset>
+              </div>
+            </details>
+          </fieldset>
+
+          <div class="est-actions">
+            <button type="submit" class="button primary">Berechnen</button>
+            <p class="est-form-status" data-form-status role="status" aria-live="polite"></p>
+          </div>
+        </form>
+
+        <!-- 3 · Ergebnis -->
+        <div class="est-block est-results" id="est-results" data-results hidden tabindex="-1" aria-labelledby="est-result-title">
+          <div class="est-block-head">
+            <div>
+              <p class="est-step">3 · Ergebnis</p>
+              <h3 id="est-result-title" class="est-badge est-badge-inline">Unverbindliche Ersteinschätzung</h3>
+            </div>
+          </div>
+
+          <p class="est-headline" data-headline></p>
+          <p class="est-range" data-range></p>
+          <p class="est-meta" data-meta></p>
+
+          <div class="est-sizing">
+            <div class="est-sizing-figure">
+              <span class="est-big" data-servers>–</span>
+              <span class="est-big-label" data-servers-label>Server empfohlen</span>
+            </div>
+            <div class="est-sizing-text">
+              <p data-sizing-rule></p>
+              <div class="est-sizing-controls">
+                <label for="est-target">Deckungsziel (Demo)</label>
+                <select id="est-target" name="target" data-target>
+                  <option value="0.5">50 %</option>
+                  <option value="0.6">60 %</option>
+                  <option value="0.7">70 %</option>
+                  <option value="0.8" selected>80 %</option>
+                  <option value="0.9">90 %</option>
+                  <option value="0.95">95 %</option>
+                  <option value="1">100 %</option>
+                </select>
+                <div class="est-stepper" role="group" aria-label="Andere Serverzahl testen">
+                  <button type="button" data-servers-step="-1" aria-label="Ein Server weniger">−</button>
+                  <button type="button" data-servers-step="1" aria-label="Ein Server mehr">+</button>
+                  <button type="button" class="est-link" data-servers-reset hidden>Empfehlung verwenden</button>
+                </div>
+              </div>
+              <p class="est-warning" data-target-warning hidden></p>
+            </div>
+          </div>
+
+          <div class="est-season-results">
+            <div class="est-block-head est-block-head-tight">
+              <h4>Winter, Sommer und Jahr</h4>
+              <div class="est-season" role="group" aria-label="Jahreszeit hervorheben" data-season-toggle>
+                <button type="button" data-season="winter" aria-pressed="true">Winter</button>
+                <button type="button" data-season="summer" aria-pressed="false">Sommer</button>
+              </div>
+            </div>
+            <div class="est-table-wrap">
+              <table class="est-table" data-season-table>
+                <caption class="visually-hidden">Ergebnis nach Jahreszeit</caption>
+                <thead>
+                  <tr><th scope="col">Pro Zeitraum</th><th scope="col" data-col="winter">Winter<small>Okt–März</small></th><th scope="col" data-col="summer">Sommer<small>Apr–Sept</small></th><th scope="col" data-col="year">Jahr</th></tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <p class="est-note">Jahreswerte sind Summen der 8'760 Stundenwerte. Ø Server = Serverstunden ÷ Stunden im Zeitraum.</p>
+
+            <figure class="est-chart" data-chart>
+              <figcaption>
+                <strong>Wärme pro Monat</strong>
+                <span class="est-legend">
+                  <span><i class="sw sw-server"></i>Wärme aus Servern</span>
+                  <span><i class="sw sw-backup"></i>Bestehende Heizung</span>
+                </span>
+              </figcaption>
+              <div class="est-chart-plot" data-chart-plot></div>
+              <div class="est-tooltip" data-tooltip role="status" hidden></div>
+              <details class="est-chart-table">
+                <summary>Monatswerte als Tabelle</summary>
+                <div class="est-table-wrap"><table class="est-table est-table-small" data-month-table></table></div>
+              </details>
+            </figure>
+          </div>
+
+          <div class="est-points">
+            <h4>Zwei Betriebszustände, eine Anlage</h4>
+            <div class="est-points-grid" data-points></div>
+          </div>
+
+          <!-- money -->
+          <div class="est-money">
+            <h4>Kosten</h4>
+            <div class="est-field est-slider-field">
+              <label for="est-price">Strompreis der Server</label>
+              <div class="est-slider-row">
+                <input id="est-price-range" type="range" min="5" max="60" step="0.05" value="33.25" aria-label="Strompreis der Server in Rappen pro kWh" data-price-range>
+                <span class="est-unit-input"><input id="est-price" type="number" inputmode="decimal" min="0" max="200" step="0.05" value="33.25" data-price-input><span>Rp./kWh</span></span>
+                <button type="button" class="est-link" data-price-reset hidden>Zurück auf 33.25</button>
+              </div>
+              <p class="est-hint">Standard 33.25 Rp./kWh: Basel-Referenz der Fallstudie (ElCom 2026, IWB, Kategorie H4, Gesamtpreis).</p>
+            </div>
+            <p class="est-stat" data-elec-cost></p>
+
+            <div class="est-money-grid">
+              <div class="est-field">
+                <label for="est-tariff" data-tariff-label>Ihr heutiger Heiztarif (Rp./kWh)</label>
+                <input id="est-tariff" type="number" inputmode="decimal" min="0" step="0.1" placeholder="z. B. 12" data-tariff>
+                <p class="est-hint" data-tariff-hint>Preis pro kWh eingekaufter Energie, alles inklusive.</p>
+              </div>
+              <div class="est-field">
+                <label for="est-heatprice">Preis für Server-Wärme (Rp./kWh)</label>
+                <input id="est-heatprice" type="number" inputmode="decimal" min="0" step="0.1" placeholder="Angebot, falls vorhanden" data-heatprice>
+                <p class="est-hint">Pro kWh gelieferter Nutzwärme. Noch kein Angebot? Feld leer lassen.</p>
+              </div>
+            </div>
+            <div class="est-savings" data-savings></div>
+
+            <details class="est-operator" data-operator>
+              <summary>Für Betreiber</summary>
+              <div class="est-operator-body">
+                <div class="est-money-grid">
+                  <div class="est-field">
+                    <label for="est-compute">Erlös pro Serverstunde (CHF)</label>
+                    <input id="est-compute" type="number" inputmode="decimal" min="0" step="0.05" value="1.35" data-compute>
+                    <p class="est-hint">Szenario: Mietpreis eines GPU-Hosts im Dauerbetrieb, unteres Ende. Ein Käufer für wärmegeführte Rechenstunden ist noch nicht bestätigt.</p>
+                  </div>
+                  <div class="est-field">
+                    <label for="est-mode">Betriebsweise</label>
+                    <select id="est-mode" data-mode>
+                      <option value="heat" selected>Wärmegeführt: rechnen, wenn Wärme gebraucht wird</option>
+                      <option value="always">Dauerbetrieb: Überschuss wird weggekühlt</option>
+                    </select>
+                  </div>
+                </div>
+                <dl class="est-dl" data-operator-out></dl>
+                <p class="est-note" data-operator-note></p>
+              </div>
+            </details>
+          </div>
+
+          <!-- CO2 -->
+          <div class="est-co2">
+            <h4>CO₂</h4>
+            <div class="est-field">
+              <label for="est-accounting">Annahme zur Rechenarbeit</label>
+              <select id="est-accounting" data-accounting>
+                <option value="elsewhere" selected>Wäre ohnehin in einem Rechenzentrum gelaufen</option>
+                <option value="additional">Entsteht zusätzlich wegen der Anlage</option>
+              </select>
+            </div>
+            <div data-co2-out></div>
+          </div>
+
+          <details class="est-how" data-how>
+            <summary>So wurde gerechnet</summary>
+            <div class="est-how-body">
+              <ol class="est-how-steps" data-how-steps></ol>
+              <h5>Annahmen anpassen</h5>
+              <div class="est-assumptions">
+                <label>Strom pro aktivem Server (kW)<input type="number" step="0.05" min="0.1" max="5" data-assume="serverKw"></label>
+                <label>Nutzbare Wärme pro aktivem Server (kW)<input type="number" step="0.05" min="0.05" max="5" data-assume="recoveredKw"></label>
+                <label>Pufferspeicher (kWh)<input type="number" step="1" min="0" max="500" data-assume="tankKwh"></label>
+                <label>Verfügbarkeit der Rechenarbeit (%)<input type="number" step="1" min="10" max="100" data-assume="availability"></label>
+                <button type="button" class="est-link" data-assume-reset>Fallstudien-Annahmen wiederherstellen</button>
+              </div>
+              <h5>Grenzen dieser Schätzung</h5>
+              <ul class="est-limits">
+                <li>Ein Wetterjahr (2025). Ein kälteres oder wärmeres Jahr verschiebt die Werte.</li>
+                <li>Das Gebäudemodell ist linear: Sonne, Wind und Speichermasse des Hauses sind nicht einzeln abgebildet.</li>
+                <li>Der Speicher verliert in der Rechnung keine Wärme. Real sind es einige kWh pro Tag; im Sommer wird die Deckung dadurch kleiner.</li>
+                <li>Strom für einen Warmwasser-Booster und für Pumpen ist nicht eingerechnet.</li>
+                <li>Warmwasser ist gleichmässig über den Tag verteilt; Spitzen am Morgen und Abend deckt der Speicher.</li>
+                <li>Hardware, Installation, Wartung und Grundgebühren sind in den Kosten nicht enthalten.</li>
+              </ul>
+              <h5>Quellen</h5>
+              <ul class="est-sources">
+                <li>Wetter: Open-Meteo Historical Weather API, stündliche Temperatur 2025, 93 Orte in der Schweiz.</li>
+                <li>Postleitzahlen: swisstopo, Amtliches Ortschaftenverzeichnis (Stand 1.11.2026). Geländehöhe: Copernicus DEM GLO-90.</li>
+                <li>Heizwärmebedarf nach Gebäudeklasse: Kanton Solothurn, «Gebäude erneuern – Energieverbrauch halbieren», typische Werte der GEAK-Klassen.</li>
+                <li>Emissionsfaktoren: KBOB/ecobau, Ökobilanzdaten im Baubereich 2009/1:2022, Version 9.0.</li>
+                <li>Strompreis: ElCom, Strompreise 2026, IWB Basel, Kategorie H4.</li>
+                <li>Server, Speicher, Warmwasser, Hausformel: Fallstudie DigitalHeat, sprintd Basel 2026.</li>
+              </ul>
+              <p class="est-check" data-selfcheck></p>
+            </div>
+          </details>
+
+          <div class="est-cta">
+            <div>
+              <strong>Passt Ihr Haus für einen Pilot?</strong>
+              <p>Wir prüfen vor Ort, was diese Schätzung nicht wissen kann. Ihre Ergebnisse übernehmen wir auf Wunsch in die Anfrage.</p>
+            </div>
+            <a class="button primary" href="#kontakt" data-pilot-cta>Pilotstandort werden</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="architecture compact-section" id="architektur" aria-labelledby="architektur-title">
+        <div class="section-grid">
+          <div>
+            <p class="section-kicker">System</p>
+            <h2 id="architektur-title">Vom Pilotstandort zur verteilten Infrastruktur.</h2>
+          </div>
+          <div class="lead-block">
+            <p>
+              In der Pilotphase steht ein gebäudenahes System im Vordergrund: ein Standort mit
+              Wärmebedarf, Technikraum, Strom- und Netzanschluss. Mehrere DigitalHeat-Standorte
+              können zu einer verteilten Schweizer Rechen- und Wärmeinfrastruktur verbunden
+              werden: kommunal, kantonal, regional, national.
+            </p>
+            <dl class="compact-facts">
+              <div><dt>Pilot</dt><dd>gebäudenahes System mit direkter Wärmenutzung</dd></div>
+              <div><dt>Verbund</dt><dd>mehrere geeignete DigitalHeat-Standorte</dd></div>
+              <div><dt>Schweiz</dt><dd>Rechenstandort, Betrieb und Datenhoheit</dd></div>
+            </dl>
+          </div>
+        </div>
+        <figure class="network-video">
+          <video
+            src="https://digitalheat.ch/assets/digitalheat-network-basel-nordwestschweiz-v2.mp4"
+            autoplay
+            muted
+            loop
+            playsinline
+            controls
+            preload="metadata"
+            aria-label="Animation einer verteilten DigitalHeat Rechen- und Wärmeinfrastruktur"
+          ></video>
+          <figcaption>
+            Mehrere DigitalHeat-Standorte werden zu einer verteilten Schweizer Rechen- und Wärmeinfrastruktur verbunden.
+          </figcaption>
+        </figure>
+      </section>
+
+      <section class="governance-section" id="partner" aria-labelledby="governance-title">
+        <div class="section-grid">
+          <div>
+          <p class="section-kicker">Infrastrukturpartner</p>
+          <h2 id="governance-title">B2B-Partner machen DigitalHeat skalierbar.</h2>
+          </div>
+          <div class="role-list">
+            <article>
+              <strong>Hosting & IT</strong>
+              <span>Rechenleistungskunden, private Rechnerdienste, KI-Arbeitslasten, Betrieb und Sicherheitsarchitektur.</span>
+            </article>
+            <article>
+              <strong>Heizung & Gebäudetechnik</strong>
+              <span>Integration in Speicher, Warmwasser, Heizsystem und Backup-/Hybridkonzepte.</span>
+            </article>
+            <article>
+              <strong>Stromnetz & Infrastruktur</strong>
+              <span>Netzanschluss, Lastmanagement, Glasfaser, Standorte und regionale Energieinfrastruktur.</span>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="sdg-section" id="sdg" aria-labelledby="sdg-title">
+        <div class="section-heading">
+          <p class="section-kicker">Nachhaltigkeit</p>
+          <h2 id="sdg-title">DigitalHeat verfolgt relevante UN Sustainable Development Goals.</h2>
+          <p>
+            DigitalHeat zahlt auf jene Nachhaltigkeitsziele ein, bei denen Energie, Infrastruktur,
+            Städte, Ressourcennutzung und Klimaschutz zusammenkommen.
+          </p>
+        </div>
+        <div class="sdg-grid" aria-label="Relevante UN Sustainable Development Goals">
+          <article>
+            <img class="sdg-icon" src="https://digitalheat.ch/assets/sdg/sdg-7.png" alt="UN Sustainable Development Goal 7: Affordable and Clean Energy" width="1024" height="1024" loading="lazy">
+            <span>SDG 7</span>
+            <strong>Bezahlbare und saubere Energie</strong>
+            <p>Computer-Abwärme wird dort genutzt, wo sie als Wärme gebraucht wird.</p>
+          </article>
+          <article>
+            <img class="sdg-icon" src="https://digitalheat.ch/assets/sdg/sdg-9.png" alt="UN Sustainable Development Goal 9: Industry, Innovation and Infrastructure" width="1024" height="1024" loading="lazy">
+            <span>SDG 9</span>
+            <strong>Industrie, Innovation und Infrastruktur</strong>
+            <p>Dezentrale Rechen- und Wärmeinfrastruktur verbindet digitale und thermische Systeme.</p>
+          </article>
+          <article>
+            <img class="sdg-icon" src="https://digitalheat.ch/assets/sdg/sdg-11.png" alt="UN Sustainable Development Goal 11: Sustainable Cities and Communities" width="1024" height="1024" loading="lazy">
+            <span>SDG 11</span>
+            <strong>Nachhaltige Städte und Gemeinden</strong>
+            <p>Gebäude und Quartiere können digitale Infrastruktur mit lokaler Wärmenutzung koppeln.</p>
+          </article>
+          <article>
+            <img class="sdg-icon" src="https://digitalheat.ch/assets/sdg/sdg-12.png" alt="UN Sustainable Development Goal 12: Responsible Consumption and Production" width="1024" height="1024" loading="lazy">
+            <span>SDG 12</span>
+            <strong>Nachhaltige Konsum- und Produktionsmuster</strong>
+            <p>Abwärme wird nicht verworfen, sondern als nutzbare Ressource eingesetzt.</p>
+          </article>
+          <article>
+            <img class="sdg-icon" src="https://digitalheat.ch/assets/sdg/sdg-13.png" alt="UN Sustainable Development Goal 13: Climate Action" width="1024" height="1024" loading="lazy">
+            <span>SDG 13</span>
+            <strong>Massnahmen zum Klimaschutz</strong>
+            <p>Rechenleistung, Abwärme und Wärmebedarf werden gemeinsam gedacht, um Energieflüsse besser zu nutzen.</p>
+          </article>
+        </div>
+        <p class="sdg-source">
+          Grundlage: <a href="https://sdgs.un.org/goals" rel="noopener noreferrer">United Nations Sustainable Development Goals</a>.
+        </p>
+      </section>
+
+      <section class="cta-band" id="kontakt" aria-labelledby="kontakt-title">
+        <div>
+          <p class="section-kicker">Pilotphase</p>
+          <h2 id="kontakt-title">Wärme, Rechenleistung oder Partnerschaft besprechen.</h2>
+          <p>
+            Wir suchen Wärmeabnehmer, Rechenleistungskunden und B2B-Partner für Hosting,
+            Heizungsinstallation sowie Stromnetz- und Standortinfrastruktur.
+          </p>
+          <ul class="pilot-criteria" aria-label="Geeignete Pilotstandorte">
+            <li>Gebäude oder Prozesse mit nutzbarem Wärmebedarf</li>
+            <li>Unternehmen mit Bedarf an Schweizer CPU-, GPU- oder KI-Arbeitslasten</li>
+            <li>Partner für Hosting, HLK, Stromnetz, Glasfaser, Standorte oder Betrieb</li>
+          </ul>
+        </div>
+        <form class="contact-form" action="contact.php" method="get" accept-charset="UTF-8" data-contact-form>
+          <div class="form-status" id="form-status" data-form-status role="status" aria-live="polite" aria-atomic="true" tabindex="-1" hidden></div>
+          <input class="form-trap" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <input type="hidden" name="form_started_at" data-form-started-at>
+          <fieldset class="contact-interests">
+            <legend>Mein Interesse</legend>
+            <label><input type="checkbox" name="interests[]" value="waerme"><span>Ich benötige Wärme</span></label>
+            <label><input type="checkbox" name="interests[]" value="rechenleistung"><span>Ich benötige Rechenleistung</span></label>
+            <label><input type="checkbox" name="interests[]" value="b2b"><span>Ich interessiere mich für eine B2B-Partnerschaft</span></label>
+          </fieldset>
+          <label>
+            <span>Name</span>
+            <input name="name" autocomplete="name" required>
+          </label>
+          <label>
+            <span>E-Mail</span>
+            <input name="email" type="email" autocomplete="email" required>
+          </label>
+          <label>
+            <span>Immobilie oder Organisation</span>
+            <input name="organisation" autocomplete="organization">
+          </label>
+          <label>
+            <span>Nachricht</span>
+            <textarea name="message" rows="4" required>Ich interessiere mich für DigitalHeat und möchte einen Pilotstandort, Wärmebezug, Rechenleistung oder eine Partnerschaft besprechen.</textarea>
+          </label>
+          <button class="button primary" type="submit" data-submit-button>Pilotstandort prüfen</button>
+          <p class="form-status">
+            Kontakt: <a href="mailto:hello@digitalheat.ch">hello@digitalheat.ch</a>
+          </p>
+        </form>
+      </section>
+
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-identity">
+        <a class="brand" href="#top" aria-label="DigitalHeat Startseite"><span class="brand-logo"><img src="https://digitalheat.ch/assets/digitalheat-logo.png" alt="Digital Heat" width="1280" height="1280" loading="lazy"></span></a>
+        <span>Eine Lösung von Virtual Culture GmbH · Basel / Schweiz</span>
+      </div>
+      <nav aria-label="Rechtliches">
+        <a href="https://digitalheat.ch/privacy-policy.html">Datenschutz</a>
+        <a href="https://digitalheat.ch/cookies-policy.html">Cookies</a>
+        <a href="https://digitalheat.ch/legal-notice.html">Impressum</a>
+      </nav>
+    </footer>
+
+    <script src="script.js?v=dh-feedback-20261024"></script>
+    <script type="module" src="rechner/app.js?v=20261121h"></script>
+  </body>
+</html>

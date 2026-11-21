@@ -1,0 +1,342 @@
+r8_guard_heldout.py. Assessment only; not the team scheduler. Case demand formula, 25.6 fixed.
+Offer seeds per year: (1, 2, 3, 4, 5); cap + 8 kWh band; restart outside execution; no outages.
+
+== 0. Checks ==
+  2025 demand from the case formula vs data/reference_house_2025_hourly.csv: max |diff| 0.000000 kWh
+  N=6: 2025 'normal' rates == headline shaped100 rates: True; seed-1 offers == offer CSV: True
+  N=8: 2025 'normal' rates == headline shaped100 rates: True; seed-1 offers == offer CSV: True
+    regression N=6 check+g0: here 0 of 32,174, cov 73.53% | r7_forecast_paths.run 0 of 32,174, 73.53% -> IDENTICAL
+    regression N=6 O3+g2: here 0 of 31,908, cov 73.20% | r7_forecast_paths.run 0 of 31,908, 73.20% -> IDENTICAL
+    regression N=6 O3+g0: here 0 of 32,122, cov 73.54% | r7_forecast_paths.run 0 of 32,122, 73.54% -> IDENTICAL
+    regression N=6 P1+g2: here 0 of 31,471, cov 72.30% | r7_forecast_paths.run 0 of 31,471, 72.30% -> IDENTICAL (P1 here: t<0 -> 0.5, no year-end wrap; r7: Dec-2024 pad + wrap)
+    regression N=6 P1+g1: here 0 of 31,615, cov 72.42% | r7_forecast_paths.run 0 of 31,615, 72.42% -> IDENTICAL (P1 here: t<0 -> 0.5, no year-end wrap; r7: Dec-2024 pad + wrap)
+    regression N=6 P1+g0: here 73 of 31,725, cov 72.17% | r7_forecast_paths.run 73 of 31,725, 72.17% -> IDENTICAL (P1 here: t<0 -> 0.5, no year-end wrap; r7: Dec-2024 pad + wrap)
+    regression N=8 check+g0: here 0 of 37,023, cov 86.10% | r7_forecast_paths.run 0 of 37,023, 86.10% -> IDENTICAL
+    regression N=8 O3+g2: here 0 of 36,771, cov 85.73% | r7_forecast_paths.run 0 of 36,771, 85.73% -> IDENTICAL
+    regression N=8 O3+g0: here 4 of 36,905, cov 85.46% | r7_forecast_paths.run 4 of 36,905, 85.46% -> IDENTICAL
+    regression N=8 P1+g2: here 0 of 36,272, cov 84.10% | r7_forecast_paths.run 0 of 36,272, 84.10% -> IDENTICAL (P1 here: t<0 -> 0.5, no year-end wrap; r7: Dec-2024 pad + wrap)
+    regression N=8 P1+g1: here 84 of 36,544, cov 84.46% | r7_forecast_paths.run 84 of 36,544, 84.46% -> IDENTICAL (P1 here: t<0 -> 0.5, no year-end wrap; r7: Dec-2024 pad + wrap)
+    regression N=8 P1+g0: here 199 of 36,682, cov 84.45% | r7_forecast_paths.run 199 of 36,682, 84.45% -> IDENTICAL (P1 here: t<0 -> 0.5, no year-end wrap; r7: Dec-2024 pad + wrap)
+
+== 1. Weather years through the case formula (25.6 fixed) ==
+  year   min T heat days space kWh peak kWh/h Jan cap N6 Jul cap N6 year cap N6 srv-h/d     N8  P1 temp error K1 / K2 (bias/RMSE)
+  2020    -4.7       188    24,665      10.15      144.0       15.0                79.9   94.0  -0.01/3.14  -0.01/4.18
+  2021   -14.7       221    30,213      14.05      144.0       15.0                91.4  108.8  -0.02/2.80  -0.05/3.71
+  2022    -6.8       185    24,636      10.97      143.7       15.0                78.3   91.4  -0.02/2.88  -0.03/3.61
+  2023    -6.5       184    24,285      10.85      144.0       15.0                79.1   92.0  +0.02/3.02  +0.03/3.91
+  2024    -7.1       189    24,480      11.09      143.9       15.0                80.2   93.4  +0.02/3.04  +0.04/3.91
+  2025    -5.6       206    26,851      10.50      144.0       15.0                85.1   99.4  +0.01/2.69  +0.03/3.58
+  archived ifs025 day 1: 2024 bias +0.65 RMSE 1.34 K (7,943 of 8,760 hours present) | 2025 bias +0.29 RMSE 1.16 K
+  archived ifs025 day 2: 2024 bias +0.69 RMSE 1.44 K (7,919 of 8,760 hours present) | 2025 bias +0.34 RMSE 1.30 K
+  archived ifs025 day 7: 2024 bias +0.46 RMSE 2.80 K (7,799 of 8,760 hours present) | 2025 bias +0.19 RMSE 2.85 K
+  2024 previous_day7 first present at hour 961 (day 41 of the year); earlier hours use P1's persisted temperature
+
+  (940 yearly runs)
+
+== 2a. Grid, offers = 100% of the OTHER five years' mean monthly capacity (headline construction, out of sample) ==
+  per year: missed of closed at seed 1 | missed summed over all seeds of closed | accepted % | coverage %
+  N=6 check g0 2020: seed1   0 of 30,189 | seeds   0 of 150,208 [0, 0, 0, 0, 0] | acc  88.2% refused work  8.2% | cov  76.20%
+  N=6 check g0 2021: seed1   0 of 31,988 | seeds   0 of 160,056 [0, 0, 0, 0, 0] | acc  96.7% refused work  2.2% | cov  66.40%
+  N=6 check g0 2022: seed1   0 of 29,759 | seeds   0 of 149,506 [0, 0, 0, 0, 0] | acc  87.9% refused work  9.2% | cov  75.06%
+  N=6 check g0 2023: seed1   0 of 30,496 | seeds   0 of 153,136 [0, 0, 0, 0, 0] | acc  89.9% refused work  7.1% | cov  78.01%
+  N=6 check g0 2024: seed1   0 of 30,520 | seeds   0 of 153,279 [0, 0, 0, 0, 0] | acc  90.0% refused work  7.1% | cov  77.99%
+  N=6 check g0 2025: seed1   0 of 32,174 | seeds   0 of 160,315 [0, 0, 0, 0, 0] | acc  95.2% refused work  3.0% | cov  74.07%
+  N=6 P1    g0 2020: seed1 178 of 30,328 | seeds 901 of 150,808 [178, 166, 187, 173, 197] | acc  88.6% refused work  9.3% | cov  74.86%
+  N=6 P1    g0 2021: seed1 132 of 31,871 | seeds 652 of 159,177 [132, 116, 127, 144, 133] | acc  96.1% refused work  2.9% | cov  65.69%
+  N=6 P1    g0 2022: seed1 143 of 29,886 | seeds 831 of 149,824 [143, 165, 168, 197, 158] | acc  88.0% refused work 10.2% | cov  74.39%
+  N=6 P1    g0 2023: seed1 292 of 30,064 | seeds 1481 of 151,023 [292, 301, 295, 299, 294] | acc  88.4% refused work  9.9% | cov  76.06%
+  N=6 P1    g0 2024: seed1 350 of 30,646 | seeds 1822 of 154,023 [350, 339, 401, 395, 337] | acc  90.5% refused work  8.7% | cov  76.41%
+  N=6 P1    g0 2025: seed1  73 of 31,725 | seeds 556 of 158,489 [73, 103, 96, 145, 139] | acc  94.1% refused work  4.8% | cov  72.82%
+  N=6 P1    g1 2020: seed1 178 of 30,158 | seeds 889 of 149,858 [178, 166, 187, 161, 197] | acc  88.0% refused work  9.8% | cov  74.40%
+  N=6 P1    g1 2021: seed1  87 of 31,814 | seeds 450 of 158,913 [87, 84, 78, 102, 99] | acc  96.0% refused work  2.9% | cov  65.69%
+  N=6 P1    g1 2022: seed1  12 of 29,609 | seeds 192 of 148,286 [12, 37, 39, 53, 51] | acc  87.1% refused work 10.6% | cov  74.22%
+  N=6 P1    g1 2023: seed1 182 of 29,971 | seeds 1003 of 150,510 [182, 191, 208, 230, 192] | acc  88.1% refused work  9.9% | cov  76.11%
+  N=6 P1    g1 2024: seed1 155 of 30,379 | seeds 942 of 152,718 [155, 174, 210, 216, 187] | acc  89.7% refused work  9.0% | cov  76.38%
+  N=6 P1    g1 2025: seed1   0 of 31,615 | seeds  92 of 157,866 [0, 43, 14, 11, 24] | acc  93.8% refused work  4.6% | cov  72.86%
+  N=6 P1    g2 2020: seed1 135 of 30,006 | seeds 641 of 149,177 [135, 117, 143, 111, 135] | acc  87.6% refused work  9.8% | cov  74.42%
+  N=6 P1    g2 2021: seed1  57 of 31,773 | seeds 249 of 158,706 [57, 57, 50, 31, 54] | acc  95.8% refused work  3.0% | cov  65.70%
+  N=6 P1    g2 2022: seed1  10 of 29,449 | seeds 175 of 147,505 [10, 37, 37, 40, 51] | acc  86.5% refused work 11.2% | cov  74.06%
+  N=6 P1    g2 2023: seed1 172 of 29,889 | seeds 930 of 150,247 [172, 189, 185, 214, 170] | acc  87.9% refused work 10.1% | cov  76.15%
+  N=6 P1    g2 2024: seed1  60 of 30,308 | seeds 413 of 151,764 [60, 84, 88, 93, 88] | acc  89.1% refused work  9.1% | cov  76.29%
+  N=6 P1    g2 2025: seed1   0 of 31,471 | seeds   0 of 157,111 [0, 0, 0, 0, 0] | acc  93.3% refused work  4.9% | cov  72.78%
+  N=6 P1    g3 2020: seed1  30 of 29,817 | seeds 178 of 148,536 [30, 38, 33, 30, 47] | acc  87.2% refused work 10.2% | cov  74.40%
+  N=6 P1    g3 2021: seed1  57 of 31,773 | seeds 245 of 158,561 [57, 57, 50, 27, 54] | acc  95.7% refused work  3.0% | cov  65.65%
+  N=6 P1    g3 2022: seed1   0 of 29,432 | seeds   4 of 147,307 [0, 0, 4, 0, 0] | acc  86.4% refused work 11.2% | cov  74.05%
+  N=6 P1    g3 2023: seed1 172 of 29,871 | seeds 921 of 150,179 [172, 180, 185, 214, 170] | acc  87.9% refused work 10.1% | cov  76.14%
+  N=6 P1    g3 2024: seed1   0 of 30,239 | seeds  25 of 151,378 [0, 6, 10, 5, 4] | acc  88.9% refused work  9.1% | cov  76.33%
+  N=6 P1    g3 2025: seed1   0 of 31,417 | seeds   0 of 156,992 [0, 0, 0, 0, 0] | acc  93.2% refused work  5.0% | cov  72.78%
+  N=6 O3    g0 2024: seed1   5 of 30,621 | seeds  43 of 153,600 [5, 3, 15, 12, 8] | acc  90.2% refused work  7.9% | cov  77.35%
+  N=6 O3    g0 2025: seed1   0 of 32,122 | seeds   0 of 160,097 [0, 0, 0, 0, 0] | acc  95.1% refused work  3.0% | cov  74.00%
+  N=6 O3    g1 2024: seed1   0 of 30,585 | seeds   3 of 152,758 [0, 0, 3, 0, 0] | acc  89.7% refused work  8.0% | cov  77.32%
+  N=6 O3    g1 2025: seed1   0 of 31,989 | seeds   0 of 159,654 [0, 0, 0, 0, 0] | acc  94.8% refused work  3.4% | cov  73.86%
+  N=6 O3    g2 2024: seed1   0 of 30,543 | seeds   0 of 152,405 [0, 0, 0, 0, 0] | acc  89.5% refused work  8.0% | cov  77.17%
+  N=6 O3    g2 2025: seed1   0 of 31,908 | seeds   0 of 159,325 [0, 0, 0, 0, 0] | acc  94.6% refused work  3.5% | cov  73.76%
+  N=6 O3    g3 2024: seed1   0 of 30,531 | seeds   0 of 152,533 [0, 0, 0, 0, 0] | acc  89.6% refused work  8.2% | cov  77.03%
+  N=6 O3    g3 2025: seed1   0 of 31,672 | seeds   0 of 158,121 [0, 0, 0, 0, 0] | acc  93.9% refused work  4.0% | cov  73.40%
+  N=8 check g0 2020: seed1   0 of 35,174 | seeds   0 of 176,954 [0, 0, 0, 0, 0] | acc  88.9% refused work  7.7% | cov  89.89%
+  N=8 check g0 2021: seed1   0 of 37,347 | seeds   0 of 187,273 [0, 0, 0, 0, 0] | acc  97.0% refused work  1.9% | cov  77.72%
+  N=8 check g0 2022: seed1   0 of 34,595 | seeds   0 of 174,228 [0, 0, 0, 0, 0] | acc  87.6% refused work  9.4% | cov  87.73%
+  N=8 check g0 2023: seed1   0 of 35,136 | seeds   0 of 177,668 [0, 0, 0, 0, 0] | acc  89.1% refused work  8.5% | cov  90.61%
+  N=8 check g0 2024: seed1   0 of 35,362 | seeds   0 of 176,404 [0, 0, 0, 0, 0] | acc  88.4% refused work  8.3% | cov  90.51%
+  N=8 check g0 2025: seed1   0 of 37,023 | seeds   0 of 185,727 [0, 0, 0, 0, 0] | acc  94.3% refused work  3.8% | cov  86.48%
+  N=8 P1    g0 2020: seed1 278 of 35,368 | seeds 1216 of 177,377 [278, 250, 239, 231, 218] | acc  89.1% refused work  9.2% | cov  88.21%
+  N=8 P1    g0 2021: seed1 146 of 37,069 | seeds 771 of 186,019 [146, 139, 172, 130, 184] | acc  96.3% refused work  3.0% | cov  76.73%
+  N=8 P1    g0 2022: seed1 218 of 34,989 | seeds 1002 of 175,810 [218, 193, 199, 183, 209] | acc  88.5% refused work 10.0% | cov  86.90%
+  N=8 P1    g0 2023: seed1 511 of 35,008 | seeds 2291 of 176,837 [511, 413, 473, 466, 428] | acc  88.5% refused work 10.2% | cov  88.68%
+  N=8 P1    g0 2024: seed1 435 of 35,892 | seeds 2289 of 179,889 [435, 455, 500, 483, 416] | acc  90.1% refused work  8.8% | cov  88.94%
+  N=8 P1    g0 2025: seed1 199 of 36,682 | seeds 983 of 184,746 [199, 171, 233, 168, 212] | acc  93.8% refused work  5.5% | cov  85.09%
+  N=8 P1    g1 2020: seed1 278 of 34,900 | seeds 1216 of 175,096 [278, 250, 239, 231, 218] | acc  87.9% refused work 10.3% | cov  87.18%
+  N=8 P1    g1 2021: seed1  97 of 37,008 | seeds 523 of 185,651 [97, 97, 117, 92, 120] | acc  96.1% refused work  3.1% | cov  76.75%
+  N=8 P1    g1 2022: seed1  68 of 34,538 | seeds 362 of 173,900 [68, 55, 96, 61, 82] | acc  87.5% refused work 11.0% | cov  86.63%
+  N=8 P1    g1 2023: seed1 390 of 34,827 | seeds 1740 of 176,200 [390, 310, 368, 357, 315] | acc  88.2% refused work 10.5% | cov  88.73%
+  N=8 P1    g1 2024: seed1 315 of 35,524 | seeds 1267 of 178,147 [315, 279, 270, 198, 205] | acc  89.2% refused work  9.2% | cov  88.94%
+  N=8 P1    g1 2025: seed1  84 of 36,544 | seeds 310 of 184,028 [84, 38, 80, 47, 61] | acc  93.4% refused work  5.7% | cov  85.14%
+  N=8 P1    g2 2020: seed1 199 of 34,650 | seeds 924 of 174,028 [199, 171, 202, 181, 171] | acc  87.4% refused work 10.8% | cov  86.90%
+  N=8 P1    g2 2021: seed1  55 of 36,948 | seeds 312 of 185,358 [55, 52, 69, 70, 66] | acc  96.0% refused work  3.2% | cov  76.73%
+  N=8 P1    g2 2022: seed1  41 of 34,300 | seeds 242 of 172,531 [41, 42, 54, 39, 66] | acc  86.7% refused work 11.6% | cov  86.24%
+  N=8 P1    g2 2023: seed1 372 of 34,637 | seeds 1694 of 174,937 [372, 310, 368, 346, 298] | acc  87.5% refused work 11.0% | cov  88.35%
+  N=8 P1    g2 2024: seed1 122 of 35,209 | seeds 603 of 176,929 [122, 122, 124, 105, 130] | acc  88.6% refused work  9.8% | cov  88.99%
+  N=8 P1    g2 2025: seed1   0 of 36,272 | seeds  22 of 182,481 [0, 0, 22, 0, 0] | acc  92.6% refused work  6.2% | cov  84.69%
+  N=8 P1    g3 2020: seed1  88 of 34,385 | seeds 364 of 172,609 [88, 67, 69, 79, 61] | acc  86.7% refused work 11.4% | cov  86.47%
+  N=8 P1    g3 2021: seed1  53 of 36,908 | seeds 310 of 184,726 [53, 52, 69, 70, 66] | acc  95.6% refused work  3.4% | cov  76.56%
+  N=8 P1    g3 2022: seed1  19 of 34,096 | seeds  43 of 171,565 [19, 5, 5, 0, 14] | acc  86.2% refused work 12.2% | cov  85.91%
+  N=8 P1    g3 2023: seed1 383 of 34,550 | seeds 1716 of 174,638 [383, 311, 368, 346, 308] | acc  87.3% refused work 11.2% | cov  88.28%
+  N=8 P1    g3 2024: seed1  14 of 35,196 | seeds  42 of 176,636 [14, 0, 16, 3, 9] | acc  88.5% refused work  9.9% | cov  89.07%
+  N=8 P1    g3 2025: seed1   0 of 36,235 | seeds   0 of 182,326 [0, 0, 0, 0, 0] | acc  92.6% refused work  6.3% | cov  84.68%
+  N=8 O3    g0 2024: seed1   2 of 35,372 | seeds 104 of 177,664 [2, 14, 60, 18, 10] | acc  89.0% refused work  9.0% | cov  89.63%
+  N=8 O3    g0 2025: seed1   4 of 36,905 | seeds  50 of 185,815 [4, 9, 9, 12, 16] | acc  94.4% refused work  4.4% | cov  85.94%
+  N=8 O3    g1 2024: seed1   0 of 35,210 | seeds   9 of 177,054 [0, 4, 0, 0, 5] | acc  88.7% refused work  9.2% | cov  89.65%
+  N=8 O3    g1 2025: seed1   0 of 36,803 | seeds   2 of 184,971 [0, 2, 0, 0, 0] | acc  93.9% refused work  4.4% | cov  86.07%
+  N=8 O3    g2 2024: seed1   0 of 35,266 | seeds   0 of 177,286 [0, 0, 0, 0, 0] | acc  88.8% refused work  9.0% | cov  89.80%
+  N=8 O3    g2 2025: seed1   0 of 36,771 | seeds   0 of 184,726 [0, 0, 0, 0, 0] | acc  93.8% refused work  4.3% | cov  86.08%
+  N=8 O3    g3 2024: seed1   0 of 35,349 | seeds   0 of 177,482 [0, 0, 0, 0, 0] | acc  88.9% refused work  9.1% | cov  89.82%
+  N=8 O3    g3 2025: seed1   0 of 36,594 | seeds   0 of 183,676 [0, 0, 0, 0, 0] | acc  93.3% refused work  4.8% | cov  85.74%
+
+== 3a. Leave-one-year-out guard choice (normal offers) ==
+  rule: smallest guard with 0 misses on the training years (all seeds); else fewest misses
+  -- N=6 P1 (training years: the other 5)
+    held out 2020: train misses [g0:5342 g1:2679 g2:1767 g3:1195] -> pick 3 K | held-out seed1 30 of 29,817, all seeds 178 of 148,536 [30, 38, 33, 30, 47], acc 87.2% (check 88.2%), refused work 10.2%, cov 74.40% (check 76.20%) | fixed 2 K: 641 of 149,177 [135, 117, 143, 111, 135]
+    held out 2021: train misses [g0:5591 g1:3118 g2:2159 g3:1128] -> pick 3 K | held-out seed1 57 of 31,773, all seeds 245 of 158,561 [57, 57, 50, 27, 54], acc 95.7% (check 96.7%), refused work 3.0%, cov 65.65% (check 66.40%) | fixed 2 K: 249 of 158,706 [57, 57, 50, 31, 54]
+    held out 2022: train misses [g0:5412 g1:3376 g2:2233 g3:1369] -> pick 3 K | held-out seed1 0 of 29,432, all seeds 4 of 147,307 [0, 0, 4, 0, 0], acc 86.4% (check 87.9%), refused work 11.2%, cov 74.05% (check 75.06%) | fixed 2 K: 175 of 147,505 [10, 37, 37, 40, 51]
+    held out 2023: train misses [g0:4762 g1:2565 g2:1478 g3:452] -> pick 3 K | held-out seed1 172 of 29,871, all seeds 921 of 150,179 [172, 180, 185, 214, 170], acc 87.9% (check 89.9%), refused work 10.1%, cov 76.14% (check 78.01%) | fixed 2 K: 930 of 150,247 [172, 189, 185, 214, 170]
+    held out 2024: train misses [g0:4421 g1:2626 g2:1995 g3:1348] -> pick 3 K | held-out seed1 0 of 30,239, all seeds 25 of 151,378 [0, 6, 10, 5, 4], acc 88.9% (check 90.0%), refused work 9.1%, cov 76.33% (check 77.99%) | fixed 2 K: 413 of 151,764 [60, 84, 88, 93, 88]
+    held out 2025: train misses [g0:5687 g1:3476 g2:2408 g3:1373] -> pick 3 K | held-out seed1 0 of 31,417, all seeds 0 of 156,992 [0, 0, 0, 0, 0], acc 93.2% (check 95.2%), refused work 5.0%, cov 72.78% (check 74.07%) | fixed 2 K: 0 of 157,111 [0, 0, 0, 0, 0]
+  -- N=6 O3 (training years: the other 1)
+    held out 2024: train misses [g0:0 g1:0 g2:0 g3:0] -> pick 0 K | held-out seed1 5 of 30,621, all seeds 43 of 153,600 [5, 3, 15, 12, 8], acc 90.2% (check 90.0%), refused work 7.9%, cov 77.35% (check 77.99%) | fixed 2 K: 0 of 152,405 [0, 0, 0, 0, 0]
+    held out 2025: train misses [g0:43 g1:3 g2:0 g3:0] -> pick 2 K | held-out seed1 0 of 31,908, all seeds 0 of 159,325 [0, 0, 0, 0, 0], acc 94.6% (check 95.2%), refused work 3.5%, cov 73.76% (check 74.07%) | fixed 2 K: 0 of 159,325 [0, 0, 0, 0, 0]
+  -- N=8 P1 (training years: the other 5)
+    held out 2020: train misses [g0:7336 g1:4202 g2:2873 g3:2111] -> pick 3 K | held-out seed1 88 of 34,385, all seeds 364 of 172,609 [88, 67, 69, 79, 61], acc 86.7% (check 88.9%), refused work 11.4%, cov 86.47% (check 89.89%) | fixed 2 K: 924 of 174,028 [199, 171, 202, 181, 171]
+    held out 2021: train misses [g0:7781 g1:4895 g2:3485 g3:2165] -> pick 3 K | held-out seed1 53 of 36,908, all seeds 310 of 184,726 [53, 52, 69, 70, 66], acc 95.6% (check 97.0%), refused work 3.4%, cov 76.56% (check 77.72%) | fixed 2 K: 312 of 185,358 [55, 52, 69, 70, 66]
+    held out 2022: train misses [g0:7550 g1:5056 g2:3555 g3:2432] -> pick 3 K | held-out seed1 19 of 34,096, all seeds 43 of 171,565 [19, 5, 5, 0, 14], acc 86.2% (check 87.6%), refused work 12.2%, cov 85.91% (check 87.73%) | fixed 2 K: 242 of 172,531 [41, 42, 54, 39, 66]
+    held out 2023: train misses [g0:6261 g1:3678 g2:2103 g3:759] -> pick 3 K | held-out seed1 383 of 34,550, all seeds 1716 of 174,638 [383, 311, 368, 346, 308], acc 87.3% (check 89.1%), refused work 11.2%, cov 88.28% (check 90.61%) | fixed 2 K: 1694 of 174,937 [372, 310, 368, 346, 298]
+    held out 2024: train misses [g0:6263 g1:4151 g2:3194 g3:2433] -> pick 3 K | held-out seed1 14 of 35,196, all seeds 42 of 176,636 [14, 0, 16, 3, 9], acc 88.5% (check 88.4%), refused work 9.9%, cov 89.07% (check 90.51%) | fixed 2 K: 603 of 176,929 [122, 122, 124, 105, 130]
+    held out 2025: train misses [g0:7569 g1:5108 g2:3775 g3:2475] -> pick 3 K | held-out seed1 0 of 36,235, all seeds 0 of 182,326 [0, 0, 0, 0, 0], acc 92.6% (check 94.3%), refused work 6.3%, cov 84.68% (check 86.48%) | fixed 2 K: 22 of 182,481 [0, 0, 22, 0, 0]
+  -- N=8 O3 (training years: the other 1)
+    held out 2024: train misses [g0:50 g1:2 g2:0 g3:0] -> pick 2 K | held-out seed1 0 of 35,266, all seeds 0 of 177,286 [0, 0, 0, 0, 0], acc 88.8% (check 88.4%), refused work 9.0%, cov 89.80% (check 90.51%) | fixed 2 K: 0 of 177,286 [0, 0, 0, 0, 0]
+    held out 2025: train misses [g0:104 g1:9 g2:0 g3:0] -> pick 2 K | held-out seed1 0 of 36,771, all seeds 0 of 184,726 [0, 0, 0, 0, 0], acc 93.8% (check 94.3%), refused work 4.3%, cov 86.08% (check 86.48%) | fixed 2 K: 0 of 184,726 [0, 0, 0, 0, 0]
+
+== 2b. Grid, SENSITIVITY: offers = 100% of the held-out year's OWN monthly capacity ==
+  per year: missed of closed at seed 1 | missed summed over all seeds of closed | accepted % | coverage %
+  N=6 check g0 2020: seed1   0 of 30,792 | seeds   0 of 153,632 [0, 0, 0, 0, 0] | acc  93.4% refused work  4.4% | cov  76.67%
+  N=6 check g0 2021: seed1   0 of 36,271 | seeds   0 of 182,066 [0, 0, 0, 0, 0] | acc  96.9% refused work  2.2% | cov  75.18%
+  N=6 check g0 2022: seed1   0 of 30,658 | seeds   0 of 153,404 [0, 0, 0, 0, 0] | acc  95.8% refused work  2.5% | cov  76.15%
+  N=6 check g0 2023: seed1   0 of 30,678 | seeds   0 of 153,178 [0, 0, 0, 0, 0] | acc  94.3% refused work  4.1% | cov  77.20%
+  N=6 check g0 2024: seed1   0 of 31,121 | seeds   0 of 155,839 [0, 0, 0, 0, 0] | acc  94.6% refused work  3.5% | cov  78.15%
+  N=6 check g0 2025: seed1   0 of 33,140 | seeds   0 of 165,488 [0, 0, 0, 0, 0] | acc  94.5% refused work  3.4% | cov  76.76%
+  N=6 P1    g0 2020: seed1 118 of 30,190 | seeds 606 of 150,393 [118, 117, 161, 83, 127] | acc  91.4% refused work  6.5% | cov  74.72%
+  N=6 P1    g0 2021: seed1 388 of 35,994 | seeds 1796 of 180,726 [388, 325, 345, 344, 394] | acc  96.2% refused work  3.5% | cov  73.64%
+  N=6 P1    g0 2022: seed1  44 of 30,373 | seeds 337 of 151,799 [44, 54, 90, 60, 89] | acc  94.8% refused work  3.8% | cov  75.10%
+  N=6 P1    g0 2023: seed1 250 of 30,622 | seeds 1267 of 152,625 [250, 251, 256, 277, 233] | acc  93.9% refused work  5.3% | cov  76.08%
+  N=6 P1    g0 2024: seed1 171 of 31,036 | seeds 1078 of 154,693 [171, 208, 209, 265, 225] | acc  93.9% refused work  4.7% | cov  76.35%
+  N=6 P1    g0 2025: seed1 223 of 32,647 | seeds 1041 of 163,362 [223, 192, 212, 235, 179] | acc  93.3% refused work  5.4% | cov  75.00%
+  N=6 P1    g1 2020: seed1 118 of 29,974 | seeds 599 of 149,130 [118, 117, 161, 83, 120] | acc  90.7% refused work  7.2% | cov  74.13%
+  N=6 P1    g1 2021: seed1 276 of 35,781 | seeds 1236 of 179,409 [276, 234, 238, 221, 267] | acc  95.5% refused work  3.9% | cov  73.47%
+  N=6 P1    g1 2022: seed1  44 of 30,239 | seeds 337 of 151,308 [44, 54, 90, 60, 89] | acc  94.5% refused work  4.1% | cov  74.88%
+  N=6 P1    g1 2023: seed1 221 of 30,582 | seeds 1118 of 152,423 [221, 200, 238, 230, 229] | acc  93.7% refused work  5.4% | cov  76.02%
+  N=6 P1    g1 2024: seed1  60 of 30,913 | seeds 545 of 154,214 [60, 109, 117, 142, 117] | acc  93.6% refused work  4.9% | cov  76.46%
+  N=6 P1    g1 2025: seed1  53 of 32,493 | seeds 212 of 162,429 [53, 36, 30, 69, 24] | acc  92.8% refused work  5.7% | cov  74.99%
+  N=6 P1    g2 2020: seed1  40 of 29,815 | seeds 213 of 148,344 [40, 49, 53, 21, 50] | acc  90.2% refused work  7.5% | cov  73.94%
+  N=6 P1    g2 2021: seed1 176 of 35,694 | seeds 731 of 178,973 [176, 130, 151, 141, 133] | acc  95.3% refused work  4.0% | cov  73.51%
+  N=6 P1    g2 2022: seed1  39 of 30,195 | seeds 250 of 150,726 [39, 44, 64, 55, 48] | acc  94.1% refused work  4.4% | cov  74.76%
+  N=6 P1    g2 2023: seed1 221 of 30,526 | seeds 1118 of 152,251 [221, 200, 238, 230, 229] | acc  93.6% refused work  5.6% | cov  75.94%
+  N=6 P1    g2 2024: seed1  33 of 30,887 | seeds 337 of 153,750 [33, 64, 77, 92, 71] | acc  93.3% refused work  5.0% | cov  76.36%
+  N=6 P1    g2 2025: seed1  40 of 32,325 | seeds 141 of 161,508 [40, 33, 24, 30, 14] | acc  92.2% refused work  6.0% | cov  74.77%
+  N=6 P1    g3 2020: seed1   0 of 29,771 | seeds  12 of 148,154 [0, 0, 2, 10, 0] | acc  90.1% refused work  7.5% | cov  73.95%
+  N=6 P1    g3 2021: seed1  63 of 35,553 | seeds 309 of 178,326 [63, 58, 61, 78, 49] | acc  94.9% refused work  4.3% | cov  73.49%
+  N=6 P1    g3 2022: seed1  16 of 30,167 | seeds  68 of 150,665 [16, 13, 19, 8, 12] | acc  94.1% refused work  4.4% | cov  74.76%
+  N=6 P1    g3 2023: seed1 221 of 30,533 | seeds 1118 of 152,261 [221, 200, 238, 230, 229] | acc  93.6% refused work  5.6% | cov  75.94%
+  N=6 P1    g3 2024: seed1   0 of 30,859 | seeds   4 of 153,363 [0, 0, 4, 0, 0] | acc  93.1% refused work  5.0% | cov  76.39%
+  N=6 P1    g3 2025: seed1   0 of 32,221 | seeds   0 of 161,192 [0, 0, 0, 0, 0] | acc  92.1% refused work  6.2% | cov  74.72%
+  N=6 O3    g0 2024: seed1   0 of 31,051 | seeds  29 of 155,527 [0, 29, 0, 0, 0] | acc  94.4% refused work  4.1% | cov  77.69%
+  N=6 O3    g0 2025: seed1   0 of 33,092 | seeds   0 of 165,080 [0, 0, 0, 0, 0] | acc  94.3% refused work  3.4% | cov  76.60%
+  N=6 O3    g1 2024: seed1   0 of 31,056 | seeds   0 of 155,256 [0, 0, 0, 0, 0] | acc  94.2% refused work  4.2% | cov  77.55%
+  N=6 O3    g1 2025: seed1   0 of 32,967 | seeds   0 of 164,301 [0, 0, 0, 0, 0] | acc  93.8% refused work  3.7% | cov  76.29%
+  N=6 O3    g2 2024: seed1   0 of 31,054 | seeds   0 of 154,627 [0, 0, 0, 0, 0] | acc  93.8% refused work  4.2% | cov  77.15%
+  N=6 O3    g2 2025: seed1   0 of 32,758 | seeds   0 of 163,663 [0, 0, 0, 0, 0] | acc  93.5% refused work  4.1% | cov  76.08%
+  N=6 O3    g3 2024: seed1   0 of 31,101 | seeds   0 of 154,773 [0, 0, 0, 0, 0] | acc  93.9% refused work  4.3% | cov  77.10%
+  N=6 O3    g3 2025: seed1   0 of 32,494 | seeds   0 of 162,521 [0, 0, 0, 0, 0] | acc  92.8% refused work  4.9% | cov  75.59%
+  N=8 check g0 2020: seed1   0 of 36,131 | seeds   0 of 181,077 [0, 0, 0, 0, 0] | acc  93.9% refused work  4.1% | cov  90.37%
+  N=8 check g0 2021: seed1   0 of 43,078 | seeds   0 of 216,035 [0, 0, 0, 0, 0] | acc  96.8% refused work  2.1% | cov  89.47%
+  N=8 check g0 2022: seed1   0 of 35,415 | seeds   0 of 177,822 [0, 0, 0, 0, 0] | acc  95.2% refused work  3.2% | cov  87.98%
+  N=8 check g0 2023: seed1   0 of 35,454 | seeds   0 of 177,656 [0, 0, 0, 0, 0] | acc  94.1% refused work  4.1% | cov  89.31%
+  N=8 check g0 2024: seed1   0 of 36,178 | seeds   0 of 180,513 [0, 0, 0, 0, 0] | acc  94.2% refused work  3.8% | cov  91.03%
+  N=8 check g0 2025: seed1   0 of 38,757 | seeds   0 of 193,830 [0, 0, 0, 0, 0] | acc  94.9% refused work  2.9% | cov  90.12%
+  N=8 P1    g0 2020: seed1 198 of 35,332 | seeds 951 of 177,306 [198, 213, 164, 196, 180] | acc  91.9% refused work  6.5% | cov  87.96%
+  N=8 P1    g0 2021: seed1 407 of 42,521 | seeds 2093 of 213,537 [407, 414, 442, 398, 432] | acc  95.7% refused work  4.1% | cov  87.23%
+  N=8 P1    g0 2022: seed1 146 of 35,168 | seeds 593 of 176,489 [146, 131, 81, 128, 107] | acc  94.5% refused work  4.4% | cov  86.64%
+  N=8 P1    g0 2023: seed1 324 of 35,263 | seeds 1677 of 176,629 [324, 276, 347, 389, 341] | acc  93.6% refused work  5.2% | cov  87.63%
+  N=8 P1    g0 2024: seed1 268 of 36,052 | seeds 1491 of 180,221 [268, 302, 319, 295, 307] | acc  94.0% refused work  5.2% | cov  89.34%
+  N=8 P1    g0 2025: seed1 255 of 38,099 | seeds 1238 of 191,344 [255, 245, 260, 265, 213] | acc  93.7% refused work  5.2% | cov  87.99%
+  N=8 P1    g1 2020: seed1 198 of 34,745 | seeds 905 of 174,678 [198, 183, 164, 180, 180] | acc  90.5% refused work  7.8% | cov  86.77%
+  N=8 P1    g1 2021: seed1 291 of 42,119 | seeds 1490 of 211,682 [291, 306, 330, 277, 286] | acc  94.8% refused work  4.7% | cov  87.04%
+  N=8 P1    g1 2022: seed1 146 of 35,038 | seeds 593 of 175,722 [146, 131, 81, 128, 107] | acc  94.1% refused work  4.7% | cov  86.27%
+  N=8 P1    g1 2023: seed1 278 of 35,237 | seeds 1489 of 176,400 [278, 275, 300, 317, 319] | acc  93.5% refused work  5.3% | cov  87.60%
+  N=8 P1    g1 2024: seed1 135 of 35,928 | seeds 811 of 179,540 [135, 180, 169, 150, 177] | acc  93.6% refused work  5.2% | cov  89.42%
+  N=8 P1    g1 2025: seed1  65 of 37,885 | seeds 253 of 189,945 [65, 39, 75, 32, 42] | acc  93.0% refused work  5.6% | cov  87.83%
+  N=8 P1    g2 2020: seed1 122 of 34,733 | seeds 494 of 173,760 [122, 77, 105, 92, 98] | acc  90.0% refused work  8.0% | cov  86.66%
+  N=8 P1    g2 2021: seed1 161 of 41,973 | seeds 791 of 210,979 [161, 170, 154, 138, 168] | acc  94.5% refused work  5.0% | cov  86.95%
+  N=8 P1    g2 2022: seed1  58 of 34,740 | seeds 305 of 173,945 [58, 59, 63, 56, 69] | acc  93.0% refused work  5.6% | cov  85.68%
+  N=8 P1    g2 2023: seed1 278 of 35,091 | seeds 1489 of 175,605 [278, 275, 300, 317, 319] | acc  93.0% refused work  5.7% | cov  87.37%
+  N=8 P1    g2 2024: seed1 111 of 35,726 | seeds 549 of 178,827 [111, 133, 92, 86, 127] | acc  93.3% refused work  5.7% | cov  89.21%
+  N=8 P1    g2 2025: seed1  42 of 37,516 | seeds 127 of 188,125 [42, 10, 35, 15, 25] | acc  92.1% refused work  6.3% | cov  87.26%
+  N=8 P1    g3 2020: seed1  14 of 34,624 | seeds  31 of 173,112 [14, 12, 0, 5, 0] | acc  89.7% refused work  8.2% | cov  86.50%
+  N=8 P1    g3 2021: seed1  64 of 41,684 | seeds 406 of 209,768 [64, 85, 87, 76, 94] | acc  93.9% refused work  5.5% | cov  86.79%
+  N=8 P1    g3 2022: seed1  19 of 34,708 | seeds  89 of 173,737 [19, 14, 21, 16, 19] | acc  92.9% refused work  5.7% | cov  85.63%
+  N=8 P1    g3 2023: seed1 275 of 35,031 | seeds 1486 of 175,319 [275, 275, 300, 317, 319] | acc  92.8% refused work  6.0% | cov  87.34%
+  N=8 P1    g3 2024: seed1  35 of 35,605 | seeds 125 of 178,289 [35, 35, 12, 28, 15] | acc  93.0% refused work  5.9% | cov  89.23%
+  N=8 P1    g3 2025: seed1   0 of 37,399 | seeds   0 of 187,724 [0, 0, 0, 0, 0] | acc  91.9% refused work  6.5% | cov  87.20%
+  N=8 O3    g0 2024: seed1   0 of 36,105 | seeds  53 of 179,889 [0, 24, 0, 26, 3] | acc  93.8% refused work  4.3% | cov  90.37%
+  N=8 O3    g0 2025: seed1   0 of 38,636 | seeds  24 of 193,583 [0, 16, 0, 8, 0] | acc  94.8% refused work  3.2% | cov  89.86%
+  N=8 O3    g1 2024: seed1   0 of 35,942 | seeds   0 of 179,677 [0, 0, 0, 0, 0] | acc  93.7% refused work  4.6% | cov  90.37%
+  N=8 O3    g1 2025: seed1   0 of 38,499 | seeds   7 of 192,491 [0, 5, 0, 2, 0] | acc  94.2% refused work  3.5% | cov  89.56%
+  N=8 O3    g2 2024: seed1   0 of 35,841 | seeds   0 of 179,649 [0, 0, 0, 0, 0] | acc  93.7% refused work  5.2% | cov  90.16%
+  N=8 O3    g2 2025: seed1   0 of 38,354 | seeds   0 of 191,861 [0, 0, 0, 0, 0] | acc  93.9% refused work  3.7% | cov  89.45%
+  N=8 O3    g3 2024: seed1   0 of 35,875 | seeds   0 of 179,898 [0, 0, 0, 0, 0] | acc  93.8% refused work  5.2% | cov  90.19%
+  N=8 O3    g3 2025: seed1   0 of 38,045 | seeds   0 of 190,412 [0, 0, 0, 0, 0] | acc  93.2% refused work  4.3% | cov  88.86%
+
+== 3b. Leave-one-year-out guard choice (own offers) ==
+  rule: smallest guard with 0 misses on the training years (all seeds); else fewest misses
+  -- N=6 P1 (training years: the other 5)
+    held out 2020: train misses [g0:5519 g1:3448 g2:2577 g3:1499] -> pick 3 K | held-out seed1 0 of 29,771, all seeds 12 of 148,154 [0, 0, 2, 10, 0], acc 90.1% (check 93.4%), refused work 7.5%, cov 73.95% (check 76.67%) | fixed 2 K: 213 of 148,344 [40, 49, 53, 21, 50]
+    held out 2021: train misses [g0:4329 g1:2811 g2:2059 g3:1202] -> pick 3 K | held-out seed1 63 of 35,553, all seeds 309 of 178,326 [63, 58, 61, 78, 49], acc 94.9% (check 96.9%), refused work 4.3%, cov 73.49% (check 75.18%) | fixed 2 K: 731 of 178,973 [176, 130, 151, 141, 133]
+    held out 2022: train misses [g0:5788 g1:3710 g2:2540 g3:1443] -> pick 3 K | held-out seed1 16 of 30,167, all seeds 68 of 150,665 [16, 13, 19, 8, 12], acc 94.1% (check 95.8%), refused work 4.4%, cov 74.76% (check 76.15%) | fixed 2 K: 250 of 150,726 [39, 44, 64, 55, 48]
+    held out 2023: train misses [g0:4858 g1:2929 g2:1672 g3:393] -> pick 3 K | held-out seed1 221 of 30,533, all seeds 1118 of 152,261 [221, 200, 238, 230, 229], acc 93.6% (check 94.3%), refused work 5.6%, cov 75.94% (check 77.20%) | fixed 2 K: 1118 of 152,251 [221, 200, 238, 230, 229]
+    held out 2024: train misses [g0:5047 g1:3502 g2:2453 g3:1507] -> pick 3 K | held-out seed1 0 of 30,859, all seeds 4 of 153,363 [0, 0, 4, 0, 0], acc 93.1% (check 94.6%), refused work 5.0%, cov 76.39% (check 78.15%) | fixed 2 K: 337 of 153,750 [33, 64, 77, 92, 71]
+    held out 2025: train misses [g0:5084 g1:3835 g2:2649 g3:1511] -> pick 3 K | held-out seed1 0 of 32,221, all seeds 0 of 161,192 [0, 0, 0, 0, 0], acc 92.1% (check 94.5%), refused work 6.2%, cov 74.72% (check 76.76%) | fixed 2 K: 141 of 161,508 [40, 33, 24, 30, 14]
+  -- N=6 O3 (training years: the other 1)
+    held out 2024: train misses [g0:0 g1:0 g2:0 g3:0] -> pick 0 K | held-out seed1 0 of 31,051, all seeds 29 of 155,527 [0, 29, 0, 0, 0], acc 94.4% (check 94.6%), refused work 4.1%, cov 77.69% (check 78.15%) | fixed 2 K: 0 of 154,627 [0, 0, 0, 0, 0]
+    held out 2025: train misses [g0:29 g1:0 g2:0 g3:0] -> pick 1 K | held-out seed1 0 of 32,967, all seeds 0 of 164,301 [0, 0, 0, 0, 0], acc 93.8% (check 94.5%), refused work 3.7%, cov 76.29% (check 76.76%) | fixed 2 K: 0 of 163,663 [0, 0, 0, 0, 0]
+  -- N=8 P1 (training years: the other 5)
+    held out 2020: train misses [g0:7092 g1:4636 g2:3261 g3:2106] -> pick 3 K | held-out seed1 14 of 34,624, all seeds 31 of 173,112 [14, 12, 0, 5, 0], acc 89.7% (check 93.9%), refused work 8.2%, cov 86.50% (check 90.37%) | fixed 2 K: 494 of 173,760 [122, 77, 105, 92, 98]
+    held out 2021: train misses [g0:5950 g1:4051 g2:2964 g3:1731] -> pick 3 K | held-out seed1 64 of 41,684, all seeds 406 of 209,768 [64, 85, 87, 76, 94], acc 93.9% (check 96.8%), refused work 5.5%, cov 86.79% (check 89.47%) | fixed 2 K: 791 of 210,979 [161, 170, 154, 138, 168]
+    held out 2022: train misses [g0:7450 g1:4948 g2:3450 g3:2048] -> pick 3 K | held-out seed1 19 of 34,708, all seeds 89 of 173,737 [19, 14, 21, 16, 19], acc 92.9% (check 95.2%), refused work 5.7%, cov 85.63% (check 87.98%) | fixed 2 K: 305 of 173,945 [58, 59, 63, 56, 69]
+    held out 2023: train misses [g0:6366 g1:4052 g2:2266 g3:651] -> pick 3 K | held-out seed1 275 of 35,031, all seeds 1486 of 175,319 [275, 275, 300, 317, 319], acc 92.8% (check 94.1%), refused work 6.0%, cov 87.34% (check 89.31%) | fixed 2 K: 1489 of 175,605 [278, 275, 300, 317, 319]
+    held out 2024: train misses [g0:6552 g1:4730 g2:3206 g3:2012] -> pick 3 K | held-out seed1 35 of 35,605, all seeds 125 of 178,289 [35, 35, 12, 28, 15], acc 93.0% (check 94.2%), refused work 5.9%, cov 89.23% (check 91.03%) | fixed 2 K: 549 of 178,827 [111, 133, 92, 86, 127]
+    held out 2025: train misses [g0:6805 g1:5288 g2:3628 g3:2137] -> pick 3 K | held-out seed1 0 of 37,399, all seeds 0 of 187,724 [0, 0, 0, 0, 0], acc 91.9% (check 94.9%), refused work 6.5%, cov 87.20% (check 90.12%) | fixed 2 K: 127 of 188,125 [42, 10, 35, 15, 25]
+  -- N=8 O3 (training years: the other 1)
+    held out 2024: train misses [g0:24 g1:7 g2:0 g3:0] -> pick 2 K | held-out seed1 0 of 35,841, all seeds 0 of 179,649 [0, 0, 0, 0, 0], acc 93.7% (check 94.2%), refused work 5.2%, cov 90.16% (check 91.03%) | fixed 2 K: 0 of 179,649 [0, 0, 0, 0, 0]
+    held out 2025: train misses [g0:53 g1:0 g2:0 g3:0] -> pick 1 K | held-out seed1 0 of 38,499, all seeds 7 of 192,491 [0, 5, 0, 2, 0], acc 94.2% (check 94.9%), refused work 3.5%, cov 89.56% (check 90.12%) | fixed 2 K: 0 of 191,861 [0, 0, 0, 0, 0]
+
+== 5. Why P1 + 2 K misses in other years (normal offers, seed 1): missed by deadline month, J1+J2 ==
+  N=6 2020: J1 127 J2   8 | by month   0   0   0  76   0   0   0   0   0   0  59   0
+  N=6 2021: J1  57 J2   0 | by month   0   0  57   0   0   0   0   0   0   0   0   0
+  N=6 2022: J1  10 J2   0 | by month   0   0   0  10   0   0   0   0   0   0   0   0
+  N=6 2023: J1 172 J2   0 | by month   0   0  89  34   0   0   0   0   0   0  49   0
+  N=6 2024: J1  60 J2   0 | by month   0   0   0  60   0   0   0   0   0   0   0   0
+  N=6 2025: J1   0 J2   0 | by month   0   0   0   0   0   0   0   0   0   0   0   0
+  N=8 2020: J1 199 J2   0 | by month   0   0   0 120   0   0   0   0   0   0  79   0
+  N=8 2021: J1  55 J2   0 | by month   0   0  53   0   0   0   0   0   0   2   0   0
+  N=8 2022: J1  41 J2   0 | by month   0   0   0  41   0   0   0   0   0   0   0   0
+  N=8 2023: J1 372 J2   0 | by month   0   0 157  85   0   0   0   0   0   1 129   0
+  N=8 2024: J1 122 J2   0 | by month   0   0   0 122   0   0   0   0   0   0   0   0
+  N=8 2025: J1   0 J2   0 | by month   0   0   0   0   0   0   0   0   0   0   0   0
+
+  Days with misses (N=6, P1 + 2 K, seed 1) and the daily mean temperature from 3 days before to 1 day after:
+    2020 day  97 ( 4):  13 missed | day means   8.3  10.3  12.2  13.5  13.5
+    2020 day 107 ( 4):  23 missed | day means   7.5   9.6  13.7  16.2  16.3
+    2020 day 108 ( 4):  32 missed | day means   9.6  13.7  16.2  16.3  16.4
+    2020 day 113 ( 4):   1 missed | day means  15.6  14.2  14.9  15.3  15.9
+    2020 day 114 ( 4):   7 missed | day means  14.2  14.9  15.3  15.9  16.1
+    2020 day 306 (11):  58 missed | day means  12.2   9.5  12.1  16.1  11.8
+    2020 day 307 (11):   1 missed | day means   9.5  12.1  16.1  11.8   7.5
+    2021 day  90 ( 3):  57 missed | day means   7.4  10.7  12.2  13.0  14.4
+    2022 day 104 ( 4):  10 missed | day means   9.1  13.2  15.3  14.4  14.1
+    2023 day  83 ( 3):  50 missed | day means   8.7  11.0  12.9  12.1   9.4
+    2023 day  89 ( 3):  34 missed | day means   5.0   5.5  12.1  13.8  11.5
+    2023 day  90 ( 3):   5 missed | day means   5.5  12.1  13.8  11.5   8.5
+    2023 day 119 ( 4):  34 missed | day means   8.8  12.8  14.5  14.1  12.9
+    2023 day 318 (11):  42 missed | day means   6.3   5.8  14.1  12.4   9.6
+    2023 day 319 (11):   7 missed | day means   5.8  14.1  12.4   9.6   7.6
+    2024 day  96 ( 4):  30 missed | day means   9.7  13.0  15.0  16.0  17.5
+    2024 day 104 ( 4):  30 missed | day means   9.6  12.1  15.7  16.1  14.6
+
+  P1 with a magnitude margin w (persisted hourly temperature + w K in the space-heating term; flag guard 2 K)
+  causal (uses only measured past temperatures); w = 0 is P1 + 2 K
+  N=6 w=0: seed1/all-seeds missed, mean coverage | 2020 135/ 641 74.42% | 2021  57/ 249 65.70% | 2022  10/ 175 74.06% | 2023 172/ 930 76.15% | 2024  60/ 413 76.29% | 2025   0/   0 72.78%
+  N=6 w=1: seed1/all-seeds missed, mean coverage | 2020 135/ 639 74.43% | 2021  57/ 249 65.70% | 2022  10/ 175 74.06% | 2023 172/ 930 76.15% | 2024  60/ 413 76.29% | 2025   0/   0 72.78%
+  N=6 w=2: seed1/all-seeds missed, mean coverage | 2020 128/ 613 74.43% | 2021  57/ 245 65.70% | 2022  10/ 174 74.06% | 2023 168/ 922 76.15% | 2024  60/ 412 76.29% | 2025   0/   0 72.77%
+  N=6 w=3: seed1/all-seeds missed, mean coverage | 2020 128/ 609 74.44% | 2021  54/ 237 65.70% | 2022  10/ 165 74.05% | 2023 162/ 884 76.15% | 2024  60/ 408 76.28% | 2025   0/   0 72.78%
+  N=6 LOYO choice of w (smallest w with 0 training misses, else fewest):
+    held out 2020: train w0:1767 w1:1767 w2:1753 w3:1694 -> w=3 | held-out seed1 128 of 30,002, all seeds 609 of 149,187 [128, 114, 133, 107, 127], acc 87.6%, cov 74.44% (P1+2K 74.42%, check 76.20%)
+    held out 2021: train w0:2159 w1:2157 w2:2121 w3:2066 -> w=3 | held-out seed1 54 of 31,769, all seeds 237 of 158,693 [54, 54, 50, 31, 48], acc 95.8%, cov 65.70% (P1+2K 65.70%, check 66.40%)
+    held out 2022: train w0:2233 w1:2231 w2:2192 w3:2138 -> w=3 | held-out seed1 10 of 29,449, all seeds 165 of 147,493 [10, 37, 37, 40, 41], acc 86.5%, cov 74.05% (P1+2K 74.06%, check 75.06%)
+    held out 2023: train w0:1478 w1:1476 w2:1444 w3:1419 -> w=3 | held-out seed1 162 of 29,872, all seeds 884 of 150,191 [162, 180, 177, 202, 163], acc 87.9%, cov 76.15% (P1+2K 76.15%, check 78.01%)
+    held out 2024: train w0:1995 w1:1993 w2:1954 w3:1895 -> w=3 | held-out seed1 60 of 30,308, all seeds 408 of 151,749 [60, 82, 85, 93, 88], acc 89.1%, cov 76.28% (P1+2K 76.29%, check 77.99%)
+    held out 2025: train w0:2408 w1:2406 w2:2366 w3:2303 -> w=3 | held-out seed1 0 of 31,463, all seeds 0 of 157,082 [0, 0, 0, 0, 0], acc 93.3%, cov 72.78% (P1+2K 72.78%, check 74.07%)
+  N=8 w=0: seed1/all-seeds missed, mean coverage | 2020 199/ 924 86.90% | 2021  55/ 312 76.73% | 2022  41/ 242 86.24% | 2023 372/1694 88.35% | 2024 122/ 603 88.99% | 2025   0/  22 84.69%
+  N=8 w=1: seed1/all-seeds missed, mean coverage | 2020 195/ 912 86.86% | 2021  49/ 281 76.73% | 2022  41/ 239 86.21% | 2023 368/1671 88.34% | 2024 118/ 595 88.99% | 2025   0/  22 84.69%
+  N=8 w=2: seed1/all-seeds missed, mean coverage | 2020 194/ 909 86.83% | 2021  45/ 269 76.72% | 2022  41/ 237 86.20% | 2023 349/1626 88.34% | 2024 113/ 577 88.98% | 2025   0/  22 84.68%
+  N=8 w=3: seed1/all-seeds missed, mean coverage | 2020 193/ 900 86.78% | 2021  41/ 249 76.72% | 2022  41/ 231 86.18% | 2023 346/1596 88.33% | 2024 111/ 574 89.00% | 2025   0/  22 84.68%
+  N=8 LOYO choice of w (smallest w with 0 training misses, else fewest):
+    held out 2020: train w0:2873 w1:2808 w2:2731 w3:2672 -> w=3 | held-out seed1 193 of 34,621, all seeds 900 of 173,745 [193, 169, 197, 178, 163], acc 87.2%, cov 86.78% (P1+2K 86.90%, check 89.89%)
+    held out 2021: train w0:3485 w1:3439 w2:3371 w3:3323 -> w=3 | held-out seed1 41 of 36,919, all seeds 249 of 185,228 [41, 40, 58, 54, 56], acc 95.9%, cov 76.72% (P1+2K 76.73%, check 77.72%)
+    held out 2022: train w0:3555 w1:3481 w2:3403 w3:3341 -> w=3 | held-out seed1 41 of 34,282, all seeds 231 of 172,492 [41, 42, 54, 39, 55], acc 86.7%, cov 86.18% (P1+2K 86.24%, check 87.73%)
+    held out 2023: train w0:2103 w1:2049 w2:2014 w3:1976 -> w=3 | held-out seed1 346 of 34,596, all seeds 1596 of 174,857 [346, 292, 357, 313, 288], acc 87.5%, cov 88.33% (P1+2K 88.35%, check 90.61%)
+    held out 2024: train w0:3194 w1:3125 w2:3063 w3:2998 -> w=3 | held-out seed1 111 of 35,197, all seeds 574 of 177,015 [111, 121, 106, 106, 130], acc 88.7%, cov 89.00% (P1+2K 88.99%, check 90.51%)
+    held out 2025: train w0:3775 w1:3698 w2:3618 w3:3550 -> w=3 | held-out seed1 0 of 36,268, all seeds 22 of 182,427 [0, 0, 22, 0, 0], acc 92.6%, cov 84.68% (P1+2K 84.69%, check 86.48%)
+
+== 4. Tile line values: 2025, seed 1 (= the offer CSV), headline construction ==
+  N=6 check run on the recorded 2025 weather   missed 0 of 32,174 | accepted 95.6% of 33,676 offered jobs | refused 1,466 jobs (J1 1,423, J2 43) = 884 server-h = 3.0% of 29,728 offered server-h | Jun-Aug 74 server-h (0.8/day), rest of year 810 | vs check run +0 server-h, cov +0.00 pts (cov 73.53%)
+  N=6 P1 persistence + 2 K                     missed 0 of 31,471 | accepted 93.5% of 33,676 offered jobs | refused 2,193 jobs (J1 2,089, J2 104) = 1,460 server-h = 4.9% of 29,728 offered server-h | Jun-Aug 74 server-h (0.8/day), rest of year 1,386 | vs check run +577 server-h, cov -1.23 pts (cov 72.30%)
+  N=6 P1 persistence + 3 K                     missed 0 of 31,417 | accepted 93.3% of 33,676 offered jobs | refused 2,247 jobs (J1 2,144, J2 103) = 1,484 server-h = 5.0% of 29,728 offered server-h | Jun-Aug 74 server-h (0.8/day), rest of year 1,410 | vs check run +600 server-h, cov -1.29 pts (cov 72.24%)
+  N=6 O3 archived ECMWF + 2 K                  missed 0 of 31,908 | accepted 94.8% of 33,676 offered jobs | refused 1,739 jobs (J1 1,690, J2 49) = 1,041 server-h = 3.5% of 29,728 offered server-h | Jun-Aug 74 server-h (0.8/day), rest of year 967 | vs check run +158 server-h, cov -0.33 pts (cov 73.20%)
+  N=6 refused server-h by month (check / P1+2K / O3+2K):
+      check      0      0      0    236    356     66      8      0    214      4      0      0
+      P1         0      0     68    460    449     66      8      0    229     46    134      0
+      O3         0      0     37    288    387     66      8      0    214     14     28      0
+  N=8 check run on the recorded 2025 weather   missed 0 of 37,023 | accepted 94.4% of 39,244 offered jobs | refused 2,199 jobs (J1 2,137, J2 62) = 1,316 server-h = 3.8% of 35,008 offered server-h | Jun-Aug 64 server-h (0.7/day), rest of year 1,252 | vs check run +0 server-h, cov +0.00 pts (cov 86.10%)
+  N=8 P1 persistence + 2 K                     missed 0 of 36,272 | accepted 92.4% of 39,244 offered jobs | refused 2,967 jobs (J1 2,773, J2 194) = 2,162 server-h = 6.2% of 35,008 offered server-h | Jun-Aug 68 server-h (0.7/day), rest of year 2,095 | vs check run +846 server-h, cov -1.99 pts (cov 84.10%)
+  N=8 P1 persistence + 3 K                     missed 0 of 36,235 | accepted 92.3% of 39,244 offered jobs | refused 3,004 jobs (J1 2,807, J2 197) = 2,192 server-h = 6.3% of 35,008 offered server-h | Jun-Aug 68 server-h (0.7/day), rest of year 2,124 | vs check run +875 server-h, cov -2.07 pts (cov 84.03%)
+  N=8 O3 archived ECMWF + 2 K                  missed 0 of 36,771 | accepted 93.7% of 39,244 offered jobs | refused 2,460 jobs (J1 2,383, J2 77) = 1,500 server-h = 4.3% of 35,008 offered server-h | Jun-Aug 68 server-h (0.7/day), rest of year 1,432 | vs check run +183 server-h, cov -0.37 pts (cov 85.73%)
+  N=8 refused server-h by month (check / P1+2K / O3+2K):
+      check      0      0      0    639    306     58      0      6    308      0      0      0
+      P1         0      0    111    785    446     59      0      8    321     48    370     12
+      O3         0      0     40    645    379     59      0      8    321      8     39      0
+
+== 6. Pooled out-of-sample miss rates (all offer seeds; missed of closed) ==
+  normal N=6 P1    g2 years 2020-2024: 2,408 of 757,399 = 0.318% | years with 0 in every seed: 0 of 5 | seed-1 misses by year [135, 57, 10, 172, 60]
+  normal N=6 P1    g3 years 2020-2024: 1,373 of 755,961 = 0.182% | years with 0 in every seed: 0 of 5 | seed-1 misses by year [30, 57, 0, 172, 0]
+  normal N=6 P1    g2 years 2020-2025: 2,408 of 914,510 = 0.263% | years with 0 in every seed: 1 of 6 | seed-1 misses by year [135, 57, 10, 172, 60, 0]
+  normal N=6 O3    g2 years 2024-2024: 0 of 152,405 = 0.000% | years with 0 in every seed: 1 of 1 | seed-1 misses by year [0]
+  normal N=6 O3    g0 years 2024-2024: 43 of 153,600 = 0.028% | years with 0 in every seed: 0 of 1 | seed-1 misses by year [5]
+  normal N=6 check g0 years 2020-2025: 0 of 926,500 = 0.000% | years with 0 in every seed: 6 of 6 | seed-1 misses by year [0, 0, 0, 0, 0, 0]
+  normal N=8 P1    g2 years 2020-2024: 3,775 of 883,783 = 0.427% | years with 0 in every seed: 0 of 5 | seed-1 misses by year [199, 55, 41, 372, 122]
+  normal N=8 P1    g3 years 2020-2024: 2,475 of 880,174 = 0.281% | years with 0 in every seed: 0 of 5 | seed-1 misses by year [88, 53, 19, 383, 14]
+  normal N=8 P1    g2 years 2020-2025: 3,797 of 1,066,264 = 0.356% | years with 0 in every seed: 0 of 6 | seed-1 misses by year [199, 55, 41, 372, 122, 0]
+  normal N=8 O3    g2 years 2024-2024: 0 of 177,286 = 0.000% | years with 0 in every seed: 1 of 1 | seed-1 misses by year [0]
+  normal N=8 O3    g0 years 2024-2024: 104 of 177,664 = 0.059% | years with 0 in every seed: 0 of 1 | seed-1 misses by year [2]
+  normal N=8 check g0 years 2020-2025: 0 of 1,078,254 = 0.000% | years with 0 in every seed: 6 of 6 | seed-1 misses by year [0, 0, 0, 0, 0, 0]
+  own    N=6 P1    g2 years 2020-2024: 2,649 of 784,044 = 0.338% | years with 0 in every seed: 0 of 5 | seed-1 misses by year [40, 176, 39, 221, 33]
+  own    N=6 P1    g3 years 2020-2024: 1,511 of 782,769 = 0.193% | years with 0 in every seed: 0 of 5 | seed-1 misses by year [0, 63, 16, 221, 0]
+  own    N=6 P1    g2 years 2020-2025: 2,790 of 945,552 = 0.295% | years with 0 in every seed: 0 of 6 | seed-1 misses by year [40, 176, 39, 221, 33, 40]
+  own    N=6 O3    g2 years 2024-2024: 0 of 154,627 = 0.000% | years with 0 in every seed: 1 of 1 | seed-1 misses by year [0]
+  own    N=6 O3    g0 years 2024-2024: 29 of 155,527 = 0.019% | years with 0 in every seed: 0 of 1 | seed-1 misses by year [0]
+  own    N=6 check g0 years 2020-2025: 0 of 963,607 = 0.000% | years with 0 in every seed: 6 of 6 | seed-1 misses by year [0, 0, 0, 0, 0, 0]
+  own    N=8 P1    g2 years 2020-2024: 3,628 of 913,116 = 0.397% | years with 0 in every seed: 0 of 5 | seed-1 misses by year [122, 161, 58, 278, 111]
+  own    N=8 P1    g3 years 2020-2024: 2,137 of 910,225 = 0.235% | years with 0 in every seed: 0 of 5 | seed-1 misses by year [14, 64, 19, 275, 35]
+  own    N=8 P1    g2 years 2020-2025: 3,755 of 1,101,241 = 0.341% | years with 0 in every seed: 0 of 6 | seed-1 misses by year [122, 161, 58, 278, 111, 42]
+  own    N=8 O3    g2 years 2024-2024: 0 of 179,649 = 0.000% | years with 0 in every seed: 1 of 1 | seed-1 misses by year [0]
+  own    N=8 O3    g0 years 2024-2024: 53 of 179,889 = 0.029% | years with 0 in every seed: 0 of 1 | seed-1 misses by year [0]
+  own    N=8 check g0 years 2020-2025: 0 of 1,126,933 = 0.000% | years with 0 in every seed: 6 of 6 | seed-1 misses by year [0, 0, 0, 0, 0, 0]
+
+(done in 111.8 s)
