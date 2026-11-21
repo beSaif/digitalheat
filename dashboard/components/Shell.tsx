@@ -12,6 +12,7 @@ import {
   ChevronRight,
   LayoutGrid,
   Map as MapIcon,
+  Radio,
   Pause,
   Play,
   Search,
@@ -26,6 +27,7 @@ const NAV = [
   { href: "/", label: "Overview", icon: LayoutGrid, match: (p: string) => p === "/" },
   { href: "/map", label: "Fleet map", icon: MapIcon, match: (p: string) => p.startsWith("/map") },
   { href: "/sites/BS-01", label: "Sites", icon: Building2, match: (p: string) => p.startsWith("/sites") },
+  { href: "/live", label: "Live demo", icon: Radio, match: (p: string) => p.startsWith("/live") },
 ];
 
 export function Shell({ children }: { children: React.ReactNode }) {
