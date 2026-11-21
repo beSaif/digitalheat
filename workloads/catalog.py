@@ -22,14 +22,29 @@ MEASUREMENTS = ROOT / "data" / "measurements"
 SERVER_W = 1000.0
 
 # Our assumptions, not measured or sourced. Kept here, in one place, so they show.
+# Arrivals (must-have 1, "how many jobs arrive per day and where that number comes from"):
+#   embed:  UNLIMITED BACKLOG. There is always embedding work waiting; the model
+#           assumes unlimited jobs of this type, as the case allows when stated.
+#   rerank: FIXED STREAM of 4 jobs per house per day, every day, at 08, 11, 14, 17 h
+#           local time. Our assumption, not from a trace: one customer's evaluation
+#           runs over a working day. 4 x ~0.9 server-h = ~3 kWh heat/day, about a quarter
+#           of summer hot water (12 kWh/day), so in summer the stream fits the heat
+#           demand only if the scheduler keeps tank room for it. Sweep 1/4/16 per day;
+#           at ~16 the deadline jobs alone make all of summer's heat.
 JOB_DEFAULTS = {
     "embed": {
-        "items_per_job": 10_000_000,  # re-indexing a large document archive; ~0.9 server-hours
+        "items_per_job": 10_000_000,  # re-indexing a large document archive; ~0.8 server-hours
         "deadline_h": 48.0,           # batch indexing: results wanted within two days
+        "arrival": "backlog",
+        "jobs_per_day": None,         # unlimited
+        "arrival_hours": (),
     },
     "rerank": {
         "items_per_job": 5_000_000,   # offline re-scoring run, e.g. 50k queries x 100 candidates
         "deadline_h": 4.0,            # evaluation run: results wanted the same working day
+        "arrival": "fixed",
+        "jobs_per_day": 4,
+        "arrival_hours": (8, 11, 14, 17),
     },
 }
 
@@ -43,6 +58,9 @@ class ReferenceJobType:
     items_per_job: int
     server_hours_per_job: float    # runtime of one job on one reference server
     deadline_h: float
+    arrival: str                   # "backlog" (unlimited, always waiting) or "fixed" (daily stream)
+    jobs_per_day: object           # int for "fixed", None for "backlog"
+    arrival_hours: tuple           # local hours of day at which "fixed" jobs arrive
     interruptible: bool            # pause instantly (SIGSTOP) or stop at a checkpoint (SIGTERM)
     max_loss_on_kill_s: float      # work lost on a hard kill = checkpoint interval
     movable: bool                  # a stopped job resumes on any server holding its job dir
@@ -73,7 +91,8 @@ def reference_job_types(measurement=None, basis="gross", efficiency_factor=1.0):
         out[name] = ReferenceJobType(
             name=name, item=r["item"], j_per_item_measured=j, items_per_server_hour=per_h,
             items_per_job=d["items_per_job"], server_hours_per_job=d["items_per_job"] / per_h,
-            deadline_h=d["deadline_h"], interruptible=True, max_loss_on_kill_s=10.0, movable=True,
+            deadline_h=d["deadline_h"], arrival=d["arrival"], jobs_per_day=d["jobs_per_day"],
+            arrival_hours=tuple(d["arrival_hours"]), interruptible=True, max_loss_on_kill_s=10.0, movable=True,
             source=f"{path.relative_to(ROOT)} ({m['machine']['cpu']}, {basis}, x{efficiency_factor})",
         )
     return out
@@ -86,5 +105,6 @@ if __name__ == "__main__":
             print(f"  {jt.name:7} {jt.j_per_item_measured:.4f} J/item  "
                   f"{jt.items_per_server_hour / 1e6:6.2f} M items/server-hour  "
                   f"job {jt.items_per_job / 1e6:g} M items = {jt.server_hours_per_job:.2f} server-h  "
-                  f"deadline {jt.deadline_h:g} h")
+                  f"deadline {jt.deadline_h:g} h  "
+                  f"arrivals {'unlimited backlog' if jt.arrival == 'backlog' else f'{jt.jobs_per_day}/day at {jt.arrival_hours} h'}")
     print(json.dumps(asdict(reference_job_types()["embed"]), indent=1))

@@ -44,5 +44,5 @@ Pitch must open with those key figures, then demo a January day, a July day, and
 - **City house data (new 21 Nov):** downloaded and summarised, not used in any model yet. The case allows testing other houses on top of the reference house.
 - **Repo is private:** must be opened up for the jury before submitting (see [submission.md](submission.md)).
 - **Unverified numbers in [assumption-limits.md](assumption-limits.md):** tank losses and server outlet temperatures are general engineering ranges; check them against the sources named there before using them in the pitch.
-- **Jobs per day:** not decided (unlimited backlog, sourced trace, or demand sweep). See [workloads.md](workloads.md#jobs-per-day-open).
+- **Jobs per day: decided.** Embeddings are an unlimited backlog (stated); reranking is a fixed stream of 4 per house per day with a 4 h deadline, swept 1/4/16. See [workloads.md](workloads.md#jobs-per-day). Optional, not done: sourced deadlines, a server-efficiency source, trace-based arrival rates ([workloads.md](workloads.md#optional-improvements-not-done)).
 - **Not collected yet:** cloud on-demand and spot prices; MLPerf power measurements (the summary sheet has throughput only).

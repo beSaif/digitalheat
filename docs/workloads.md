@@ -2,7 +2,7 @@
 
 Must-have 1 of the case ([case-brief.md](case-brief.md#must-haves-for-a-valid-submission-all-on-the-reference-house)): at least two job types with runtime, energy, interruptibility and deadline; at least one actually running and measured on our machine; scaled to the 1 kW reference server; jobs per day with a source.
 
-**Both job types run for real on our laptop and were measured.** Code: [`workloads/`](../workloads/). Measurement: [`data/measurements/workloads_2026-11-21_jk_apple-m1.json`](../data/measurements/workloads_2026-11-21_jk_apple-m1.json). Teammates add their own machines with [measure-on-your-machine.md](measure-on-your-machine.md); [`scripts/combine_measurements.py`](../scripts/combine_measurements.py) averages them into `combined.json`, which the scheduler's catalog uses.
+**Both job types run for real and were measured on three team laptops (Apple M1, M3, M4).** Code: [`workloads/`](../workloads/). Measurements: one file per machine in [`data/measurements/`](../data/measurements/), averaged by [`scripts/combine_measurements.py`](../scripts/combine_measurements.py) into [`combined.json`](../data/measurements/combined.json), which the scheduler's catalog ([`workloads/catalog.py`](../workloads/catalog.py)) uses. Teammates add machines with [measure-on-your-machine.md](measure-on-your-machine.md).
 
 ## Must-have 1 checklist
 
@@ -10,14 +10,14 @@ Must-have 1 of the case ([case-brief.md](case-brief.md#must-haves-for-a-valid-su
 |---|---|---|
 | What one item is | One scientific abstract → 384-dim vector | One (query, abstract) pair → relevance score |
 | Model | `sentence-transformers/all-MiniLM-L6-v2` @ `1110a24` (Apache-2.0) | `cross-encoder/ms-marco-MiniLM-L6-v2` @ `233902d` (Apache-2.0) |
-| Runs on our machine | yes, measured | yes, measured |
-| Throughput, measured | 50.96 items/s | 19.50 items/s |
-| Energy per item, measured | 0.322 J gross · 0.205 J marginal | 0.654 J gross · 0.348 J marginal |
-| Reference server (1 kW), gross basis | 11.2 M items per server-hour | 5.5 M items per server-hour |
-| One job | 10 M abstracts = 0.90 server-hours | 5 M pairs = 0.91 server-hours |
-| Interruptible | yes: pause instantly, or stop at a checkpoint and resume anywhere | same |
-| Deadline | 48 h *(our assumption: batch re-indexing)* | 4 h *(our assumption: same-day evaluation run)* |
-| Jobs per day | **open, see [below](#jobs-per-day-open)** | **open** |
+| Runs on our machine | yes, on 3 laptops | yes, on 3 laptops |
+| Throughput, measured | 51–110 items/s (M1 → M4) | 19.5–43 items/s |
+| Energy per item, measured (mean of 3, range) | **0.293 J** gross (0.262–0.322) · 0.221 J marginal | **0.660 J** gross (0.623–0.702) · 0.479 J marginal |
+| Reference server (1 kW), gross basis | 12.3 M items per server-hour | 5.5 M items per server-hour |
+| One job, on one reference server | 10 M abstracts = **0.81 server-hours** | 5 M pairs = **0.92 server-hours** |
+| Interruptible | **yes, tested:** pause instantly, or stop at a checkpoint and resume anywhere, with identical output | same |
+| Deadline | 48 h after arrival *(our assumption: batch re-indexing)* | 4 h after arrival *(our assumption: same-day evaluation run)* |
+| Jobs per day | **unlimited backlog** (stated assumption; see [below](#jobs-per-day)) | **4 per house per day**, at 08, 11, 14 and 17 h *(our assumption, swept 1/4/16)* |
 
 Why these two: DigitalHeat's own slides list "document indexing" and "CLIP embeddings" as flexible jobs ([case-presentation.md](case-presentation.md#03--ideas-for-flexible-computing-jobs)), and the case names embeddings and reranking. Together they make the first two steps of a search/RAG pipeline: index documents, then rank the candidates for a query. They differ in what matters for scheduling: the embedding job tolerates two days of delay, the reranking job only four hours.
 
@@ -58,7 +58,18 @@ A job is "process items 0 … N−1". Item *i* maps onto the corpus deterministi
 2. Each job starts as the real `workloads.run` subprocess. Model loading and one full warm-up window are discarded, then power is averaged over 4 windows while counting finished items from `status.json`. The job is stopped with SIGTERM.
 3. Gross J/item = load power ÷ items/s. Marginal J/item = (load − idle) ÷ items/s.
 
-**Machine:** Apple M1, 8 cores (4 performance), 8 GB, macOS 26.3.1, Python 3.11.14, torch 2.5.1 on CPU (4 threads, torch's default), batch size 32. Measured 2026-11-21 00:10 UTC, on battery.
+**Team results** (all on battery, torch 2.5.1 on CPU, 4 threads, batch size 32, same code and pinned models):
+
+| Machine | Idle W | embed items/s | embed W | embed J/item (gross · marginal) | rerank items/s | rerank W | rerank J/item (gross · marginal) |
+|---|---|---|---|---|---|---|---|
+| Apple M1, 8 GB, macOS 26.3.1 | 5.97 | 50.96 | 16.42 | 0.322 · 0.205 | 19.50 | 12.75 | 0.654 · 0.348 |
+| Apple M3, macOS 15.2 | 3.95 | 73.72 | 21.74 | 0.295 · 0.241 | 32.19 | 20.05 | 0.623 · 0.500 |
+| Apple M4, 10 cores, macOS 26.6.2 | 4.86 | 109.55 | 28.67 | 0.262 · 0.217 | 43.12 | 30.29 | 0.702 · 0.590 |
+| **Mean** | | | | **0.293** · 0.221 | | | **0.660** · 0.479 |
+
+**Speed doubles from M1 to M4, but gross energy per item stays within ±10%.** That is why the reference server is sized by energy per item, not by laptop speed. Marginal energy varies more between machines (up to ±26% for reranking), which is another reason to use gross as the default.
+
+**Example of one run** (Apple M1, measured 2026-11-21 00:10 UTC):
 
 | | Power (W) per window | Average | Covered |
 |---|---|---|---|
@@ -82,26 +93,38 @@ items per server-hour = 3,600,000 J ÷ (J per item on our machine × efficiency 
 
 | | Break-even per server-hour | Per 1 M embeddings | Per 1 M rerank pairs |
 |---|---|---|---|
-| All heat used (0.3325 − 0.8 × 0.1330) | 0.226 CHF | 0.020 CHF | 0.041 CHF |
-| All heat dumped (0.3325) | 0.333 CHF | 0.030 CHF | 0.060 CHF |
+| All heat used (0.3325 − 0.8 × 0.1330) | 0.226 CHF | 0.018 CHF | 0.041 CHF |
+| All heat dumped (0.3325) | 0.333 CHF | 0.027 CHF | 0.061 CHF |
 
-(Electricity 0.3325 CHF/kWh and heat value 0.1330 CHF/kWh from [data/README.md](../data/README.md#electricity-price-elcom-2026-iwb-basel-h4), gross basis, factor 1. Hardware cost is excluded, as in the case's formula.) Comparing these with what cloud providers charge for the same output is part of the economics workstream.
+(Electricity 0.3325 CHF/kWh and heat value 0.1330 CHF/kWh from [data/README.md](../data/README.md#electricity-price-elcom-2026-iwb-basel-h4), team-mean gross basis, factor 1. Hardware cost is excluded, as in the case's formula.) Comparing these with what cloud providers charge for the same output is part of the economics workstream.
 
-## Jobs per day (open)
+## Jobs per day
 
-The case requires the number of jobs arriving per day and its source, or a clear statement that the model assumes unlimited jobs. **This is not decided yet.** One reference server can do about 26 embedding jobs or 26 rerank jobs per day (24 h ÷ 0.9 h), so arrivals are best set relative to fleet capacity. Options:
+The case requires the number of jobs arriving per day and where it comes from, and says a model that assumes unlimited jobs must state it. Ours (set in [`workloads/catalog.py`](../workloads/catalog.py), `JOB_DEFAULTS`):
 
-1. **Unlimited backlog** (always work waiting). Allowed if stated. It makes utilisation purely a heat question, and missed deadlines only come from tight-deadline jobs.
-2. **Fixed demand from a sourced trace**, e.g. job arrival rates and durations from the [Alibaba GPU cluster trace 2020](https://github.com/alibaba/clusterdata/tree/master/cluster-trace-gpu-v2020) (several GB, not downloaded) rescaled to our job sizes.
-3. **Scenario sweep:** demand at 50%, 100% and 150% of the fleet's winter capacity. That shows where deadlines start to slip in summer, when servers are throttled.
+- **Embeddings: unlimited backlog. The model assumes there is always embedding work waiting.** It is the flexible filler: servers run it whenever their heat is useful, and pause it when it is not. Utilisation is therefore limited by heat demand, not by a lack of jobs. In reality, demand for flexible computing is finite. So the yearly utilisation is an upper bound, reached only if DigitalHeat sells enough flexible work.
+- **Reranking: a fixed stream of 4 jobs per house per day, every day of the year, arriving at 08:00, 11:00, 14:00 and 17:00 local time, each due 4 h after arrival.** This is our assumption, not taken from a trace. It stands for one customer's evaluation runs spread over a working day. These are the jobs that can be missed, so they are what the "missed deadlines" figure counts.
+
+Why 4 per day: 4 × 0.92 server-hours ≈ 3.7 server-hours ≈ **2.9 kWh of heat per day**, about a quarter of summer hot-water demand (12 kWh/day). In winter the stream is small next to heating demand. In summer it fits the heat demand *only if* the scheduler keeps tank room for it, instead of filling the tank with embedding work. Otherwise the jobs must run anyway and the heat is dumped, or they miss their deadline. So this is the stream that tests the scheduler.
+
+**Sensitivity:** the yearly balance is also run at 1 and 16 rerank jobs per day. At ~16 per day (≈ 11.7 kWh of heat per day), the deadline jobs alone produce all of summer's heat demand, so above that dumping heat is unavoidable in summer.
+
+For scale: one reference server can do ~30 embedding jobs or ~26 rerank jobs per day.
 
 ## Limits of these numbers
 
-- **One machine so far, one run of ~3 minutes per job** (more machines: [measure-on-your-machine.md](measure-on-your-machine.md)). The windows vary by up to ±5% for embeddings. One idle window spiked to 8.5 W (median idle 5.70 W): with the median baseline, marginal energy would be 2.6% (embed) and 4.0% (rerank) higher.
-- **Thermal drift:** embedding power fell from 17.3 to 15.9 W over the run, likely thermal throttling on a fanless laptop. A long-running steady state may be slightly slower.
+- **Three laptops, one run of ~2–4 minutes per job each,** all Apple silicon. No x86 or server hardware has been measured. Within a run, the power windows vary by up to ±5% for embeddings. Idle baselines are noisy: the M1 had one 8.5 W spike (median 5.70 W), and the M4's idle drifted from 5.5 to 3.7 W. Marginal figures are therefore less reliable than gross.
+- **Thermal drift:** on the M1, embedding power fell from 17.3 to 15.9 W over the run, likely thermal throttling on a fanless laptop. A long-running steady state may be slightly slower.
+- **M4 reranking is the outlier:** it costs more energy per item than on the older chips (0.70 vs 0.62–0.65 J), while M4 embedding costs less. We have not investigated why. It is inside the ±6% range we report.
 - **Whole-system meter:** display, editor and background tasks are inside both idle and load. The gross figure is therefore a little pessimistic, and the marginal figure assumes background load stayed steady.
 - **CPU only**, small models (22 M parameters). Larger models (LLM batch inference, transcription) would have very different energy per item but the same heat per server-hour.
 - **Reranking pairs are not real top-k retrieval** (see above). This affects relevance, not cost.
+
+## Optional improvements (not done)
+
+- **Reasoning for the deadlines:** 48 h and 4 h are plausible but unsourced. A sentence from a real use case (e.g. how often a search index is rebuilt, or how fast evaluation results are needed) would back them up.
+- **A source for the efficiency factor:** we have not measured or sourced how a 1 kW server's energy per item compares with a laptop's. MLPerf Inference power results ([mlcommons.org](https://mlcommons.org/benchmarks/inference-datacenter/)) are the place to look: they report samples per second per watt for datacenter systems. Until then, the yearly balance is run at efficiency factor 0.5–4×.
+- **Arrival rates from a trace:** the 4 rerank jobs per day could be replaced by a rate from the [Alibaba GPU cluster trace 2020](https://github.com/alibaba/clusterdata/tree/master/cluster-trace-gpu-v2020) (several GB, not downloaded).
 
 ## Apple M4 battery-gauge diagnostic
 
