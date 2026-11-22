@@ -1,0 +1,44 @@
+[
+  {
+    "name": "join",
+    "who": "Homeowner",
+    "from": 0,
+    "until": 14.433
+  },
+  {
+    "name": "fleet",
+    "who": "DigitalHeat",
+    "from": 14.433,
+    "until": 29.267
+  },
+  {
+    "name": "order",
+    "who": "Customer",
+    "from": 29.267,
+    "until": 38.6
+  },
+  {
+    "name": "winter",
+    "who": "DigitalHeat",
+    "from": 38.6,
+    "until": 61.133
+  },
+  {
+    "name": "summer-order",
+    "who": "Customer",
+    "from": 61.133,
+    "until": 70.533
+  },
+  {
+    "name": "summer",
+    "who": "DigitalHeat",
+    "from": 70.533,
+    "until": 85.967
+  },
+  {
+    "name": "download",
+    "who": "Customer",
+    "from": 85.967,
+    "until": 100.567
+  }
+]

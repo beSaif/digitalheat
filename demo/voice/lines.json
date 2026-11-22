@@ -1,0 +1,10 @@
+[
+  {"id": "l01", "clip": "join", "offset": 0.5, "text": "So this is Lena. She lives in Basel, and instead of a heat pump, her basement has DigitalHeat servers. She scans the code, types her name... and that's her house, up on our map."},
+  {"id": "l02", "clip": "fleet", "text": "Fourteen servers, enough for all her heat in the coldest hour of the year. A few others join too... a pharma lab, a family home, a spa, an office and a greenhouse."},
+  {"id": "l03", "clip": "order", "text": "Now the customer. That's the jury today. You want a 3D image rendered, you can see what it costs, and you order it."},
+  {"id": "l04", "clip": "winter", "text": "It's a January morning, and every building on the map needs heat. So the image is cut into sixty tiles, and every building's servers render a share of them."},
+  {"id": "l05", "clip": "winter", "offset": 13.5, "text": "The coloured corner on each tile shows which building rendered it... some are Lena's. The heat from that work went straight into her radiators."},
+  {"id": "l06", "clip": "summer-order", "text": "Now July, two in the afternoon. This time the customer asks an AI to search scientific papers for a claim about aspirin."},
+  {"id": "l07", "clip": "summer", "text": "Lena only needs hot water now, and her tank is full... so just one of her fourteen servers runs, and the greenhouse is off completely. The work goes to the pharma lab and the spa, which still need the heat."},
+  {"id": "l09", "clip": "download", "text": "The customer gets the finished image. And every server that worked on it was heating a building that needed the heat."}
+]

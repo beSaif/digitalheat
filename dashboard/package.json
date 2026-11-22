@@ -8,23 +8,23 @@
     "start": "next start",
     "lint": "eslint",
     "predev": "cp node_modules/maplibre-gl/dist/maplibre-gl-worker.mjs public/",
-    "prebuild": "cp node_modules/maplibre-gl/dist/maplibre-gl-worker.mjs public/",
-    "data": "cd .. && python3 scripts/build_fleet_scenario.py"
+    "prebuild": "cp node_modules/maplibre-gl/dist/maplibre-gl-worker.mjs public/"
   },
   "dependencies": {
+    "@huggingface/transformers": "^4.3.2",
     "clsx": "^2.1.1",
-    "d3-geo": "^3.1.2",
     "lucide-react": "^1.77.0",
     "maplibre-gl": "^6.19.0",
     "next": "16.4.6",
+    "qrcode": "^1.5.4",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "4.3.3",
-    "@types/d3-geo": "^3.1.1",
     "@types/geojson": "^7946.0.16",
     "@types/node": "^20",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",

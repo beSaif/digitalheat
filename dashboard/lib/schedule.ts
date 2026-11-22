@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 /* The scheduler's output (python -m scheduler.balance). The dashboard only displays it. */
 
@@ -111,7 +111,7 @@ export type Schedule = {
 
 const STORE = "dh.sites.v1";
 
-/** The sites the user set up on the overview (kept in this browser). */
+/** The sites the operator set up (kept in this browser). */
 export function useSavedSites() {
   const [sites, setSites] = useState<SiteIn[]>(DEFAULT_SITES);
   useEffect(() => {
@@ -132,29 +132,3 @@ export function useSavedSites() {
 
 /** What the scheduler needs to know about a site (no UI flags). */
 export const plainSite = (s: SiteIn) => ({ id: s.id, kind: s.kind, name: s.name, lat: s.lat, lon: s.lon, servers: s.servers });
-
-/** Fetch the scheduler's year for these sites; keeps the last result on screen while a new one runs. */
-export function useSchedule(sites: SiteIn[], year: number) {
-  const [res, setRes] = useState<{ key: string; data: Schedule | null; error: string | null } | null>(null);
-  const key = JSON.stringify({ year, sites: sites.map(plainSite) });
-  const latest = useRef(key);
-  useEffect(() => {
-    latest.current = key;
-    const t = setTimeout(() => {
-      fetch("/api/schedule", { method: "POST", headers: { "content-type": "application/json" }, body: key })
-        .then(async (r) => {
-          const j = await r.json();
-          if (!r.ok) throw new Error(j.error || r.statusText);
-          return j as Schedule;
-        })
-        .then((d) => {
-          if (latest.current === key) setRes({ key, data: d, error: null });
-        })
-        .catch((e) => {
-          if (latest.current === key) setRes((r) => ({ key, data: r?.data ?? null, error: String(e.message) }));
-        });
-    }, 250); // let quick +/- clicks settle
-    return () => clearTimeout(t);
-  }, [key]);
-  return { data: res?.data ?? null, loading: res?.key !== key, error: res?.key === key ? res.error : null };
-}

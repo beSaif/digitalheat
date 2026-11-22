@@ -68,10 +68,14 @@ class RealJob:
                 self.state = "running"
                 return "resume (SIGCONT)"
             return None
+        code = self.proc.poll() if self.proc else None
+        crashed = self.state == "running" and code not in (None, 0, EXIT_STOPPED)
         restart = (self.dir / "state.json").exists()
         self._spawn()
         self.state = "running"
-        return "restart from checkpoint" if restart else "start"
+        what = "restart from checkpoint" if restart else "start"
+        # a worker that died on its own (not by our SIGTERM) is reported, not silently restarted
+        return f"worker crashed (exit {code}, see runs/live/job.log); {what}" if crashed else what
 
     def pause(self):
         if self.proc and self.proc.poll() is None and self.state == "running":

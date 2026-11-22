@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import * as maplibregl from "maplibre-gl";
 import type { StyleSpecification } from "maplibre-gl";
 import clsx from "clsx";
-import { ArrowDown, ArrowUp, Briefcase, Building2, FlaskConical, Hospital, House, Leaf, Minus, Pause, Plus, Save, Users, Waves, X } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowUp, Box, Briefcase, Building2, FlaskConical, Hospital, House, Leaf, Minus, Pause, Plus, Save, Users, Waves, X } from "lucide-react";
 import { KIND_LABEL, KIND_SERVERS, type Kind, type Schedule, type SiteIn } from "@/lib/schedule";
 
 maplibregl.setWorkerUrl("/maplibre-gl-worker.mjs");
@@ -25,16 +25,48 @@ const SWISS: [[number, number], [number, number]] = [
 ];
 const PAD = { top: 110, bottom: 70, left: 170, right: 170 };
 
-async function style(): Promise<StyleSpecification> {
+/** Base-map labels a quiet map keeps: cities and towns. Villages, hamlets, districts, roads, rivers and the airport go. */
+const MAIN_LABELS = new Set(["label_city", "label_city_capital", "label_town", "label_state", "label_country_1", "label_country_2", "label_country_3"]);
+
+async function style(quiet: boolean): Promise<StyleSpecification> {
   const s: StyleSpecification = await fetch("https://tiles.openfreemap.org/styles/positron").then((r) => r.json());
-  s.layers = s.layers.filter((l) => !l.id.includes("shield"));
+  s.layers = s.layers.filter((l) => !l.id.includes("shield") && (!quiet || l.type !== "symbol" || MAIN_LABELS.has(l.id)));
   for (const l of s.layers) {
     const p = l as { paint?: Record<string, unknown> };
     if (l.id === "background") p.paint = { "background-color": "#ece8de" };
     if (l.id === "water") p.paint = { "fill-color": "#cfdedd" };
   }
-  return s;
+  // 3D buildings, only close up (a building's 3D view): the city map further out stays flat
+  const at = s.layers.findIndex((l) => l.type === "symbol");
+  s.layers.splice(at < 0 ? s.layers.length : at, 0, {
+    id: "buildings-3d",
+    type: "fill-extrusion",
+    source: "openmaptiles",
+    "source-layer": "building",
+    minzoom: 15,
+    paint: {
+      "fill-extrusion-color": "#fbfaf6",
+      "fill-extrusion-height": ["coalesce", ["get", "render_height"], 9],
+      "fill-extrusion-base": ["coalesce", ["get", "render_min_height"], 0],
+      "fill-extrusion-opacity": ["interpolate", ["linear"], ["zoom"], 15, 0, 16, 0.92],
+      "fill-extrusion-vertical-gradient": true,
+    },
+  });
+  return { ...s, light: { anchor: "viewport", color: "#ffffff", intensity: 0.3 } };
 }
+
+/** The building of the site in 3D view, in DigitalHeat's colour. */
+function paintBuilding(m: maplibregl.Map, x: SiteIn | undefined) {
+  if (!x) return;
+  if (!m.getSource("site-bldg")) {
+    m.addSource("site-bldg", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
+    m.addLayer({ id: "site-bldg", type: "fill-extrusion", source: "site-bldg", paint: { "fill-extrusion-color": "#c0653a", "fill-extrusion-height": ["get", "h"], "fill-extrusion-base": 0, "fill-extrusion-opacity": 0.96 } });
+  }
+  (m.getSource("site-bldg") as maplibregl.GeoJSONSource).setData(footprintAt(m, x.lat, x.lon, "buildings-3d"));
+}
+
+/** A building's 3D view: close up, tilted, turned a little. */
+const VIEW_3D = { zoom: 17.2, pitch: 62, bearing: -28 };
 
 function boundsOf(sites: SiteIn[]): [[number, number], [number, number]] {
   const lons = sites.map((s) => s.lon),
@@ -58,32 +90,72 @@ type Props = {
   onAdd: (kind: Kind, lat: number, lon: number) => void;
   onRemove: (i: number) => void;
   busy: boolean;
+  /** Tailwind height class; the overview uses the default 560 px */
+  height?: string;
+  /** room around the sites when the map fits them (smaller for a smaller map) */
+  pad?: { top: number; bottom: number; left: number; right: number };
+  /** small pin markers at every zoom (for a small map; the details live elsewhere on the page) */
+  compact?: boolean;
+  /** full-bleed map under floating panels: no frame, legend, zoom or server buttons, and only the main place names */
+  bare?: boolean;
+  /** sites from this index on are small pins labelled with their name (people's racks in the live demo) */
+  pinFrom?: number;
+  /** extra controls in a building's card (the live demo: fill its tank) */
+  cardExtra?: (i: number) => React.ReactNode;
 };
 
-export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setServers, adding, onAdd, onRemove, busy }: Props) {
+export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setServers, adding, onAdd, onRemove, busy, height = "h-[560px]", pad = PAD, compact = false, bare = false, pinFrom, cardExtra }: Props) {
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const [pts, setPts] = useState<{ x: number; y: number }[] | null>(null);
   const [zoom, setZoom] = useState(13);
-  const [hover, setHover] = useState<number | null>(null);
+  const small = compact || zoom < 11;
+  const isPin = (i: number) => small || (pinFrom !== undefined && i >= pinFrom);
+  const named = (i: number) => pinFrom !== undefined && i >= pinFrom;
+  const [hover, setHoverNow] = useState<number | null>(null);
   const [pinned, setPinned] = useState<number | null>(null);
-  const card = hover ?? pinned;
+  // a building's 3D view: the map flies into its block, tilted, with the building in DigitalHeat's colour
+  const [view3d, setView3d] = useState<number | null>(null);
+  const view3dRef = useRef<number | null>(null);
+  const card = hover ?? pinned ?? view3d;
+  // leaving a pin closes its card a moment later, so the pointer can move onto the card and use its buttons
+  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const setHover = (i: number | null) => {
+    if (hoverTimer.current) clearTimeout(hoverTimer.current);
+    hoverTimer.current = null;
+    if (i !== null) setHoverNow(i);
+    else hoverTimer.current = setTimeout(() => setHoverNow(null), 280);
+  };
+  const keepCard = () => {
+    if (hoverTimer.current) clearTimeout(hoverTimer.current);
+    hoverTimer.current = null;
+  };
+  // Escape closes a building's card
+  useEffect(() => {
+    if (pinned === null) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setPinned(null);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [pinned]);
   const [pick, setPick] = useState<{ lat: number; lon: number; x: number; y: number } | null>(null);
   const sitesRef = useRef(sites);
   const addingRef = useRef(adding);
+  const padRef = useRef(pad);
+  const bareRef = useRef(bare);
   useEffect(() => {
     sitesRef.current = sites;
     addingRef.current = adding;
+    padRef.current = pad;
   });
 
   useEffect(() => {
     let m: maplibregl.Map | null = null;
     let cancelled = false;
-    style().then((st) => {
+    style(bareRef.current).then((st) => {
       if (cancelled || !el.current) return;
       m = new maplibregl.Map({ container: el.current, style: st, center: [7.589, 47.561], zoom: 13, scrollZoom: false, attributionControl: { compact: true } });
       map.current = m;
-      m.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
+      if (!bareRef.current) m.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
       const place = () => {
         if (!m) return;
         setPts(sitesRef.current.map((s) => m!.project([s.lon, s.lat])));
@@ -91,18 +163,27 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
       };
       m.on("load", () => {
         m?.resize();
-        m?.fitBounds(boundsOf(sitesRef.current), { padding: PAD, duration: 0 });
+        m?.fitBounds(boundsOf(sitesRef.current), { padding: padRef.current, duration: 0 });
         place();
       });
       m.on("move", place);
       m.on("resize", place);
       m.on("click", (e) => {
+        setPinned(null); // a click on the map closes a building's card
         if (!addingRef.current) return;
         const { lng, lat } = e.lngLat;
         if (lat < 45.8 || lat > 47.9 || lng < 5.9 || lng > 10.6) return;
         setPick({ lat, lon: lng, x: e.point.x, y: e.point.y });
       });
-      const ro = new ResizeObserver(() => m?.resize());
+      m.on("idle", () => {
+        const i = view3dRef.current;
+        if (m && i !== null) paintBuilding(m, sitesRef.current[i]);
+      });
+      // a map in a flexible box gets its final size after load: refit the sites when the box changes
+      const ro = new ResizeObserver(() => {
+        m?.resize();
+        if (m?.loaded() && view3dRef.current === null) m.fitBounds(boundsOf(sitesRef.current), { padding: padRef.current, maxZoom: 14, duration: 0 });
+      });
       ro.observe(el.current);
       m.once("remove", () => ro.disconnect());
     });
@@ -115,11 +196,11 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
 
   // re-place markers and refit when sites are added or removed
   const shape = sites.map((s) => `${s.id}:${s.lat}:${s.lon}`).join("|");
-  const spots = pts && spread(pts, zoom < 11 ? 84 : 230, zoom < 11 ? 36 : 120);
+  const spots = pts && spread(pts, (i) => (named(i) ? [150, 34] : isPin(i) ? [84, 36] : [230, 120]));
   useEffect(() => {
     const m = map.current;
     if (!m) return;
-    m.fitBounds(boundsOf(sitesRef.current), { padding: PAD, maxZoom: 14, duration: 600 });
+    if (view3dRef.current === null) m.fitBounds(boundsOf(sitesRef.current), { padding: padRef.current, maxZoom: 14, duration: 600 });
     Promise.resolve().then(() => setPts(sitesRef.current.map((s) => m.project([s.lon, s.lat]))));
   }, [shape]);
 
@@ -127,28 +208,64 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
     if (map.current) map.current.getCanvas().style.cursor = adding ? "crosshair" : "";
   }, [adding]);
 
+  const open3d = (i: number) => {
+    const m = map.current;
+    if (!m) return;
+    view3dRef.current = i;
+    setView3d(i);
+    setPinned(i);
+    setSelected(i);
+    (m.getSource("site-bldg") as maplibregl.GeoJSONSource | undefined)?.setData({ type: "FeatureCollection", features: [] });
+    const x = sitesRef.current[i];
+    m.flyTo({ center: [x.lon, x.lat], ...VIEW_3D, padding: padRef.current, duration: 2200, essential: true });
+  };
+  const close3d = () => {
+    const m = map.current;
+    view3dRef.current = null;
+    setView3d(null);
+    setPinned(null);
+    if (!m) return;
+    (m.getSource("site-bldg") as maplibregl.GeoJSONSource | undefined)?.setData({ type: "FeatureCollection", features: [] });
+    // level the camera and drop the 3D view's padding (flyTo keeps it on the map, and fitBounds adds its own on top)
+    m.easeTo({ pitch: 0, bearing: 0, padding: { top: 0, bottom: 0, left: 0, right: 0 }, duration: 700 });
+    m.once("moveend", () => {
+      if (view3dRef.current === null) m.fitBounds(boundsOf(sitesRef.current), { padding: padRef.current, maxZoom: 14, duration: 1100 });
+    });
+  };
+  // Escape leaves the 3D view
+  useEffect(() => {
+    if (view3d === null) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close3d();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+
   const S = schedule && schedule.sites.length === sites.length ? schedule : null;
   const showPick = adding && pick;
 
   return (
-    <div className="relative h-[560px] overflow-hidden rounded-[20px] ring-1 ring-line">
+    <div className={clsx("relative overflow-hidden", !bare && "rounded-[20px] ring-1 ring-line", height)}>
       <div ref={el} className="h-full w-full" />
 
-      <div className="pointer-events-none absolute left-1/2 top-4 -translate-x-1/2 rounded-full bg-ink px-4 py-2 text-[13px] font-semibold text-cream shadow">
-        Job queue
-      </div>
-      <button
-        onClick={() => map.current?.fitBounds(SWISS, { padding: 30 })}
-        className="absolute right-3 top-3 rounded-full bg-card px-3 py-1.5 text-[12px] font-semibold ring-1 ring-line hover:bg-paper"
-      >
-        Switzerland
-      </button>
+      {!bare && (
+        <div className="pointer-events-none absolute left-1/2 top-4 -translate-x-1/2 rounded-full bg-ink px-4 py-2 text-[13px] font-semibold text-cream shadow">
+          Job queue
+        </div>
+      )}
+      {!bare && (
+        <button
+          onClick={() => map.current?.fitBounds(SWISS, { padding: 30 })}
+          className="absolute right-3 top-3 rounded-full bg-card px-3 py-1.5 text-[12px] font-semibold ring-1 ring-line hover:bg-paper"
+        >
+          Switzerland
+        </button>
+      )}
       {adding && !showPick && (
         <div className="pointer-events-none absolute left-1/2 top-16 -translate-x-1/2 rounded-full bg-rust px-4 py-1.5 text-[13px] font-semibold text-cream">
           Click on the map to place the new site
         </div>
       )}
-      {busy && (
+      {busy && !bare && (
         <div className="pointer-events-none absolute left-3 top-3 flex items-center gap-2 rounded-full bg-card px-3 py-1.5 text-[12px] ring-1 ring-line">
           <span className="size-2 animate-pulse rounded-full bg-rust" /> Scheduler running…
         </div>
@@ -191,7 +308,7 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
           const paused = x ? x.paused_now[t] : 0;
           const waiting = x ? x.waiting_now[t] : 0;
           const movedIn = S ? S.deadline_jobs.filter((j) => j[4] === i && j[5] === t && j[1] !== i).length + (x?.moved_in[t] ?? 0) : 0;
-          if (zoom < 11)
+          if (isPin(i))
             return (
               <button
                 key={s.id}
@@ -210,7 +327,10 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
                 <span className="grid size-6 place-items-center rounded-full bg-amber-soft text-rust-deep">
                   <Icon size={13} />
                 </span>
-                {run}/{n}
+                {named(i) && <span className="max-w-[90px] truncate">{s.name}</span>}
+                <span className={clsx(named(i) && "font-normal text-muted")}>
+                  {run}/{n}
+                </span>
                 {paused > 0 && <Pause size={11} className="text-rust" fill="currentColor" />}
               </button>
             );
@@ -244,7 +364,7 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
                     <b className="text-ink">{run}</b> / {n} servers
                   </div>
                 </div>
-                <div className="flex flex-col gap-1">
+                {!bare && <div className="flex flex-col gap-1">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -266,7 +386,7 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
                   >
                     <Minus size={12} />
                   </button>
-                </div>
+                </div>}
                 {s.added && (
                   <button
                     onClick={(e) => {
@@ -315,13 +435,14 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
             const [a, b] = k.split("-").map(Number);
             if (!spots[a] || !spots[b]) return null;
             // start and end at the card edges, not under the cards
-            const r = zoom < 11 ? 22 : 70;
+            const ra = isPin(a) ? 22 : 70,
+              rb = isPin(b) ? 22 : 70;
             const dx = spots[b].x - spots[a].x,
               dy = spots[b].y - spots[a].y,
               len = Math.hypot(dx, dy);
-            if (len < 2 * r + 10) return null;
-            const A = { x: spots[a].x + (dx / len) * r, y: spots[a].y + (dy / len) * r },
-              B = { x: spots[b].x - (dx / len) * r, y: spots[b].y - (dy / len) * r };
+            if (len < ra + rb + 10) return null;
+            const A = { x: spots[a].x + (dx / len) * ra, y: spots[a].y + (dy / len) * ra },
+              B = { x: spots[b].x - (dx / len) * rb, y: spots[b].y - (dy / len) * rb };
             const mx = (A.x + B.x) / 2 - (B.y - A.y) * 0.25,
               my = (A.y + B.y) / 2 + (B.x - A.x) * 0.25;
             return (
@@ -351,7 +472,33 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
           soc={S.series[card].soc[t]}
           tank={S.sites[card].tank_kwh}
           high={zoom >= 11}
+          live={bare}
+          onEnter={keepCard}
+          onLeave={() => setHover(null)}
+          actions={
+            <>
+              {view3d === card ? (
+                <CardBtn onClick={close3d}>
+                  <ArrowLeft size={13} /> Back to map
+                </CardBtn>
+              ) : (
+                <CardBtn onClick={() => open3d(card)}>
+                  <Box size={13} /> 3D view
+                </CardBtn>
+              )}
+              {cardExtra?.(card)}
+            </>
+          }
         />
+      )}
+
+      {view3d !== null && sites[view3d] && (
+        <button
+          onClick={close3d}
+          className="absolute left-1/2 top-4 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-ink px-4 py-2 text-[13px] font-semibold text-cream shadow-lg hover:bg-ink-2"
+        >
+          <ArrowLeft size={14} /> Back to the map · {sites[view3d].name} in 3D
+        </button>
       )}
 
       {showPick && (
@@ -383,7 +530,7 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
         </div>
       )}
 
-      <div className="pointer-events-none absolute bottom-3 left-3 flex gap-3 rounded-full bg-card/90 px-3 py-1.5 text-[12px] ring-1 ring-line">
+      {!bare && <div className="pointer-events-none absolute bottom-3 left-3 flex gap-3 rounded-full bg-card/90 px-3 py-1.5 text-[12px] ring-1 ring-line">
         <span className="flex items-center gap-1.5">
           <i className="size-2.5 rounded-full bg-teal" /> Embed
         </span>
@@ -399,39 +546,64 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
         <span className="flex items-center gap-1.5">
           <i className="h-0 w-4 border-t-2 border-dashed border-amber" /> moved to heat
         </span>
-      </div>
+      </div>}
     </div>
   );
 }
 
 /** Push pins that would sit on top of each other downwards, so close sites stay readable. */
-function spread(pts: { x: number; y: number }[], w: number, h: number) {
+function spread(pts: { x: number; y: number }[], size: (i: number) => [number, number]) {
   const out: { x: number; y: number }[] = [];
-  for (const p of pts) {
+  pts.forEach((p, i) => {
     if (!p) {
       out.push(p);
-      continue;
+      return;
     }
+    const [w, h] = size(i);
     const q = { x: p.x, y: p.y };
-    while (out.some((o) => o && Math.abs(o.x - q.x) < w && Math.abs(o.y - q.y) < h)) q.y += h;
+    // two boxes overlap when their centres are closer than half of both widths (heights)
+    while (out.some((o, k) => o && Math.abs(o.x - q.x) < (w + size(k)[0]) / 2 && Math.abs(o.y - q.y) < (h + size(k)[1]) / 2)) q.y += h;
     out.push(q);
-  }
+  });
   return out;
 }
 
 /** What a site needs this hour, and where the heat comes from. */
-function SiteHour(p: { x: number; y: number; name: string; demand: number; heat: number; served: number; soc: number; tank: number; high: boolean }) {
+/** A building's hour. `live`: the live demo, where servers cover all heat through the tank (no backup heater). */
+function SiteHour(p: {
+  x: number;
+  y: number;
+  name: string;
+  demand: number;
+  heat: number;
+  served: number;
+  soc: number;
+  tank: number;
+  high: boolean;
+  live?: boolean;
+  actions?: React.ReactNode;
+  onEnter?: () => void;
+  onLeave?: () => void;
+}) {
   const backup = Math.max(0, p.demand - p.served);
   const rows = [
     { l: "Needs", v: `${p.demand.toFixed(1)} kW` },
     { l: "Servers give", v: `${p.heat.toFixed(1)} kW` },
-    { l: "Backup heater", v: `${backup.toFixed(1)} kW`, hot: backup > 0.05 },
+    ...(p.live ? [] : [{ l: "Backup heater", v: `${backup.toFixed(1)} kW`, hot: backup > 0.05 }]),
   ];
+  const level = p.tank > 0 ? Math.max(0, Math.min(1, p.soc / p.tank)) : 0;
+  // no room above the pin (a building's 3D view puts it near the top): open the card below it
+  const below = p.y < 380;
   return (
     <div
-      className="pointer-events-none absolute z-20 w-[210px] -translate-x-1/2 rounded-2xl bg-ink p-3.5 text-cream shadow-xl"
-      style={{ left: p.x, top: p.y - (p.high ? 58 : 22), transform: "translate(-50%, -100%)" }}
+      onMouseEnter={p.onEnter}
+      onMouseLeave={p.onLeave}
+      onClick={(e) => e.stopPropagation()}
+      className="absolute z-20 w-[220px] rounded-2xl bg-ink p-3.5 text-cream shadow-xl"
+      style={below ? { left: p.x, top: p.y + 22, transform: "translate(-50%, 0)" } : { left: p.x, top: p.y - (p.high ? 58 : 22), transform: "translate(-50%, -100%)" }}
     >
+      {/* a bridge over the gap to the pin, so moving onto the card keeps it open */}
+      <div className={clsx("absolute inset-x-0", below ? "bottom-full" : "top-full")} style={{ height: below ? 14 : p.high ? 46 : 14 }} />
       <div className="text-[13px] font-semibold">{p.name}</div>
       <div className="mt-2 space-y-1 text-[13px]">
         {rows.map((r) => (
@@ -444,12 +616,94 @@ function SiteHour(p: { x: number; y: number; name: string; demand: number; heat:
       <div className="mt-2.5 flex justify-between text-[13px]">
         <span className="text-cream/60">Tank</span>
         <b className="tabular-nums">
+          {p.live ? `${Math.round(level * 100)} % · ` : ""}
           {p.soc.toFixed(0)} / {p.tank} kWh
         </b>
       </div>
-      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-cream/15">
-        <div className="h-full rounded-full bg-amber" style={{ width: `${Math.min(100, (p.soc / p.tank) * 100)}%` }} />
+      <div className={clsx("mt-1.5 overflow-hidden rounded-full bg-cream/15", p.live ? "h-2.5" : "h-1.5")}>
+        <div className={clsx("h-full rounded-full", p.live ? "bg-gradient-to-r from-[#3f8f9a] to-[#7cc3cb]" : "bg-amber")} style={{ width: `${level * 100}%` }} />
       </div>
+      {p.actions && <div className="mt-3 flex flex-wrap gap-1.5">{p.actions}</div>}
     </div>
   );
+}
+
+export function CardBtn({ onClick, children, title }: { onClick: () => void; children: React.ReactNode; title?: string }) {
+  return (
+    <button
+      title={title}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      className="flex items-center gap-1.5 rounded-full bg-cream/12 px-2.5 py-1 text-[12px] font-semibold text-cream ring-1 ring-cream/25 hover:bg-cream/20"
+    >
+      {children}
+    </button>
+  );
+}
+
+/**
+ * The building at a point, as a polygon to extrude in DigitalHeat's colour: the house-sized footprint of
+ * `layer` (rendered buildings) under or nearest to the point, or a 16 m block when none is mapped there.
+ */
+export function footprintAt(m: maplibregl.Map, lat: number, lon: number, layer: string): GeoJSON.FeatureCollection {
+  const p = m.project([lon, lat]);
+  const box: [maplibregl.PointLike, maplibregl.PointLike] = [
+    [p.x - 40, p.y - 40],
+    [p.x + 40, p.y + 40],
+  ];
+  const feats = m.getLayer(layer) ? m.queryRenderedFeatures(box, { layers: [layer] }) : [];
+  // tiles merge neighbouring buildings into one multipolygon: pick the single polygon at the site
+  const inside = (ring: number[][]) => {
+    let c = false;
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      const [xi, yi] = ring[i],
+        [xj, yj] = ring[j];
+      if (yi > lat !== yj > lat && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) c = !c;
+    }
+    return c;
+  };
+  let best: { ring: number[][]; h: number } | null = null;
+  let bestD = Infinity;
+  for (const f of feats) {
+    const g = f.geometry;
+    if (g.type !== "Polygon" && g.type !== "MultiPolygon") continue;
+    const polys = (g.type === "Polygon" ? [g.coordinates] : g.coordinates) as number[][][][];
+    for (const poly of polys) {
+      const ring = poly[0];
+      // house-sized footprints only (7–80 m across): skips station halls, malls and sheds
+      const xs = ring.map((c) => c[0]),
+        ys = ring.map((c) => c[1]);
+      const spanM = Math.max((Math.max(...xs) - Math.min(...xs)) * 111320 * Math.cos((lat * Math.PI) / 180), (Math.max(...ys) - Math.min(...ys)) * 110540);
+      if (spanM > 80 || spanM < 7) continue;
+      let d = inside(ring) ? 0 : Infinity;
+      if (d) for (const c of ring) d = Math.min(d, (c[0] - lon) ** 2 + (c[1] - lat) ** 2);
+      if (d < bestD) {
+        bestD = d;
+        best = { ring, h: Number(f.properties?.render_height ?? 12) };
+      }
+    }
+  }
+  if (best) {
+    // grow the footprint 4 % so its walls sit just outside the white extrusion (no z-fighting)
+    const n = best.ring.length;
+    const cx = best.ring.reduce((a, c) => a + c[0], 0) / n,
+      cy = best.ring.reduce((a, c) => a + c[1], 0) / n;
+    const ring = best.ring.map(([x, y]) => [cx + (x - cx) * 1.04, cy + (y - cy) * 1.04]);
+    return { type: "FeatureCollection", features: [{ type: "Feature", properties: { h: best.h + 1 }, geometry: { type: "Polygon", coordinates: [ring] } }] };
+  }
+  // no mapped building at the point: draw a 16 m block so the site is still visible
+  const dx = 8 / (111320 * Math.cos((lat * Math.PI) / 180)),
+    dy = 8 / 110540;
+  return {
+    type: "FeatureCollection",
+    features: [
+      {
+        type: "Feature",
+        properties: { h: 14 },
+        geometry: { type: "Polygon", coordinates: [[[lon - dx, lat - dy], [lon + dx, lat - dy], [lon + dx, lat + dy], [lon - dx, lat + dy], [lon - dx, lat - dy]]] },
+      },
+    ],
+  };
 }
