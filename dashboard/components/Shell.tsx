@@ -20,6 +20,8 @@ import {
   X,
   Coins,
   ListChecks,
+  Presentation,
+  Wallet,
 } from "lucide-react";
 import { Logo } from "./Logo";
 import { useFleet } from "@/lib/store";
@@ -29,13 +31,18 @@ const NAV = [
   { href: "/", label: "Overview", icon: LayoutGrid, match: (p: string) => p === "/" },
   { href: "/replay", label: "Swiss replay", icon: Flame, match: (p: string) => p.startsWith("/replay") },
   { href: "/money", label: "Money", icon: Coins, match: (p: string) => p.startsWith("/money") },
+  { href: "/finance", label: "Finance", icon: Wallet, match: (p: string) => p.startsWith("/finance") },
   { href: "/assumptions", label: "Assumptions", icon: ListChecks, match: (p: string) => p.startsWith("/assumptions") },
   { href: "/map", label: "Fleet map", icon: MapIcon, match: (p: string) => p.startsWith("/map") },
   { href: "/sites/BS-01", label: "Sites", icon: Building2, match: (p: string) => p.startsWith("/sites") },
+  { href: "/pitch", label: "Pitch", icon: Presentation, match: (p: string) => p.startsWith("/pitch") },
 ];
 
 export function Shell({ children }: { children: React.ReactNode }) {
   const [method, setMethod] = useState(false);
+  const path = usePathname();
+  // the pitch is a full-screen presentation: no console chrome around it
+  if (path.startsWith("/pitch")) return <>{children}</>;
   return (
     <div className="flex h-dvh gap-3 p-3">
       <Suspense fallback={<aside className="hidden w-[232px] shrink-0 rounded-[28px] bg-cream lg:block" />}>

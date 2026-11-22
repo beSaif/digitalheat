@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import { mkdirSync, openSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { ROOT, cleanSites, cleanYear, python } from "@/lib/server/python";
@@ -29,9 +29,19 @@ function alive(pid: number | undefined) {
   }
 }
 
+/** What the operating system says about the job process (ps STAT: R/S running, T stopped). */
+function osState(pid: number | undefined) {
+  if (!pid || !alive(pid)) return null;
+  try {
+    return execFileSync("ps", ["-o", "stat=", "-p", String(pid)]).toString().trim() || null;
+  } catch {
+    return null;
+  }
+}
+
 export async function GET() {
   const s = readStatus();
-  return Response.json(s ? { ...s, alive: alive(s.pid) && s.state !== "finished" } : null, {
+  return Response.json(s ? { ...s, alive: alive(s.pid) && s.state !== "finished", os: osState(s.job?.pid) } : null, {
     headers: { "cache-control": "no-store" },
   });
 }

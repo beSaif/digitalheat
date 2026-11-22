@@ -7,7 +7,7 @@ export function Card({
   ...rest
 }: React.HTMLAttributes<HTMLDivElement> & { className?: string }) {
   return (
-    <div className={clsx("rounded-[24px] bg-card p-5 ring-1 ring-line/70", className)} {...rest}>
+    <div className={clsx("dh-card rounded-[24px] bg-card p-5 ring-1 ring-line/70", className)} {...rest}>
       {children}
     </div>
   );
