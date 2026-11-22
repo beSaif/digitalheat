@@ -64,3 +64,8 @@ export function cleanSites(raw: unknown): SiteIn[] | null {
   }
   return out;
 }
+
+export function cleanYear(raw: unknown) {
+  const y = Number(raw);
+  return Number.isInteger(y) && y >= 1950 && y <= 2025 ? y : null;
+}
