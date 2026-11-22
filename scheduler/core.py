@@ -118,7 +118,7 @@ def service_job_types(sim_per_day=100, twin_per_day=6, replicas=TWIN_REPLICAS):
     return t
 
 
-@dataclass
+@dataclass(slots=True)
 class Job:
     id: int
     type: str
@@ -137,6 +137,7 @@ class Job:
     checkpoints: int = 0
     group: int = -1  # replicated jobs: id of the first copy; -1 = not replicated
     restarts: int = 0
+    _ran: int = -1  # last hour it ran
 
     @property
     def left(self):
@@ -174,9 +175,13 @@ class SiteHour:
 
 
 class Scheduler:
-    def __init__(self, sites, demand, types=None, pool=True, partial=False, cool_fill=False, outages=()):
+    def __init__(self, sites, demand, types=None, pool=True, partial=False, cool_fill=False, outages=(),
+                 keep_jobs=True):
         """sites: list of scheduler.sites.Site; demand: list of 8,760-hour lists (kW), the forecast.
-        outages: (site index, first hour, hours) tuples."""
+        outages: (site index, first hour, hours) tuples.
+        keep_jobs: keep every job ever created in self.jobs (the yearly balance counts them). With False
+        only open jobs are kept: a year of backlog fill is millions of jobs, so a fast-forward to one
+        moment (scheduler.day) runs in a fraction of the time and memory, with the same decisions."""
         self.sites = sites
         self.d = demand
         self.types = types or job_types()
@@ -187,6 +192,8 @@ class Scheduler:
         self.n = len(sites)
         self.soc = [0.0] * self.n
         self.jobs = []
+        self.keep_jobs = keep_jobs
+        self.n_jobs = 0  # jobs created so far (job ids), also when they are not kept
         self.open = []
         self.groups = {}  # group id -> copies
         self.count = {}  # jobs created per type
@@ -199,8 +206,10 @@ class Scheduler:
 
     # ---- helpers -------------------------------------------------------------------------
     def _new(self, jt, origin, t, group=-1):
-        j = Job(len(self.jobs), jt.name, origin, t, t + int(jt.due_h), jt.sh, group=group)
-        self.jobs.append(j)
+        j = Job(self.n_jobs, jt.name, origin, t, t + int(jt.due_h), jt.sh, group=group)
+        self.n_jobs += 1
+        if self.keep_jobs:
+            self.jobs.append(j)
         self.count[jt.name] = self.count.get(jt.name, 0) + 1
         self.open.append(j)
         return j
@@ -208,7 +217,7 @@ class Scheduler:
     def _arrive(self, jt, origin, t):
         if jt.replicas <= 1:
             return self._new(jt, origin, t)
-        first = self._new(jt, origin, t, group=len(self.jobs))
+        first = self._new(jt, origin, t, group=self.n_jobs)
         copies = [first] + [self._new(jt, origin, t, group=first.id) for _ in range(jt.replicas - 1)]
         self.groups[first.id] = copies
         return first
@@ -236,16 +245,11 @@ class Scheduler:
                 held[j.site].add(j.group)
         return [len(x) for x in held]
 
-    def _reserve(self, s, t, short):
-        """U[t+1]: most heat the tank may hold after hour t without a later deadline job dumping."""
-        C = self.sites[s].tank_kwh
-        q = [0.0] * (HORIZON + 2)
-        for j in short:  # waiting deadline jobs of this site, at their last possible start
-            if j.state == "queued" and j.origin == s:
-                k = j.due - math.ceil(j.left - EPS) - t
-                if 1 <= k <= HORIZON:
-                    q[k] += REC * min(1.0, j.left)
-        for jt in self.deadline_types:  # arrivals expected at this site in the next 24 h
+    def _arrivals(self, t):
+        """Deadline-job arrivals expected at every site in the next 24 h, as (hour index, heat) in the
+        order _reserve adds them; the same for all sites, so step() works it out once per hour."""
+        out = []
+        for jt in self.deadline_types:
             if not jt.per_site or jt.due_h > HORIZON:
                 continue
             for k in range(1, HORIZON + 1):
@@ -253,10 +257,26 @@ class Scheduler:
                 if h % 24 in jt.arrival_hours:
                     last = k + int(jt.due_h) - math.ceil(jt.sh)
                     if last <= HORIZON:
-                        q[last] += REC * jt.sh * jt.replicas
+                        out.append((last, REC * jt.sh * jt.replicas))
+        return out
+
+    def _reserve(self, s, t, short, arrivals=None):
+        """U[t+1]: most heat the tank may hold after hour t without a later deadline job dumping.
+        short: waiting deadline jobs (all, or only this site's); arrivals: self._arrivals(t)."""
+        C = self.sites[s].tank_kwh
+        q = [0.0] * (HORIZON + 2)
+        for j in short:  # waiting deadline jobs of this site, at their last possible start
+            if j.state == "queued" and j.origin == s:
+                k = j.due - math.ceil(j.left - EPS) - t
+                if 1 <= k <= HORIZON:
+                    q[k] += REC * min(1.0, j.left)
+        for k, v in (self._arrivals(t) if arrivals is None else arrivals):  # arrivals expected at this site
+            q[k] += v
         u = C
+        d, H = self.d[s], self.H
         for k in range(HORIZON, 0, -1):
-            u = min(C, max(0.0, min(C, u) - q[k] + self._d(s, t + k)))
+            h = t + k
+            u = min(C, max(0.0, min(C, u) - q[k] + (d[h] if h < H else d[h - H])))  # = self._d(s, h)
         return u
 
     def _will_have_heat(self, s, t):
@@ -297,12 +317,17 @@ class Scheduler:
             self._outage_starts(t)
         hours = []
         short = [j for j in self.open if j.type != "embed" and j.due - t <= HORIZON + math.ceil(self.max_work) + 1]
+        by_site = [[] for _ in range(n)]  # the same jobs per origin, in the same order
+        for j in short:
+            if j.state == "queued" and 0 <= j.origin < n:
+                by_site[j.origin].append(j)
+        arrivals = self._arrivals(t)
         # 1-3: heat signal, permit, reserve
         for s, site in enumerate(self.sites):
             d = self.d[s][t]
             room = site.tank_kwh - self.soc[s]
             down = self._down(s, t)
-            u = self._reserve(s, t, short)
+            u = self._reserve(s, t, by_site[s], arrivals)
             if down or not self._usable(s):
                 permit = limit = 0
             elif self.partial:

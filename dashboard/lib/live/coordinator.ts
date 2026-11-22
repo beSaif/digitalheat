@@ -299,7 +299,8 @@ function decide(s: Store, key: CondKey): Promise<DayData> {
   const m = moment(key);
   const req = JSON.stringify({
     year: 2025,
-    sites: fleet(s).map(({ id, kind, name, lat, lon, servers }) => ({ id, kind, name, lat, lon, servers, x_house: X_HOUSE[kind] ?? 1 })),
+    // no names: they are not the scheduler's business, and a renamed rack then reuses the cached decision
+    sites: fleet(s).map(({ id, kind, lat, lon, servers }) => ({ id, kind, name: id, lat, lon, servers, x_house: X_HOUSE[kind] ?? 1 })),
     day: m.day,
     hour: m.hour,
     hours: 1,
@@ -401,9 +402,8 @@ function biggestRack(s: Store) {
   return top;
 }
 
-/** What the scheduler decided for this node's rack at the moment, in words. */
-function placement(s: Store, n: NodeRec, top: number) {
-  const h = hour(s);
+/** What the scheduler decided for this node's rack at the moment (h = hour(s)), in words. */
+function placement(s: Store, n: NodeRec, top: number, h: DayHour | null) {
   const site = rackIndex(s, n);
   if (!h) return { site, on: 0, servers: 1, reason: "" };
   if (site < 0) return { site, on: 0, servers: 1, reason: "Adding your rack…" };
@@ -491,16 +491,18 @@ function tick(s: Store) {
   const now = Date.now();
   unstick(s, now);
   const top = biggestRack(s);
+  // the live hour once per tick: it copies every site, and a tick runs on every beat of every rack
+  const h = hour(s);
   for (const n of s.nodes.values()) {
     if (n.state === "offline") continue;
     if (now - n.lastSeen > OFFLINE_AFTER_MS) {
       goAway(s, n, "stopped answering");
       continue;
     }
-    const p = placement(s, n, top);
+    const p = placement(s, n, top, h);
     n.site = p.site;
     n.reason = p.reason;
-    n.state = !hour(s) || p.site < 0 ? "waiting" : p.on > 0 ? "running" : "off";
+    n.state = !h || p.site < 0 ? "waiting" : p.on > 0 ? "running" : "off";
     n.duty = p.on > 0 ? Math.min(1, p.on / Math.max(p.on, top)) : 0;
     // the rack was switched off: its part pauses, is saved, and continues on a rack that needs heat
     if (n.current && n.state !== "running") pause(s, n);

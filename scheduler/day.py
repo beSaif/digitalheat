@@ -68,11 +68,13 @@ def run(sites_in, year=2025, day=0, hour=0, hours=24, outages=(), sizing=None):
             s.servers = math.ceil(max(d) / REC - 1e-9)
     idx = {s.id: i for i, s in enumerate(sites)}
     outs = [(idx[o[0]], int(o[1]), int(o[2])) for o in outages if o[0] in idx and int(o[2]) > 0]
-    sch = Scheduler(sites, dem, job_types(), outages=outs)
+    # the fast-forward keeps only open jobs (the year's finished backlog jobs would take ~50 MB per site)
+    sch = Scheduler(sites, dem, job_types(), outages=outs, keep_jobs=False)
     H = len(dem[0])
     t0 = max(0, min(H - 1, day * 24 + hour))
     for t in range(t0):  # fast-forward: same scheduler, same state as the balance
         sch.step(t)
+    sch.keep_jobs = True  # the hours shown list the jobs that start in them
     out = []
     for t in range(t0, min(t0 + hours, H)):
         before = list(sch.open)
