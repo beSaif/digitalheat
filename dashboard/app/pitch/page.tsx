@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import {
   ArrowRight,
@@ -26,7 +26,7 @@ import { Finance } from "@/components/Finance";
  * ← → / space / PageUp-Down move, N shows speaker notes, F goes full screen.
  */
 
-const SERVERS = 10; // servers in the reference house's basement (python3 -m scheduler.balance --servers 10)
+const SERVERS = 11; // servers in the reference house's basement (python3 -m scheduler.balance --servers 11)
 const HOUSE: SiteIn[] = [{ id: "BS-01", kind: "house", name: "Reference house", lat: 47.5695, lon: 7.588, servers: SERVERS }];
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const dayLabel = (d: number) => {
@@ -99,11 +99,10 @@ export default function Pitch() {
       <div className="scarf-bar fixed left-0 top-0 z-30 h-2" style={{ width: `${progress * 100}%` }} />
       <Hook revealed={revealed} reveal={() => setRevealed(true)} />
       <Problems />
-      <Idea />
       <Figures data={data} />
       <Console />
-      <Money />
       <Services />
+      <Money />
       <Close data={data} />
 
       {/* chapter rail */}
@@ -325,7 +324,7 @@ function HouseXray({ v, servers, tank, cold, dark }: { v: Day; servers: number; 
 
 /* ---------- 0 · opening: the solution first, then the two problems it solves ---------- */
 
-const WARM: Day = { demand: 1, running: 10, soc: 20, served: 1, dumped: 0, paused: 0 }; // a winter hour with every server on
+const WARM: Day = { demand: 1, running: 11, soc: 20, served: 1, dumped: 0, paused: 0 }; // a winter hour with every server on
 
 function Hook({ revealed, reveal }: { revealed: boolean; reveal: () => void }) {
   return (
@@ -412,39 +411,6 @@ function ProblemCard({ n, icon, title, big, unit, text, warm }: { n: string; ico
   );
 }
 
-/* ---------- 0c · the rule the scheduler follows (scheduler/core.py) ---------- */
-
-function Idea() {
-  const steps = [
-    { n: "1", t: "The house asks", d: "How much heat do I need right now?" },
-    { n: "2", t: "Servers turn on", d: "Only as many as that heat needs." },
-    { n: "3", t: "No heat needed?", d: "The work pauses and waits." },
-  ];
-  return (
-    <Slide id="idea">
-      <Kicker>The solution</Kicker>
-      <h2 className="mt-3 max-w-[1100px] font-display text-[36px] font-semibold leading-[1.05] md:text-[52px]">
-        Move the servers into the basement. Their wasted heat warms the home.
-      </h2>
-      <div className="mt-4 font-display text-[28px] font-semibold md:text-[40px]">
-        Our rule: servers only run <span className="text-rust">when the house needs heat.</span>
-      </div>
-      <div className="mt-12 grid flex-1 grid-cols-1 content-center items-stretch gap-4 lg:grid-cols-[1fr_auto_1fr_auto_1fr]">
-        {steps.map((x, i) => (
-          <Fragment key={x.n}>
-            <div className={clsx("sticker rounded-[28px] bg-card p-6", i % 2 ? "tilt-r" : "tilt-l")}>
-              <span className="grid size-10 place-items-center rounded-full border-[3px] border-ink bg-amber font-display text-[17px] font-semibold text-ink">{x.n}</span>
-              <div className="mt-4 font-display text-[26px] font-semibold leading-tight">{x.t}</div>
-              <p className="mt-2 text-[16px] leading-snug text-muted">{x.d}</p>
-            </div>
-            {i < steps.length - 1 && <ArrowRight size={28} className="hidden self-center text-rust lg:block" />}
-          </Fragment>
-        ))}
-      </div>
-    </Slide>
-  );
-}
-
 /* ---------- 1 · key figures ---------- */
 
 function Figures({ data }: { data: House | null }) {
@@ -458,7 +424,7 @@ function Figures({ data }: { data: House | null }) {
   const figs = y
     ? [
         [String(y.servers), "servers"],
-        [pct(y.coverage, 1), "of its heat"],
+        [pct(y.coverage, 2), "of its heat"],
         [kwh(y.dumped_kwh), "heat dumped"],
         [pct(y.utilisation, 1), "utilisation"],
         [pct(y.missed_pct / 100, 0), "missed deadlines"],
@@ -475,7 +441,7 @@ function Figures({ data }: { data: House | null }) {
               <>
                 {y.servers} servers heat
                 <br />
-                <span className="text-amber">{pct(y.coverage, 1)}</span> of the home.
+                <span className="text-amber">{pct(y.coverage, 2)}</span> of the home.
               </>
             ) : (
               "The reference house"
@@ -628,7 +594,7 @@ function Close({ data }: { data: House | null }) {
         </div>
         <div className="sticker tilt-r rounded-[22px] bg-card px-5 py-4">
           <div className="font-display text-[26px] font-semibold leading-tight md:text-[30px]">
-            <span className="text-amber">{data ? pct(data.y.coverage, 1) : "99.3%"}</span> of its heat from computing.
+            <span className="text-amber">{data ? pct(data.y.coverage, 2) : "99.97%"}</span> of its heat from computing.
           </div>
         </div>
       </div>

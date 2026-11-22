@@ -3,9 +3,10 @@
  * (the "bridge"), and the script to say. The deck (page.tsx) and the printable script
  * (script/page.tsx) both read this list.
  *
- * Story: the solution first → the two problems → how it works → result → live demo (the console, slide 5) → money →
- * services → back to the two problems. About 5 minutes; the console is Q&A only.
- * Numbers are the reference house in Basel, 2025, 10 servers (python3 -m scheduler.balance --servers 10).
+ * Story: what it is and the result → we pay for heat twice, so the house decides → why eleven, not thirteen →
+ * live demo → who pays for the work → does it pay, and what has to be true → back to the two problems.
+ * Written for the ear: short sentences, the key word last, few numbers, said as words.
+ * Numbers are the reference house in Basel, 2025, 11 servers (python3 -m scheduler.balance --servers 11).
  */
 /** seconds: a fixed time budget instead of one counted from the words (the live demo). */
 export type PitchSlide = { id: string; label: string; bridge: string; note: string; seconds?: number; qa?: boolean };
@@ -15,50 +16,44 @@ export const SLIDES: PitchSlide[] = [
     id: "hook",
     label: "Opening",
     bridge: "It starts with two problems.",
-    note: "Ten servers in a basement. For a whole year, they gave a Basel home 99.3% of its heat. Not one kilowatt-hour was wasted, and the servers earned money the entire time. (Press space.) We're team Ctrl+Free, and this is DigitalHeat: servers that heat homes.",
+    note: "DigitalHeat puts servers in the basement, so their waste heat warms the home. We tested it on a house in Basel, every hour of 2025. Eleven servers. 99.97 percent of the heat. Zero heat thrown away. Zero jobs late. (Press space.) We're team Ctrl+Free.",
   },
   {
     id: "problems",
     label: "Two problems",
-    bridge: "So how many servers does a house need?",
-    note: "Today, servers waste heat: data centres pay to cool it away. And homes pay for heat: this house needs 31,231 kilowatt-hours a year, about 4,150 francs even with a heat pump. So why not put servers in basements? Because a house is a moody customer. In the coldest hour it wants twelve and a half servers. On a summer day, less than one. Buy twelve, they idle all summer. Buy one, the house is cold all winter.",
-  },
-  {
-    id: "idea",
-    label: "Solution",
-    bridge: "We tested it on the reference house, hour by hour, for all of 2025.",
-    note: "So we don't fix the number. We let the house decide. Every hour, it tells our scheduler how much heat it needs and how much room is left in its hot-water tank, and only that many servers switch on. When no heat is needed, the work doesn't fail. It pauses, keeps its place, and waits.",
+    bridge: "So how many did we buy?",
+    note: "Today, we pay for heat twice. Data centres pay to get rid of it. Homes pay to make it. This house spends about 4,150 francs a year, even with a heat pump. The catch: a house is a moody customer. On the coldest night, it wants twelve and a half servers. In summer, not even one. So we let the house decide. Every hour, it tells our scheduler how much heat it needs and how much hot water it can still store. That many servers switch on. When the house is warm, the work pauses and waits.",
   },
   {
     id: "figures",
     label: "Result",
-    bridge: "Now, the live demo.",
-    note: "We ran this on the reference house for every hour of 2025. Ten servers. 99.3% of the heat covered. Zero heat dumped. Zero missed deadlines. The servers were busy 44% of the year, and that's the point: they only run when the heat is wanted. Let's watch it happen.",
+    bridge: "Here's what to watch.",
+    note: "We bought eleven, not thirteen. The hot-water tank covers the coldest nights, so no server sits waiting for them. Across 2025, they worked 40 percent of the hours. Here's what to watch.",
   },
   {
     id: "console",
     label: "Live demo",
-    bridge: "Useful heat, useful work. But does it pay?",
+    bridge: "That job is something people pay for.",
     seconds: 90,
-    note: "(Click Open the live console.) Show 15 January: every server running. Then 15 July: servers asleep, the work pausing. Then the real job on this laptop pausing and resuming on the heat signal. (Come back to the slides with: Useful heat, useful work. But does it pay?)",
-  },
-  {
-    id: "money",
-    label: "Costs",
-    bridge: "So who buys all that computing?",
-    note: "Useful heat, useful work. But does it pay? Each server is the same machine Amazon rents out by the hour. Ten, installed, cost 253,000 francs. All in, one server-hour costs us 1.60. We sell it at 2.74, Amazon's own spot price, and less than a third of their on-demand price. That's 44,000 francs profit a year, and the money back in under three years. Where does it break? Below 1.60 a server-hour, or if servers are busy less than a quarter of the year. And in a real house, the summer tank loses some heat and showers need a small booster. Every number and assumption is in our repository, ready to rerun.",
+    note: "(Open the live console.) 15 January. Watch the servers follow the heat line: every one of them is working. (Switch to 15 July.) Summer. The house barely needs heat, so the servers sleep and the work waits. (Show the real job.) This is a real AI job, running on this laptop. The house says it's warm, and the job freezes. Heat is needed again, and it carries on from the exact same step. (If the console fails, play the backup recording.) (Back to the slides with: That job is something people pay for.)",
   },
   {
     id: "services",
     label: "Paid services",
+    bridge: "But does it pay?",
+    note: "That job is something people pay for. Our customers are anyone with work that can wait for heat. Private document search for hospitals and law firms, with data that never leaves Switzerland. Simulations for engineers. And overnight video processing.",
+  },
+  {
+    id: "money",
+    label: "Costs",
     bridge: "Back to our two problems.",
-    note: "So who pays? Work that can wait for heat. Private document search for hospitals and law firms, with data that never leaves Switzerland: that's the job you just saw. Simulations for engineers. And overnight video processing.",
+    note: "But does it pay? Our servers use the same chips Amazon rents out. All in, one server costs us 1.72 francs an hour. Our work can pause, so we price it like Amazon's spot computing: 2.74. Eleven servers make 40,000 francs a year, and pay for themselves in about three years. What has to be true? Two things. First, the price stays above 1.72. Azure's cheapest is already below that, so we won't win on price alone. We win on computing that stays in Switzerland. Second, the servers work a quarter of the year. Basel gave us 40 percent. Almost double. A real house loses some tank heat in summer, and showers need a small booster. That's what the pilot tests. Every number is in our repository. Rerun it yourselves.",
   },
   {
     id: "close",
     label: "Conclusion",
     bridge: "",
-    note: "Back to our two problems: zero heat wasted, and a home heated by computing someone else pays for. Our ask: one pilot. One building, ten servers, one winter. (Pause.) Because the heat was always there. (Pause.) It was just in the wrong building. Thank you.",
+    note: "So: data centres stop paying to throw heat away. Families stop paying to make it. Our ask is one pilot. One building. Eleven servers. One winter. (Pause.) Because the heat was always there. (Pause.) It was just in the wrong building. Thank you.",
   },
 ];
 
