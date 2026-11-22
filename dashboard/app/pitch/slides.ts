@@ -4,7 +4,7 @@
  * (script/page.tsx) both read this list.
  *
  * Story: what it is and the result → we pay for heat twice, so the house decides → why eleven, not thirteen →
- * live demo → who pays for the work → does it pay, and what has to be true → back to the two problems.
+ * live demo → summer: an algae farm as a third income → who pays for the work → does it pay, and what has to be true → back to the two problems.
  * Written for the ear: short sentences, the key word last, few numbers, said as words.
  * Numbers are the reference house in Basel, 2025, 11 servers (python3 -m scheduler.balance --servers 11).
  */
@@ -33,21 +33,27 @@ export const SLIDES: PitchSlide[] = [
   {
     id: "console",
     label: "Live demo",
-    bridge: "That job is something people pay for.",
+    bridge: "What about summer?",
     seconds: 90,
-    note: "(Open the live console.) 15 January. Watch the servers follow the heat line: every one of them is working. (Switch to 15 July.) Summer. The house barely needs heat, so the servers sleep and the work waits. (Show the real job.) This is a real AI job, running on this laptop. The house says it's warm, and the job freezes. Heat is needed again, and it carries on from the exact same step. (If the console fails, play the backup recording.) (Back to the slides with: That job is something people pay for.)",
+    note: "(Open the live console.) 15 January. Watch the servers follow the heat line: every one of them is working. (Switch to 15 July.) Summer. The house barely needs heat, so the servers sleep and the work waits. (Show the real job.) This is a real AI job, running on this laptop. The house says it's warm, and the job freezes. Heat is needed again, and it carries on from the exact same step. (If the console fails, play the backup recording.) (Back to the slides with: What about summer?)",
+  },
+  {
+    id: "industry",
+    label: "Algae case study",
+    bridge: "Who pays for the work?",
+    note: "What about summer? The house barely needs heat, so the servers sleep. But Windcloud, in Germany, already grows algae with their data centre's heat. A greenhouse next door could take the heat the house doesn't need, so our servers could run every hour. That's a third income, next to computing and heat: up to four times the profit, if every hour sells. (Pause.) Homes take the winter heat. Algae could take spring and autumn.",
   },
   {
     id: "services",
     label: "Paid services",
     bridge: "But does it pay?",
-    note: "That job is something people pay for. Our customers are anyone with work that can wait for heat. Private document search for hospitals and law firms, with data that never leaves Switzerland. Simulations for engineers. And overnight video processing.",
+    note: "Who pays for the work? Anyone with work that can wait for heat. Private document search for hospitals and law firms, with data that never leaves Switzerland. That's the job you just saw. Simulations for engineers. And overnight video processing.",
   },
   {
     id: "money",
     label: "Costs",
     bridge: "Back to our two problems.",
-    note: "But does it pay? Our servers use the same chips Amazon rents out. All in, one server costs us 1.72 francs an hour. Our work can pause, so we price it like Amazon's spot computing: 2.74. Eleven servers make 40,000 francs a year, and pay for themselves in about three years. What has to be true? Two things. First, the price stays above 1.72. Azure's cheapest is already below that, so we won't win on price alone. We win on computing that stays in Switzerland. Second, the servers work a quarter of the year. Basel gave us 40 percent. Almost double. A real house loses some tank heat in summer, and showers need a small booster. That's what the pilot tests. Every number is in our repository. Rerun it yourselves.",
+    note: "But does it pay? Our servers use the same chips Amazon rents out. All in, one server costs us 1.72 francs an hour. Our work can pause, so we price it like Amazon's spot computing: 2.74. Eleven servers make 40,000 francs a year, and pay for themselves in about three years. What has to be true? Two things. First, the price stays above 1.72. Azure's cheapest is already below that, so we won't win on price alone. We win on computing that stays in Switzerland. Second, the servers work a quarter of the year. Basel gave us 40 percent. Almost double. Every number is in our repository. Rerun it yourselves.",
   },
   {
     id: "close",

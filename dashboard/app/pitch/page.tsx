@@ -13,6 +13,10 @@ import {
   Play,
   Receipt,
   Search,
+  Sprout,
+  Thermometer,
+  Waves,
+  Coins,
   StickyNote,
   ScrollText,
 } from "lucide-react";
@@ -101,6 +105,7 @@ export default function Pitch() {
       <Problems />
       <Figures data={data} />
       <Console />
+      <Industry />
       <Services />
       <Money />
       <Close data={data} />
@@ -575,6 +580,36 @@ function Services() {
             <p className="mt-3 text-[17px] leading-snug text-cream/80">{s.d}</p>
           </div>
         ))}
+      </div>
+    </Slide>
+  );
+}
+
+/* ---------- 6b · case study: Windcloud 4.0 heats a spirulina farm with data-centre heat (their email to us) ---------- */
+
+const ALGAE = [
+  { k: "What", icon: <Sprout size={22} />, d: "A spirulina farm, heated by a data centre's waste heat." },
+  { k: "Why", icon: <Thermometer size={22} />, d: "Spirulina grows in water at 15–38 °C. Server heat is exactly that warm." },
+  { k: "How", icon: <Waves size={22} />, d: "Warm water from the servers heats the greenhouse, so the growing season lasts longer." },
+  { k: "A third income?", icon: <Coins size={22} />, d: "Running every hour would make 46,000 kWh a year more heat than the house needs. If a greenhouse took it, profit could rise from CHF 40,000 to up to 178,000 a year, if every hour sells." },
+];
+
+function Industry() {
+  return (
+    <Slide id="industry" dark>
+      <Kicker dark>Case study · Windcloud 4.0, northern Germany</Kicker>
+      <h2 className="mt-3 font-display text-[36px] font-semibold leading-none md:text-[52px]">Data-centre heat that grows algae.</h2>
+      <div className="mt-10 grid flex-1 grid-cols-1 content-center gap-5 md:grid-cols-2 lg:grid-cols-4">
+        {ALGAE.map((x, i) => (
+          <div key={x.k} className={clsx("sticker flex flex-col rounded-[28px] p-6", i % 2 ? "tilt-r" : "tilt-l", i === 3 ? "bg-amber-soft" : "bg-card")}>
+            <span className="grid size-11 place-items-center rounded-full border-[3px] border-cream bg-amber text-ink">{x.icon}</span>
+            <div className="mt-4 font-display text-[28px] font-semibold leading-none">{x.k}</div>
+            <p className="mt-3 text-[17px] leading-snug text-cream/85">{x.d}</p>
+          </div>
+        ))}
+      </div>
+      <div className="sticker mt-8 self-start rounded-[22px] bg-teal-soft px-6 py-4 font-display text-[22px] font-semibold leading-snug text-cream md:text-[28px]">
+        Homes take the winter heat. <span className="text-rust-deep">Algae could take spring and autumn.</span>
       </div>
     </Slide>
   );
