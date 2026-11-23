@@ -42,7 +42,7 @@ ROOT = Path(__file__).resolve().parent.parent
 H = 8760
 
 KINDS = {
-    "house": {"label": "House", "servers": 4, "tank_kwh": 35, "size": 1.0, "size_unit": "x reference house",
+    "house": {"label": "House", "servers": 11, "tank_kwh": 35, "size": 1.0, "size_unit": "x reference house",
               "supply_c": 55},
     "family": {"label": "Family home, 5 people", "servers": 4, "tank_kwh": 35, "size": 5, "size_unit": "people",
                "supply_c": 55},
@@ -209,3 +209,67 @@ def demand(site, temps, year=2025):
                 raise ValueError(site.kind)
             out[d * 24 + h] = v
     return out
+
+
+def size_sites(sites, sites_in, temps, dem, year=2025, sizing=None, rec=0.8):
+    """Live-demo sizing, shared by scheduler.day and scheduler.balance so they cannot drift.
+
+    sites: Site objects (servers may be changed in place); sites_in: the request dicts; temps, dem: per site
+    8,760 temperatures and hourly demands. Returns the (possibly scaled) demands.
+      x_house > 0   scale the site's hourly demand so its coldest hour needs x_house times the house's
+                    (same place and weather): the building keeps its own daily and yearly shape.
+      sizing="peak" every site gets enough servers for its highest hour: servers = ceil(peak kW / rec).
+      sizing="tank" every site gets the fewest servers that, with its tank, cover every hour of the year
+                    (tank_servers): the tank carries heat into the cold hours, so fewer servers than "peak".
+    Without either, the demands and servers are returned unchanged.
+    """
+    import math
+    dem = list(dem)
+    for i, d in enumerate(sites_in):
+        x = float(d.get("x_house") or 0)
+        if x > 0 and max(dem[i]) > 0:
+            house = Site.from_dict({"id": "house", "kind": "house", "lat": sites[i].lat, "lon": sites[i].lon})
+            f = x * max(demand(house, temps[i], year)) / max(dem[i])
+            dem[i] = [v * f for v in dem[i]]
+    if sizing == "peak":
+        for s, d in zip(sites, dem):
+            s.servers = math.ceil(max(d) / rec - 1e-9)
+    elif sizing == "tank":
+        for s, d in zip(sites, dem):
+            s.servers = tank_servers(d, s.tank_kwh, rec)
+    return dem
+
+
+def tank_servers(dem, tank_kwh, rec=0.8):
+    """The fewest servers that cover every hour of `dem` (kW per hour) with a tank of `tank_kwh`.
+
+    Mirrors the scheduler's heat permit (scheduler.core step 2): every hour it runs as many whole servers
+    as the demand plus the tank's free room can take, at most n. The tank starts the year at the level it
+    ends the year with (a real building's tank isn't empty on New Year's morning). The scheduler itself
+    starts from an empty tank, so its first hours of 1 January can fall short by a few kWh (reference house,
+    11 servers: 9 kWh, 99.97 % covered). n servers are enough if every hour is served.
+    """
+    import math
+    eps = 1e-9
+
+    def year(n, soc):
+        ok = True
+        for d in dem:
+            on = min(n, math.floor((d + tank_kwh - soc) / rec + eps))
+            avail = soc + on * rec
+            ok = ok and avail >= d - 1e-6
+            soc = min(tank_kwh, max(0.0, avail - d))
+        return ok, soc
+
+    def covers(n):
+        return year(n, year(n, 0.0)[1])[0]  # second pass from the first year's 31 December level
+
+    lo = max(0, math.ceil(sum(dem) / len(dem) / rec - eps))  # fewer can't keep up over the year
+    hi = math.ceil(max(dem) / rec - eps)  # "peak" always covers
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if covers(mid):
+            hi = mid
+        else:
+            lo = mid + 1
+    return hi

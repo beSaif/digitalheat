@@ -144,11 +144,11 @@ class NewRules(unittest.TestCase):
 class ReferenceYear(unittest.TestCase):
     def test_reference_house_2025(self):
         r = run(REFERENCE, 2025, series=False)["fleet"]
-        self.assertEqual(r["servers"], 4)
+        self.assertEqual(r["servers"], 11)
         self.assertEqual(r["jobs_missed"], 0)
         self.assertEqual(r["dumped_kwh"], 0)
         self.assertAlmostEqual(r["break_even_chf_per_server_h"], 0.3325 - REC * 0.3325 / 2.5, places=3)
-        self.assertGreater(r["coverage"], 0.5)
+        self.assertGreater(r["coverage"], 0.999)  # short only in the first hours of 1 January (empty tank)
 
     def test_pay_off_thresholds_are_break_even_points(self):
         from scheduler.balance import electricity_price
@@ -156,8 +156,9 @@ class ReferenceYear(unittest.TestCase):
 
         f = run(REFERENCE, 2025, series=False)["fleet"]
         m, e = f["money"], electricity_price()
-        # selling exactly at the minimum price gives zero profit
-        self.assertAlmostEqual(pays_off(f, e, e / 2.5, sell=m["min_price_chf_per_server_h"])["profit_chf"], 0, delta=5)
+        # selling exactly at the minimum price gives zero profit (up to its rounding to 0.001 CHF per server-hour)
+        self.assertAlmostEqual(pays_off(f, e, e / 2.5, sell=m["min_price_chf_per_server_h"])["profit_chf"], 0,
+                               delta=0.0005 * f["run_server_h"] + 1)
         # at the maximum electricity price, profit is zero too
         e2 = m["max_electricity_chf_kwh"]
         h = f["run_server_h"]

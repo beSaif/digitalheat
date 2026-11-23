@@ -57,7 +57,7 @@ Full table in [`outputs/business_case.md`](../outputs/business_case.md#1-service
 
 One server-hour costs 0.33 CHF of electricity. **Price is not the constraint; demand is.** The investor view therefore uses the cheapest honest comparator for interruptible batch work, AWS spot for the same server (c7a.48xlarge): 2.74 CHF/server-hour, **3.42 with our premium (base case)**. On-demand parity is 9.45.
 
-**Reference point from the case owner:** a friend pays USD 12k/yr on AWS for simulations. That is ~1,070 server-hours, 0.15 of one of our servers. At AWS + 25 % he would pay ~12,600 CHF/yr. One reference house (4 servers, 70 % sold) needs about 15 such customers.
+**Reference point from the case owner:** a friend pays USD 12k/yr on AWS for simulations. That is ~1,070 server-hours, 0.15 of one of our servers. At AWS + 25 % he would pay ~12,600 CHF/yr. One reference house (11 servers, 70 % sold) needs about 26 such customers.
 
 ## 4. Redundancy tier (RAID across buildings)
 
@@ -73,14 +73,14 @@ A job of the **twin** tier runs as 2–4 copies on different sites. The schedule
 
 ## 5. Homeowner offer and billing
 
-**Offer:** heat at a discount to what a heat pump would cost for the same heat, **not free heat**. Free heat costs DigitalHeat 2,410 CHF/yr per reference house in lost heat income. It also invites waste: windows open, 26 °C indoors.
+**Offer:** heat at a discount to what a heat pump would cost for the same heat, **not free heat**. Free heat costs DigitalHeat 4,153 CHF/yr per reference house in lost heat income. It also invites waste: windows open, 26 °C indoors.
 
-A heat pump's running cost is 0.3325 ÷ 2.5 = **0.133 CHF per kWh of heat**. For the reference house, where server heat covers 18,123 kWh/yr:
+A heat pump's running cost is 0.3325 ÷ 2.5 = **0.133 CHF per kWh of heat**. For the reference house, where server heat covers 31,222 kWh/yr (11 servers):
 
 | Heat price | CHF/kWh | Host pays /yr | Host saves /yr | Host's share of server power | DigitalHeat refunds /yr |
 |---|---|---|---|---|---|
-| 30 % below heat pump | 0.093 | 1,687 | 723 | 22 % | 5,845 |
-| 50 % below heat pump | 0.067 | 1,205 | 1,205 | 16 % | 6,327 |
+| 30 % below heat pump | 0.093 | 2,907 | 1,246 | 22 % | 10,075 |
+| 50 % below heat pump | 0.067 | 2,076 | 2,076 | 16 % | 10,906 |
 
 **10-year pitch line** (the case owner's own math): a household paying 1,500 CHF/yr for heating saves **4,500 CHF over 10 years at 30 % off** and **7,500 CHF at 50 % off**. Research puts heat pump running costs at 1,000–1,600 CHF/yr, so 1,500 is realistic. Installing a heat pump costs CHF 45–60k, minus ~10.5k Basel-Stadt subsidy. A DigitalHeat host who already has a heating system avoids that investment for the share the servers cover.
 
@@ -128,9 +128,9 @@ New site kinds in `scheduler/sites.py`. Daily shapes are the German gas-industry
 - Homes and offices both boost at 06–08.
 - Homes add an evening peak (17–21 h) while offices are in setback. Offices hold the daytime and drop at weekends.
 - On equal energy, mixing homes and offices lowers the January peak-to-mean only a little (1.66 and 1.61 → 1.59). Adding a 24/7 pharma site lowers it to 1.45.
-- The bigger complement is seasonal. In summer, pharma (84 % utilisation), spa (82 %) and hospital (77 %) keep their servers busy, while homes (33 %) and offices (31 %) don't.
+- The bigger complement is seasonal. In summer, pharma (84 % utilisation), spa (82 %) and hospital (77 %) keep their servers busy, while homes (the reference house: 14 %) and offices (31 %) don't.
 
-**Household size:** hot water is a home's only summer heat sink, so size for families. With the same building and 4 servers:
+**Household size:** hot water is a home's only summer heat sink, so size for families. With the same building and 4 servers (the family-home study keeps 4 so only the number of people changes):
 
 | People | Summer heat (kWh, Apr–Sep) | Summer utilisation |
 |---|---|---|
@@ -141,8 +141,8 @@ New site kinds in `scheduler/sites.py`. Daily shapes are the German gas-industry
 
 | Services fleet | Utilisation | Summer utilisation | Heat dumped | Break-even (CHF/server-h) | Payback |
 |---|---|---|---|---|---|
-| without dry cooler | 82.6 % | 67 % | 0 | 0.226 | 2.5 yr |
-| with dry cooler, fill | 96.8 % | 94 % | 56 MWh | 0.242 | 2.1 yr |
+| without dry cooler | 76.4 % | 60 % | 0 | 0.226 | 2.8 yr |
+| with dry cooler, fill | 93.1 % | 87 % | 74 MWh | 0.246 | 2.2 yr |
 
 It pays wherever the price per server-hour is above about 0.34 CHF (electricity + fan, no heat credit).
 
@@ -152,8 +152,8 @@ All new behaviour is in `scheduler/core.py`. It is off by default, so the refere
 
 - **Input 1, heat:** heat demand from the forecast, tank state, and the **supply temperature the site asks for** (`supply_c`). No heat pump and no booster: a site needing water hotter than the server loop's 60 °C outlet gets no server heat (tested).
 - **Input 2, redundancy:** where each job's copies and data are. The hard rule is never two copies on one site. The soft rule is to prefer the site that holds the fewest copies of other jobs, so one building's failure touches as few jobs as possible. Started jobs stay where their data is while that site has heat. `--outage SITE:DAY:HOURS:START` simulates a site failure.
-- **Defer non-urgent jobs to winter:** simulation jobs (8 server-hours each, due in 120 days, 100/day) share the earliest-deadline-first queue. Heat-useful capacity falls from 100 % of the servers in Dec–Feb to **59–60 % in Jun–Aug**. Deferred work builds to 8,200 server-hours by the end of August, October clears it, and **no deadline is missed** (`plots/seasonal_capacity.png`, `python3 -m scheduler.balance --scenario services --monthly`).
-- **24/7 at partial power** (`--partial`): servers run at 30–100 % power instead of on/off. On the reference house, a server is on in **100 % of hours instead of 84 %**, and in summer 100 % instead of 70 %. On/off switching drops from 2,746 switches to 0, with the same heat and coverage. That suits always-on light services (an embeddings API, people counting) that need a server up even when little heat is wanted. Limit: we take throughput as proportional to power; at low power caps the idle share makes this optimistic.
+- **Defer non-urgent jobs to winter:** simulation jobs (8 server-hours each, due in 120 days, 100/day) share the earliest-deadline-first queue. Heat-useful capacity falls from 96–97 % of the servers in Dec–Feb to **53–54 % in Jun–Aug**. Deferred work builds to 8,300 server-hours by the end of August, October clears it, and **no deadline is missed** (`plots/seasonal_capacity.png`, `python3 -m scheduler.balance --scenario services --monthly`).
+- **24/7 at partial power** (`--partial`): servers run at 30–100 % power instead of on/off. On the reference house, a server is on in **100 % of hours instead of 84 %**, and in summer 100 % instead of 70 %. On/off switching drops from 2,866 switches to 0, with the same heat and coverage. That suits always-on light services (an embeddings API, people counting) that need a server up even when little heat is wanted. Limit: we take throughput as proportional to power; at low power caps the idle share makes this optimistic.
 
 ## 9. Investor view
 
@@ -170,18 +170,18 @@ At the base case (3.42 CHF per sold server-hour, 70 % of running hours sold, hea
 
 | Fleet | EBITDA per server/yr | Payback | Break-even price |
 |---|---|---|---|
-| reference house | 7,140 | 4.1 yr | 3.04 CHF/server-h |
-| services fleet | 10,530 | 2.5 yr | 2.28 |
-| services fleet + dry cooler | 12,770 | 2.1 yr | 2.04 |
+| reference house | 3,577 | 7.4 yr | 4.19 CHF/server-h |
+| services fleet | 9,531 | 2.8 yr | 2.42 |
+| services fleet + dry cooler | 12,163 | 2.2 yr | 2.09 |
 
-A rollout of 1,000 servers in services-type sites costs 26.7 M CHF and earns 10.5 M CHF EBITDA a year. The NPV over 5 years at 8 % is 15.3 M CHF.
+A rollout of 1,000 servers in services-type sites costs 26.5 M CHF and earns 9.5 M CHF EBITDA a year. The NPV over 5 years at 8 % is 11.5 M CHF.
 
-**RAM risk:** server DRAM rose ~3× from Q4 2025 to Q4 2026 (TrendForce), so the case owner's "2.5×" is if anything low. The 25,000 CHF server price assumes 2026 contract memory prices. At retail RAM prices (USD 2,561 per 64 GB), payback goes from 2.5 to 3.4 years. At early-2025 prices it would be 1.6 years.
+**RAM risk:** server DRAM rose ~3× from Q4 2025 to Q4 2026 (TrendForce), so the case owner's "2.5×" is if anything low. The 25,000 CHF server price assumes 2026 contract memory prices. At retail RAM prices (USD 2,561 per 64 GB), payback goes from 2.8 to 3.7 years. At early-2025 prices it would be 1.8 years.
 
 **When it does not pay off:**
-- below ~2.3 CHF per sold server-hour (spot parity is 2.74)
-- when less than about half of the running hours are sold: at 50 % sold, payback is 4.4 years; at 25 % it never pays back
-- single homes alone, without summer sites: 4.1 years, close to the server's 5-year life
+- below ~2.4 CHF per sold server-hour (spot parity is 2.74)
+- when less than about half of the running hours are sold: at 50 % sold, payback is 4.9 years; at 25 % it never pays back
+- single homes alone, without summer sites: 7.4 years with 11 servers sized for all of the heat, longer than the server's 5-year life
 - free heat
 
 Demand, not heat or price, is the risk.
@@ -193,7 +193,7 @@ Slides follow the team's visual-first rule (pictures, numbers, short titles; sen
 1. **Business case:**
    - Who pays: privacy-bound Basel customers buy compute results at AWS + 25 %
    - Who gains: hosts get heat 30–50 % below a heat pump, saving 7,500 CHF over 10 years at 50 % off
-   - Payback: 2.5 years on a mixed fleet
+   - Payback: 2.8 years on a mixed fleet
 2. **Customers:** the top-5 list above, with Basel names. One customer, two needs.
 3. **Resilience:** distributed across buildings, so no single outage takes the service down. Examples:
    - CrowdStrike/Microsoft, 19 Jul 2024: ~8.5 M Windows devices down

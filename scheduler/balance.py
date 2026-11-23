@@ -2,7 +2,7 @@
 
     python -m scheduler.balance                        # reference house alone, 2025 (must-have 3)
     python -m scheduler.balance --servers 6 --year 2024
-    python -m scheduler.balance --sweep 1-12           # servers per house
+    python -m scheduler.balance --sweep 1-14           # servers per house
     python -m scheduler.balance --config sites.json    # any sites (see DEFAULT_SITES)
     python -m scheduler.balance --stdin --json -       # what the dashboard calls
     python -m scheduler.balance --scenario services --monthly   # business mix: homes, office, pharma, ...
@@ -23,7 +23,7 @@ import time
 from pathlib import Path
 
 from scheduler.core import REC, Scheduler, job_types, service_job_types
-from scheduler.sites import KINDS, Site, demand
+from scheduler.sites import KINDS, Site, demand, size_sites
 from scheduler.weather import H, temperatures
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -60,11 +60,16 @@ def electricity_price():
 
 
 def run(sites_in, year=2025, pool=True, hw_chf=HW_CHF_PER_SERVER, series=True, sell=SELL_CHF_H, types=None,
-        partial=False, cool_fill=False, outages=()):
-    """outages: (site id, first day, hours[, start hour]) tuples."""
+        partial=False, cool_fill=False, outages=(), sizing=None):
+    """outages: (site id, first day, hours[, start hour]) tuples.
+    Live-demo sizing (as scheduler.day): a site's `x_house` scales its demand against the house's, and
+    sizing="tank" gives every site the fewest servers that cover the year with its tank, "peak" servers for
+    its highest hour (scheduler.sites.size_sites)."""
     t0 = time.time()
     sites = [Site.from_dict(s) for s in sites_in]
-    dem = [demand(s, temperatures(s.lat, s.lon, year), year) for s in sites]
+    temps = [temperatures(s.lat, s.lon, year) for s in sites]
+    dem = [demand(s, tt, year) for s, tt in zip(sites, temps)]
+    dem = size_sites(sites, sites_in, temps, dem, year, sizing, REC)
     types = types or job_types()
     idx = {s.id: i for i, s in enumerate(sites)}
     outs = [(idx[o[0]], int(o[1]) * 24 + (int(o[3]) if len(o) > 3 else 0), int(o[2])) for o in outages]

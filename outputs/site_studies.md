@@ -34,16 +34,16 @@ Hot water is the only summer heat sink in a home, so it scales with the number o
 
 | Option | Covered | Dumped (kWh) | Util. | Summer util. | Missed | Cooled server-h | Fan kWh | ≥1 server on | Break-even |
 |---|---|---|---|---|---|---|---|---|---|
-| base (on/off servers) | 72.8 % | 0 | 82.6 % | 67.2 % | 0.00 % | 0 | 0 | 90.8 % | 0.226 |
-| partial power | 72.8 % | 0 | 82.7 % | 67.2 % | 0.00 % | 0 | 0 | 94.6 % | 0.226 |
-| dry cooler 4 kW per site, deadline/forced only | 72.8 % | 0 | 82.6 % | 67.2 % | 0.00 % | 0 | 0 | 90.8 % | 0.226 |
-| dry cooler 4 kW per site, fill spare servers | 72.8 % | 55,702 | 96.8 % | 93.9 % | 0.00 % | 69,627 | 1,114 | 100.0 % | 0.242 |
+| base (on/off servers) | 75.8 % | 0 | 76.4 % | 60.0 % | 0.00 % | 0 | 0 | 90.7 % | 0.226 |
+| partial power | 75.8 % | 0 | 76.4 % | 60.0 % | 0.00 % | 0 | 0 | 94.6 % | 0.226 |
+| dry cooler 4 kW per site, deadline/forced only | 75.8 % | 0 | 76.4 % | 60.0 % | 0.00 % | 0 | 0 | 90.7 % | 0.226 |
+| dry cooler 4 kW per site, fill spare servers | 75.8 % | 73,598 | 93.1 % | 87.4 % | 0.00 % | 91,997 | 1,472 | 100.0 % | 0.246 |
 
 Sites of the services fleet (base case):
 
 | Site | Servers | Heat demand (kWh) | Covered | Util. | Summer util. |
 |---|---|---|---|---|---|
-| Reference house | 4 | 31,231 | 58.0 % | 64.6 % | 32.9 % |
+| Reference house | 11 | 31,231 | 100.0 % | 40.5 % | 13.8 % |
 | Family home (5) | 4 | 32,326 | 57.4 % | 66.2 % | 36.0 % |
 | Hospital | 15 | 107,221 | 86.3 % | 88.1 % | 77.3 % |
 | Spa & pool | 11 | 72,000 | 96.5 % | 90.1 % | 81.5 % |
@@ -56,25 +56,25 @@ Heat-useful capacity = server-h whose heat the sites can use (heat permit). Simu
 
 | Month | Capacity (server-h) | Capacity % of servers | Ran | Simulation + twin ran | Deferred at month end (server-h) | Jobs waiting |
 |---|---|---|---|---|---|---|
-| Jan | 41,664 | 100 % | 41,664 | 26,288 | 0 | 0 |
-| Feb | 37,632 | 100 % | 37,632 | 23,744 | 0 | 0 |
-| Mar | 41,221 | 99 % | 41,209 | 26,288 | 0 | 0 |
-| Apr | 35,478 | 88 % | 35,343 | 25,377 | 63 | 29 |
-| May | 29,966 | 72 % | 29,532 | 26,049 | 302 | 53 |
-| Jun | 23,971 | 59 % | 23,406 | 22,672 | 3,070 | 401 |
-| Jul | 25,148 | 60 % | 24,656 | 23,901 | 5,457 | 702 |
-| Aug | 24,886 | 60 % | 24,256 | 23,499 | 8,246 | 1046 |
-| Sep | 28,416 | 70 % | 28,056 | 27,312 | 6,374 | 820 |
-| Oct | 38,500 | 92 % | 38,488 | 32,662 | 0 | 0 |
-| Nov | 39,513 | 98 % | 39,489 | 25,440 | 0 | 0 |
-| Dec | 41,664 | 100 % | 41,664 | 26,288 | 0 | 0 |
+| Jan | 45,413 | 97 % | 45,413 | 26,288 | 0 | 0 |
+| Feb | 40,715 | 96 % | 40,715 | 23,744 | 0 | 0 |
+| Mar | 43,378 | 93 % | 43,366 | 26,288 | 0 | 0 |
+| Apr | 36,085 | 80 % | 35,950 | 25,365 | 75 | 29 |
+| May | 30,113 | 64 % | 29,679 | 26,053 | 310 | 55 |
+| Jun | 23,971 | 53 % | 23,406 | 22,675 | 3,075 | 402 |
+| Jul | 25,148 | 54 % | 24,656 | 23,901 | 5,462 | 702 |
+| Aug | 24,886 | 53 % | 24,256 | 23,498 | 8,252 | 1047 |
+| Sep | 28,538 | 63 % | 28,178 | 27,440 | 6,252 | 804 |
+| Oct | 39,153 | 84 % | 39,141 | 32,540 | 0 | 0 |
+| Nov | 41,985 | 93 % | 41,961 | 25,440 | 0 | 0 |
+| Dec | 45,064 | 96 % | 45,064 | 26,288 | 0 | 0 |
 
 Partial power on the reference house alone (power capping 30-100 %, throughput taken as proportional to power):
 
 | Mode | Hours with a server on | Summer hours on | On/off switches | Covered | Util. |
 |---|---|---|---|---|---|
-| on/off | 84.3 % | 70.2 % | 2,746 | 58.0 % | 64.6 % |
-| partial power | 100.0 % | 100.0 % | 0 | 58.1 % | 64.7 % |
+| on/off | 83.6 % | 69.6 % | 2,866 | 100.0 % | 40.5 % |
+| partial power | 100.0 % | 100.0 % | 0 | 100.0 % | 40.5 % |
 
 ## 5. Redundancy under outages
 
@@ -82,5 +82,5 @@ Partial power on the reference house alone (power capping 30-100 %, throughput t
 
 | Twin tier | Work lost (server-h) | Twin jobs done | Twin copies lost, job carried by its other copy | Twin jobs restarted from zero | Sim jobs restarted | Missed |
 |---|---|---|---|---|---|---|
-| replicas=1 | 1970.6 | 2190 | 0 | 16 | 480 | 0.00 % |
-| replicas=2 | 1984.6 | 4355 | 25 | 0 | 489 | 0.00 % |
+| replicas=1 | 2075.8 | 2190 | 0 | 13 | 512 | 0.00 % |
+| replicas=2 | 2069.4 | 4355 | 25 | 0 | 522 | 0.00 % |

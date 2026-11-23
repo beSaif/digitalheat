@@ -1,34 +1,38 @@
 {
-  "l01": {
-    "seconds": 12.72,
-    "hash": "eff3712ffa8b"
+  "m01": {
+    "seconds": 6.16,
+    "hash": "387fbaa7d418"
   },
-  "l02": {
-    "seconds": 13.68,
-    "hash": "fbf10d8961a3"
+  "m02": {
+    "seconds": 12.08,
+    "hash": "476137c720bd"
   },
-  "l03": {
-    "seconds": 8.16,
-    "hash": "1fcb816a7a84"
+  "m03": {
+    "seconds": 10.48,
+    "hash": "3306a0b5b97c"
   },
-  "l04": {
-    "seconds": 11.04,
-    "hash": "93fce94e9e89"
+  "m04": {
+    "seconds": 13.6,
+    "hash": "0cbc16e05cb4"
   },
-  "l05": {
-    "seconds": 9.12,
-    "hash": "cd68807078ff"
+  "m05": {
+    "seconds": 7.84,
+    "hash": "edfe3a5f83d5"
   },
-  "l06": {
-    "seconds": 8.08,
-    "hash": "f5eb4fb10d94"
+  "m06": {
+    "seconds": 9.84,
+    "hash": "98c4ef7bf209"
   },
-  "l07": {
-    "seconds": 14.24,
-    "hash": "54e802fce099"
+  "m07": {
+    "seconds": 12.64,
+    "hash": "2813dee8dbb5"
   },
-  "l09": {
-    "seconds": 7.28,
-    "hash": "318c6fa3b487"
+  "m08": {
+    "seconds": 11.12,
+    "hash": "b179a4486644"
+  },
+  "m09": {
+    "seconds": 6.88,
+    "hash": "88287d54ec31"
   }
 }

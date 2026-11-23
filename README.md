@@ -156,7 +156,7 @@ One scheduler (`scheduler/core.py`) makes the yearly balance, controls the real 
 python3 -m scheduler.balance                 # reference house, 2025
 python3 -m scheduler.balance --fleet         # house + hospital + spa
 python3 -m scheduler.balance --year 2023     # any year 1950–2025 (Open-Meteo weather)
-python3 -m scheduler.balance --sweep 1-12    # servers vs coverage and price
+python3 -m scheduler.balance --sweep 1-14    # servers vs coverage and price
 python3 -m scheduler.live --fleet            # the scheduler runs a real embed job: pause/resume/checkpoint
 python3 -m scheduler.pricing                 # price of one server-hour and one job vs AWS
 python3 -m scheduler.assumptions --md        # regenerate docs/assumptions.md

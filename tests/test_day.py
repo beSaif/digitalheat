@@ -6,7 +6,7 @@ import unittest
 from scheduler.balance import DEFAULT_SITES, run
 from scheduler.core import REC
 from scheduler.day import run as day
-from scheduler.sites import Site, demand
+from scheduler.sites import Site, demand, tank_servers
 from scheduler.weather import temperatures
 
 SITES = [dict(s, servers={"hospital": 15, "house": 4, "spa": 11}[s["kind"]]) for s in DEFAULT_SITES]
@@ -75,3 +75,22 @@ class SizedAgainstHouse(unittest.TestCase):
         on = {s["kind"]: x["running"] for s, x in zip(rec["sites"], rec["hours"][0]["sites"])}
         self.assertLessEqual(on["house"], 2)  # July: hot water only
         self.assertGreater(on["pharma"], 10 * on["house"])
+
+    def test_tank_sizing_covers_the_year_with_fewer_servers(self):
+        sites = [dict(s, x_house={"hospital": 4, "house": 1, "spa": 3}[s["kind"]]) for s in DEFAULT_SITES]
+        peak = {s["kind"]: s["servers"] for s in day(sites, 2025, 14, 8, 1, sizing="peak")["sites"]}
+        tank = {s["kind"]: s["servers"] for s in day(sites, 2025, 14, 8, 1, sizing="tank")["sites"]}
+        self.assertEqual(tank["house"], 11)  # the reference house: the pitch, the yearly figures and the demo agree
+        for kind in tank:
+            self.assertLess(tank[kind], peak[kind], kind)
+        year = run(sites, 2025, series=False, sizing="tank")
+        for s in year["sites"]:  # every building covered, short only in the first hours of 1 January (empty tank)
+            self.assertGreater(s["year"]["coverage"], 0.999, s["kind"])
+            self.assertEqual(s["year"]["dumped_kwh"], 0, s["kind"])
+
+    def test_tank_servers_is_the_fewest_that_cover(self):
+        house = Site.from_dict({"id": "h", "kind": "house", "lat": 47.56, "lon": 7.59})
+        d = demand(house, temperatures(47.56, 7.59, 2025), 2025)
+        self.assertEqual(tank_servers(d, 35), 11)
+        self.assertEqual(tank_servers(d, 0), math.ceil(max(d) / REC - 1e-9))  # no tank: the peak rule
+        self.assertEqual(tank_servers([1.0] * 48, 35), 2)  # 1 kW needs 1.25 servers: 2

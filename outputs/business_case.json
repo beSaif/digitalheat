@@ -1,31 +1,31 @@
 {
  "physics": {
   "reference house": {
-   "servers": 4,
-   "coverage": 0.5803,
-   "utilisation": 0.6465,
-   "run_server_h": 22654,
-   "served_kwh": 18123,
+   "servers": 11,
+   "coverage": 0.9997,
+   "utilisation": 0.4052,
+   "run_server_h": 39044,
+   "served_kwh": 31222,
    "dumped_kwh": 0.0,
    "fan_kwh": 0.0
   },
   "services fleet": {
-   "servers": 56,
-   "coverage": 0.7283,
-   "utilisation": 0.8264,
-   "run_server_h": 405395,
-   "served_kwh": 324316,
+   "servers": 63,
+   "coverage": 0.7578,
+   "utilisation": 0.7643,
+   "run_server_h": 421785,
+   "served_kwh": 337415,
    "dumped_kwh": 0.0,
    "fan_kwh": 0.0
   },
   "services fleet + dry cooler": {
-   "servers": 56,
-   "coverage": 0.7283,
-   "utilisation": 0.9683,
-   "run_server_h": 475022.0,
-   "served_kwh": 324316,
-   "dumped_kwh": 55701.6,
-   "fan_kwh": 1114.0
+   "servers": 63,
+   "coverage": 0.7578,
+   "utilisation": 0.931,
+   "run_server_h": 513782.0,
+   "served_kwh": 337415,
+   "dumped_kwh": 73597.6,
+   "fan_kwh": 1472.0
   }
  },
  "catalogue": [
@@ -192,40 +192,40 @@
  ],
  "homeowner": {
   "heat_pump_chf_per_kwh_heat": 0.133,
-  "served_kwh": 18123,
-  "server_kwh": 22654,
+  "served_kwh": 31222,
+  "server_kwh": 39044,
   "rows": [
    {
     "discount": 0.0,
     "heat_price_chf_kwh": 0.133,
-    "host_pays_chf": 2410,
+    "host_pays_chf": 4153,
     "host_saves_chf": 0,
     "host_share_of_server_power": 0.32,
-    "digitalheat_refund_chf": 5122
+    "digitalheat_refund_chf": 8830
    },
    {
     "discount": 0.3,
     "heat_price_chf_kwh": 0.0931,
-    "host_pays_chf": 1687,
-    "host_saves_chf": 723,
+    "host_pays_chf": 2907,
+    "host_saves_chf": 1246,
     "host_share_of_server_power": 0.224,
-    "digitalheat_refund_chf": 5845
+    "digitalheat_refund_chf": 10075
    },
    {
     "discount": 0.5,
     "heat_price_chf_kwh": 0.0665,
-    "host_pays_chf": 1205,
-    "host_saves_chf": 1205,
+    "host_pays_chf": 2076,
+    "host_saves_chf": 2076,
     "host_share_of_server_power": 0.16,
-    "digitalheat_refund_chf": 6327
+    "digitalheat_refund_chf": 10906
    },
    {
     "discount": 1.0,
     "heat_price_chf_kwh": 0.0,
     "host_pays_chf": 0,
-    "host_saves_chf": 2410,
+    "host_saves_chf": 4153,
     "host_share_of_server_power": 0.0,
-    "digitalheat_refund_chf": 7532
+    "digitalheat_refund_chf": 12982
    }
   ],
   "owner_example": [
@@ -240,7 +240,7 @@
     "saved_10y": 7500.0
    }
   ],
-  "host_pays_half_heat_price": 0.2078,
+  "host_pays_half_heat_price": 0.2079,
   "host_pays_half_vs_heat_pump": 1.56
  },
  "capex": {
@@ -249,43 +249,43 @@
  },
  "unit": {
   "reference house": {
-   "capex": 29000,
-   "server_h": 5664,
-   "sold_server_h": 3964,
-   "revenue": 12203,
-   "heat_income": 422,
-   "electricity": 1883,
-   "opex": 3600,
-   "ebitda": 7141,
-   "payback_years": 4.06,
-   "profit_after_depreciation": 1341,
-   "break_even_price_sh": 3.044
+   "capex": 26455,
+   "server_h": 3549,
+   "sold_server_h": 2485,
+   "revenue": 7648,
+   "heat_income": 264,
+   "electricity": 1180,
+   "opex": 3155,
+   "ebitda": 3577,
+   "payback_years": 7.4,
+   "profit_after_depreciation": -1714,
+   "break_even_price_sh": 4.186
   },
   "services fleet": {
-   "capex": 26714,
-   "server_h": 7239,
-   "sold_server_h": 5067,
-   "revenue": 15598,
-   "heat_income": 539,
-   "electricity": 2407,
-   "opex": 3200,
-   "ebitda": 10530,
-   "payback_years": 2.54,
-   "profit_after_depreciation": 5187,
-   "break_even_price_sh": 2.283
+   "capex": 26524,
+   "server_h": 6695,
+   "sold_server_h": 4686,
+   "revenue": 14425,
+   "heat_income": 499,
+   "electricity": 2226,
+   "opex": 3167,
+   "ebitda": 9531,
+   "payback_years": 2.78,
+   "profit_after_depreciation": 4226,
+   "break_even_price_sh": 2.418
   },
   "services fleet + dry cooler": {
-   "capex": 26950,
-   "server_h": 8483,
-   "sold_server_h": 5938,
-   "revenue": 18276,
-   "heat_income": 539,
-   "electricity": 2827,
-   "opex": 3224,
-   "ebitda": 12765,
-   "payback_years": 2.11,
-   "profit_after_depreciation": 7375,
-   "break_even_price_sh": 2.04
+   "capex": 26733,
+   "server_h": 8155,
+   "sold_server_h": 5709,
+   "revenue": 17571,
+   "heat_income": 499,
+   "electricity": 2719,
+   "opex": 3188,
+   "ebitda": 12163,
+   "payback_years": 2.2,
+   "profit_after_depreciation": 6816,
+   "break_even_price_sh": 2.093
   }
  },
  "grid": {
@@ -299,55 +299,55 @@
    null,
    null,
    null,
-   18.46
+   23.44
   ],
   "1.50": [
    null,
    null,
-   11.81,
-   5.68
+   14.07,
+   6.4
   ],
   "2.00": [
    null,
-   18.46,
-   5.68,
-   3.35
+   23.44,
+   6.4,
+   3.71
   ],
   "2.74": [
    null,
-   6.92,
-   3.21,
-   2.09
+   7.89,
+   3.54,
+   2.28
   ],
   "3.00": [
    null,
-   5.68,
-   2.79,
-   1.85
+   6.4,
+   3.06,
+   2.01
   ],
   "3.42": [
-   53.14,
-   4.4,
-   2.29,
-   1.55
+   102.94,
+   4.9,
+   2.51,
+   1.69
   ],
   "5.00": [
-   8.68,
-   2.38,
-   1.38,
-   0.97
+   10.06,
+   2.61,
+   1.5,
+   1.05
   ],
   "9.45": [
-   2.59,
-   1.04,
-   0.65,
-   0.47
+   2.84,
+   1.13,
+   0.7,
+   0.51
   ],
   "11.81": [
-   1.89,
-   0.8,
-   0.51,
-   0.37
+   2.06,
+   0.86,
+   0.55,
+   0.4
   ]
  },
  "grid_shares": [
@@ -358,31 +358,31 @@
  ],
  "rollout": {
   "servers": 1000,
-  "capex_chf": 26714000,
-  "revenue_chf_y": 15598000,
-  "ebitda_chf_y": 10530000,
-  "payback_years": 2.54,
-  "npv_chf": 15329237,
+  "capex_chf": 26524000,
+  "revenue_chf_y": 14425000,
+  "ebitda_chf_y": 9531000,
+  "payback_years": 2.78,
+  "npv_chf": 11530519,
   "sold_share": 0.7
  },
  "ram": {
   "early 2025": {
    "ram_chf": 2519,
-   "capex": 18722,
-   "payback_years": 1.65,
-   "break_even_price_sh": 1.757
+   "capex": 18531,
+   "payback_years": 1.79,
+   "break_even_price_sh": 1.85
   },
   "2026 contract (base)": {
    "ram_chf": 10511,
-   "capex": 26714,
-   "payback_years": 2.54,
-   "break_even_price_sh": 2.283
+   "capex": 26524,
+   "payback_years": 2.78,
+   "break_even_price_sh": 2.418
   },
   "retail Nov 2026": {
    "ram_chf": 16973,
-   "capex": 33176,
-   "payback_years": 3.36,
-   "break_even_price_sh": 2.708
+   "capex": 32985,
+   "payback_years": 3.71,
+   "break_even_price_sh": 2.878
   }
  },
  "friend": {
@@ -391,6 +391,6 @@
   "servers_at_80pct": 0.15,
   "our_price_chf": 12600,
   "our_price_at_base_rate_chf": 3650,
-  "customers_per_house": 15
+  "customers_per_house": 26
  }
 }

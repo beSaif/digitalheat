@@ -1,0 +1,182 @@
+[
+ {
+  "label": "Weather",
+  "value": "Basel 47.56 N 7.59 E, hourly, 2025",
+  "source": "Open-Meteo historical archive (data/reference_house_2025_hourly.csv), as the case brief asks"
+ },
+ {
+  "label": "Days shown",
+  "value": "Wednesday 15 January 2025 (day 14) and Tuesday 15 July 2025 (day 195)",
+  "source": "the live app's January and July moments (dashboard/lib/live/shared.ts CONDITIONS); sliced from the full-year run, so the tank carries over. Day index 0 = 1 January, as the live app's \"Now\""
+ },
+ {
+  "label": "Server",
+  "value": "1 kW in, 80% recovered as heat",
+  "source": "case brief"
+ },
+ {
+  "label": "Sites",
+  "value": "Hospital 38 servers, 70 kWh tank, 60 °C; House 11 servers, 35 kWh tank, 55 °C; Spa & pool 33 servers, 50 kWh tank, 40 °C",
+  "source": "the live app's base sites (scheduler/balance.py DEFAULT_SITES); tanks and supply temperatures: scheduler/sites.py KINDS defaults (the live app sends no tank size)"
+ },
+ {
+  "label": "Building size",
+  "value": "Hospital x4 the house's coldest hour (42.0 kW); House x1 the house's coldest hour (10.5 kW); Spa & pool x3 the house's coldest hour (31.5 kW)",
+  "source": "the live app's X_HOUSE (dashboard/lib/live/shared.ts, our assumption): each building's hourly demand is scaled so its coldest hour is X times the house's; it keeps its own daily and yearly shape (scheduler.sites.size_sites, shared with scheduler.day)"
+ },
+ {
+  "label": "Servers per site",
+  "value": "the fewest that, with the site's tank, cover every hour of 2025 (house: 11; the coldest hour alone would need 14)",
+  "source": "the live app's sizing \"tank\" (scheduler.sites.tank_servers): the scheduler's own heat permit, hour by hour, with the tank starting the year at its 31 December level; all heat from servers, no heat pump, no backup heater"
+ },
+ {
+  "label": "Heat demand",
+  "value": "House: case formula 10 kW x (20 - T) / 25.6 + 0.5 kW hot water. Hospital: 2,500 kWh hot water per bed and year + ward heating. Spa: pool water, hall at 30 °C, showers and sauna 09-21",
+  "source": "scheduler/sites.py (hospital DHW study; Passive House pool guide); see docs/assumptions.md"
+ },
+ {
+  "label": "Floor area (site card)",
+  "value": "Hospital 1,910 m²; House 180 m²; Spa & pool 480 m²",
+  "source": "our assumption: house 180 m²; hospital 40 m² per bed, spa 5 x its water area, both scaled with the building size above (the models size these sites in beds and m² of water, not floor area)"
+ },
+ {
+  "label": "Base plan",
+  "value": "the live app's set-up: tank-sized servers, jobs may move between sites, on/off servers, no dry cooler",
+  "source": "scheduler.day as the live app calls it; each measure changes one thing"
+ },
+ {
+  "label": "Electricity price",
+  "value": "CHF 0.3325/kWh",
+  "source": "ElCom 2026, IWB Basel, category H4, total incl. all fees (data/raw/elcom_iwb_H4_2025_2026.json), as the case brief asks"
+ },
+ {
+  "label": "Heat pump efficiency (COP)",
+  "value": "2.5",
+  "source": "case brief (Swiss field tests measured 2.5-4.0 for air-water, so 2.5 is conservative)"
+ },
+ {
+  "label": "Heat-pump heat price",
+  "value": "CHF 0.1330 per kWh of heat (electricity / 2.5)",
+  "source": "case brief: value of the heat = electricity price / 2.5"
+ },
+ {
+  "label": "DigitalHeat heat price",
+  "value": "CHF 0.0931/kWh, 30% below a heat pump",
+  "source": "our assumption, following the case owner (21 Nov 2026): a discount, not free heat (data/business_assumptions.json heat_discount_base, docs/business-model.md section 5)"
+ },
+ {
+  "label": "Host pays half the power",
+  "value": "50% of the server electricity (incl. dry cooler fan), no heat price",
+  "source": "DigitalHeat meeting, 21 Nov 2026: \"host pays at least 50 % of power\". docs/business-model.md section 5: for a home this costs more than a heat pump"
+ },
+ {
+  "label": "Computing sell price",
+  "value": "CHF 3.423/server-hour",
+  "source": "AWS spot for the same server (c7a.48xlarge, Frankfurt) USD 3.26 x USD/CHF 0.84 = CHF 2.738 (data/prices_2026.json, checked Nov 2026), plus 25% for local, private, Swiss computing (data/business_assumptions.json compute_premium, our assumption; case owner: we can charge more than Amazon). The live app quotes the same. On-demand would be CHF 9.445"
+ },
+ {
+  "label": "Server-hours sold",
+  "value": "every server-hour that runs is sold",
+  "source": "scheduler/balance.py (as in the case's key figures); docs/business-model.md's investor view assumes 70 % sold"
+ },
+ {
+  "label": "Hardware",
+  "value": "CHF 25,000 per server, written off over 5 years",
+  "source": "data/prices_2026.json (listed dual EPYC 9654 server + about 30 % for 2026 memory and cooling)"
+ },
+ {
+  "label": "DigitalHeat profit",
+  "value": "income - electricity DigitalHeat pays + what the host pays for heat - hardware",
+  "source": "ours; scheduler/balance.py credits the full heat value instead of the discounted heat price (difference: 30% of the heat value)"
+ },
+ {
+  "label": "Break-even price",
+  "value": "(electricity - heat value) / server-hours sold",
+  "source": "case brief, as scheduler/balance.py"
+ },
+ {
+  "label": "Dry cooler fan",
+  "value": "0.02 kW per kW of heat rejected",
+  "source": "Kelvion datasheet, design point (scheduler/core.py)"
+ },
+ {
+  "label": "CO₂ of Swiss electricity",
+  "value": "90 g CO₂eq/kWh",
+  "source": "VSE (Swiss electricity industry association), 2026: Swiss consumption mix 2025, incl. imports, direct and upstream emissions (strom.ch)"
+ },
+ {
+  "label": "CO₂ of the data centre's electricity",
+  "value": "344 g CO₂/kWh",
+  "source": "Umweltbundesamt (German Environment Agency), 2026: German consumption mix 2025, preliminary. Direct CO₂ only, so the data-centre side is if anything understated"
+ },
+ {
+  "label": "Data centre",
+  "value": "AWS Frankfurt (eu-central-1), PUE 1.14",
+  "source": "the comparator instance of data/prices_2026.json; PUE: AWS sustainability page, global PUE 2025 (aws.amazon.com/sustainability). Location-based factor, no green-power certificates; its heat is wasted"
+ },
+ {
+  "label": "CO₂ without DigitalHeat",
+  "value": "heat demand / COP x Swiss factor + the same server-hours x 1 kW x PUE x German factor",
+  "source": "ours"
+ },
+ {
+  "label": "CO₂ with DigitalHeat",
+  "value": "top-up heat / COP x Swiss factor + server electricity incl. fan x Swiss factor",
+  "source": "ours"
+ },
+ {
+  "label": "Always-on comparison",
+  "value": "every server runs every hour, 0.8 kW of heat each into the tank, heat above the tank is dumped; tank empty on 1 January; same prices",
+  "source": "ours (no scheduler)"
+ },
+ {
+  "label": "Always-on comparison: cooler not charged",
+  "value": "the always-on servers dump heat the tank cannot take, which needs a dry cooler or the servers overheat; its cost (about CHF 550 per kW installed) and fan power are not charged, so the always-on income and CO₂ figures are flattering",
+  "source": "ours; dry cooler cost: data/business_assumptions.json drycooler_chf_per_kw"
+ },
+ {
+  "label": "Strategy rules",
+  "value": "a plan qualifies only if every host pays at most what its own heat pump would cost and the plan pays off. Best value = profit - capex / 5 years (no interest). Safest = no capex, no heat dumped, no job missed, then most profit. Ties: fewer measures",
+  "source": "ours; the plans are searched by scripts/build_sim2.py, not hand-picked"
+ },
+ {
+  "label": "CO₂ if the data centre ran on Swiss power",
+  "value": "base plan saves 19.3 t a year instead of 154.5 t",
+  "source": "ours, sensitivity: most of the saving comes from the cleaner Swiss grid; the heat reuse and the data centre's cooling overhead (PUE) are the rest"
+ },
+ {
+  "label": "Measure: Double the tanks",
+  "value": "capex CHF 17,714",
+  "source": "155 kWh more storage = 4,429 L at CHF 4 per litre installed"
+ },
+ {
+  "label": "Measure: Size for 80 % of the coldest hour",
+  "value": "capex CHF 0",
+  "source": "no cost; 22 fewer servers = CHF 550,000 less hardware, already counted in the yearly hardware write-off (hardware_chf, profit), so not again here"
+ },
+ {
+  "label": "Measure: Give the host 50 % off",
+  "value": "capex CHF 0",
+  "source": "software or contract only"
+ },
+ {
+  "label": "Measure: Add a summer cooler",
+  "value": "capex CHF 6,600",
+  "source": "3 sites x 4 kW x CHF 550/kW installed"
+ },
+ {
+  "label": "Measure: Host pays half the power",
+  "value": "capex CHF 0",
+  "source": "software or contract only"
+ },
+ {
+  "label": "Tank cost",
+  "value": "CHF 4 per litre installed (1,000 L = 35 kWh at 30 K)",
+  "source": "our assumption from data/business_assumptions.json site_install_chf (1,000 L tank about CHF 4,000 installed) and the case's tank (1,000 L, 30 K, 35 kWh)"
+ },
+ {
+  "label": "Lean sizing",
+  "value": "Hospital 42, House 11, Spa & pool 32 servers",
+  "source": "ours: servers = ceil(80% x coldest-hour demand / 0.8 kW)"
+ }
+]

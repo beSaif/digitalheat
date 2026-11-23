@@ -4,8 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import * as maplibregl from "maplibre-gl";
 import type { StyleSpecification } from "maplibre-gl";
 import clsx from "clsx";
-import { ArrowDown, ArrowLeft, ArrowUp, Box, Briefcase, Building2, FlaskConical, Hospital, House, Leaf, Minus, Pause, Plus, Save, Users, Waves, X } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowUp, Box, Briefcase, DoorOpen, Building2, FlaskConical, Hospital, Map as MapIcon, House, Leaf, Minus, Pause, Plus, Save, Users, Waves, X } from "lucide-react";
 import { KIND_LABEL, KIND_SERVERS, type Kind, type Schedule, type SiteIn } from "@/lib/schedule";
+import { STATUS, type Status } from "@/lib/heatStatus";
+import { BuildingInside, type Inside } from "@/components/BuildingInside";
+import chCoarse from "@/lib/switzerland-coarse.json";
 
 maplibregl.setWorkerUrl("/maplibre-gl-worker.mjs");
 
@@ -28,14 +31,54 @@ const PAD = { top: 110, bottom: 70, left: 170, right: 170 };
 /** Base-map labels a quiet map keeps: cities and towns. Villages, hamlets, districts, roads, rivers and the airport go. */
 const MAIN_LABELS = new Set(["label_city", "label_city_capital", "label_town", "label_state", "label_country_1", "label_country_2", "label_country_3"]);
 
+/** Line layers a quiet map drops: paths, minor streets, piers, rail, tunnels and the airport. Main roads and motorways stay. */
+const QUIET_DROP = /^(highway_path|highway_minor|road_pier|road_area_pier|railway|tunnel_|aeroway)/;
+
+/**
+ * A quiet map (the live room screen) is a pale paper backdrop, so the heat-status colours on the pins are the only
+ * strong colour: land, parks and buildings close to the paper tone, main roads a faint warm line, town names faded.
+ */
+function quieten(l: StyleSpecification["layers"][number]) {
+  const p = l as { paint?: Record<string, unknown> };
+  const id = l.id;
+  if (id === "background") p.paint = { "background-color": "#f1eee6" };
+  else if (id === "water") p.paint = { "fill-color": "#dce6e4" };
+  else if (id === "waterway") p.paint = { ...p.paint, "line-color": "#d6e1df" };
+  else if (id === "building") p.paint = { ...p.paint, "fill-color": "#ebe7de", "fill-outline-color": "#e4dfd4" };
+  else if (l.type === "fill" && id !== "buildings-3d") p.paint = { ...p.paint, "fill-color": "#ece8df" };
+  else if (id.includes("casing")) p.paint = { ...p.paint, "line-color": "#e3ded2" };
+  else if (id.startsWith("highway_")) p.paint = { ...p.paint, "line-color": "#f8f6f0" };
+  else if (id.startsWith("boundary")) p.paint = { ...p.paint, "line-color": "#cdc7ba", "line-opacity": 0.55 };
+  else if (l.type === "symbol") p.paint = { ...p.paint, "text-color": "#8a857a", "text-halo-color": "#f1eee6", "text-halo-width": 1.2, "text-halo-blur": 0, "text-opacity": 0.85 };
+}
+
 async function style(quiet: boolean): Promise<StyleSpecification> {
-  const s: StyleSpecification = await fetch("https://tiles.openfreemap.org/styles/positron").then((r) => r.json());
-  s.layers = s.layers.filter((l) => !l.id.includes("shield") && (!quiet || l.type !== "symbol" || MAIN_LABELS.has(l.id)));
+  // the border is drawn from the fine outline; labels are tested against a ~1 km coarse one, which is far cheaper
+  const [s, ch]: [StyleSpecification, GeoJSON.Feature<GeoJSON.Polygon>] = await Promise.all([
+    fetch("https://tiles.openfreemap.org/styles/positron").then((r) => r.json()),
+    fetch("/switzerland.geojson").then((r) => r.json()),
+  ]);
+  s.layers = s.layers.filter((l) => !l.id.includes("shield") && (!quiet || ((l.type !== "symbol" || MAIN_LABELS.has(l.id)) && !QUIET_DROP.test(l.id))));
   for (const l of s.layers) {
     const p = l as { paint?: Record<string, unknown> };
-    if (l.id === "background") p.paint = { "background-color": "#ece8de" };
-    if (l.id === "water") p.paint = { "fill-color": "#cfdedd" };
+    if (quiet) quieten(l);
+    else if (l.id === "background") p.paint = { "background-color": "#ece8de" };
+    else if (l.id === "water") p.paint = { "fill-color": "#cfdedd" };
+    // place names only inside Switzerland: towns across the border are noise
+    if (l.type === "symbol") {
+      const f = (l as { filter?: unknown[] }).filter;
+      (l as { filter?: unknown }).filter = f ? ["all", f, ["within", chCoarse]] : ["within", chCoarse];
+    }
   }
+  // Switzerland's border, drawn strong over the roads and under the labels
+  s.sources.ch = { type: "geojson", data: ch };
+  const top = s.layers.findIndex((l) => l.type === "symbol");
+  s.layers.splice(
+    top < 0 ? s.layers.length : top,
+    0,
+    { id: "ch-halo", type: "line", source: "ch", layout: { "line-join": "round" }, paint: { "line-color": "#ffffff", "line-opacity": 0.8, "line-width": ["interpolate", ["linear"], ["zoom"], 6, 6, 12, 10] } },
+    { id: "ch-border", type: "line", source: "ch", layout: { "line-join": "round" }, paint: { "line-color": "#5b5348", "line-width": ["interpolate", ["linear"], ["zoom"], 6, 2.2, 12, 3.5] } },
+  );
   // 3D buildings, only close up (a building's 3D view): the city map further out stays flat
   const at = s.layers.findIndex((l) => l.type === "symbol");
   s.layers.splice(at < 0 ? s.layers.length : at, 0, {
@@ -67,6 +110,12 @@ function paintBuilding(m: maplibregl.Map, x: SiteIn | undefined) {
 
 /** A building's 3D view: close up, tilted, turned a little. */
 const VIEW_3D = { zoom: 17.2, pitch: 62, bearing: -28 };
+
+/** Below this zoom the sites are one marker: they would all sit on the same spot. */
+const FAR_ZOOM = 8;
+
+/** Room around Switzerland when the whole country is shown: the side panels' room, little at top and bottom. */
+const swissPad = (p: { top: number; bottom: number; left: number; right: number }) => ({ top: Math.min(p.top, 120), bottom: 90, left: p.left, right: p.right });
 
 function boundsOf(sites: SiteIn[]): [[number, number], [number, number]] {
   const lons = sites.map((s) => s.lon),
@@ -102,14 +151,26 @@ type Props = {
   pinFrom?: number;
   /** extra controls in a building's card (the live demo: fill its tank) */
   cardExtra?: (i: number) => React.ReactNode;
+  /** heat status of a building (lib/heatStatus.ts): its pin's dot and label, and a ring around its icon */
+  statusAt?: (i: number) => Status | undefined;
+  /** open on the whole of Switzerland and fly into the sites; adds a "Switzerland" / "Back to Basel" button */
+  fromSwiss?: boolean;
+  /** where that button sits (Tailwind position classes) */
+  swissBtnAt?: string;
+  /** a building's plant room and servers: adds "Go inside" to its 3D view */
+  insideOf?: (i: number) => Inside | null;
 };
 
-export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setServers, adding, onAdd, onRemove, busy, height = "h-[560px]", pad = PAD, compact = false, bare = false, pinFrom, cardExtra }: Props) {
+export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setServers, adding, onAdd, onRemove, busy, height = "h-[560px]", pad = PAD, compact = false, bare = false, pinFrom, cardExtra, statusAt, fromSwiss = false, swissBtnAt = "right-3 top-3", insideOf }: Props) {
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const [pts, setPts] = useState<{ x: number; y: number }[] | null>(null);
   const [zoom, setZoom] = useState(13);
   const small = compact || zoom < 11;
+  const far = zoom < FAR_ZOOM;
+  // the whole country is shown (or the opening flight is under way): no automatic refits onto the sites meanwhile
+  const [swiss, setSwiss] = useState(fromSwiss);
+  const holdRef = useRef(fromSwiss);
   const isPin = (i: number) => small || (pinFrom !== undefined && i >= pinFrom);
   const named = (i: number) => pinFrom !== undefined && i >= pinFrom;
   const [hover, setHoverNow] = useState<number | null>(null);
@@ -117,7 +178,10 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
   // a building's 3D view: the map flies into its block, tilted, with the building in DigitalHeat's colour
   const [view3d, setView3d] = useState<number | null>(null);
   const view3dRef = useRef<number | null>(null);
-  const card = hover ?? pinned ?? view3d;
+  // inside a building (from its 3D view): its plant room and servers cover the map
+  const [inside, setInside] = useState<number | null>(null);
+  const insideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const card = inside !== null ? null : (hover ?? pinned ?? view3d);
   // leaving a pin closes its card a moment later, so the pointer can move onto the card and use its buttons
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const setHover = (i: number | null) => {
@@ -142,6 +206,7 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
   const addingRef = useRef(adding);
   const padRef = useRef(pad);
   const bareRef = useRef(bare);
+  const fromSwissRef = useRef(fromSwiss);
   useEffect(() => {
     sitesRef.current = sites;
     addingRef.current = adding;
@@ -153,7 +218,15 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
     let cancelled = false;
     style(bareRef.current).then((st) => {
       if (cancelled || !el.current) return;
-      m = new maplibregl.Map({ container: el.current, style: st, center: [7.589, 47.561], zoom: 13, scrollZoom: false, attributionControl: { compact: true } });
+      const intro = fromSwissRef.current;
+      m = new maplibregl.Map({
+        container: el.current,
+        style: st,
+        // the opening shot is the whole of Switzerland
+        ...(intro ? { bounds: SWISS, fitBoundsOptions: { padding: swissPad(padRef.current) } } : { center: [7.589, 47.561] as [number, number], zoom: 13 }),
+        scrollZoom: false,
+        attributionControl: { compact: true },
+      });
       map.current = m;
       if (!bareRef.current) m.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
       const place = () => {
@@ -163,7 +236,8 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
       };
       m.on("load", () => {
         m?.resize();
-        m?.fitBounds(boundsOf(sitesRef.current), { padding: padRef.current, duration: 0 });
+        if (intro) setTimeout(() => flyIn(1), 900);
+        else m?.fitBounds(boundsOf(sitesRef.current), { padding: padRef.current, duration: 0 });
         place();
       });
       m.on("move", place);
@@ -182,7 +256,7 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
       // a map in a flexible box gets its final size after load: refit the sites when the box changes
       const ro = new ResizeObserver(() => {
         m?.resize();
-        if (m?.loaded() && view3dRef.current === null) m.fitBounds(boundsOf(sitesRef.current), { padding: padRef.current, maxZoom: 14, duration: 0 });
+        if (m?.loaded() && view3dRef.current === null && !holdRef.current) m.fitBounds(boundsOf(sitesRef.current), { padding: padRef.current, maxZoom: 14, duration: 0 });
       });
       ro.observe(el.current);
       m.once("remove", () => ro.disconnect());
@@ -196,11 +270,11 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
 
   // re-place markers and refit when sites are added or removed
   const shape = sites.map((s) => `${s.id}:${s.lat}:${s.lon}`).join("|");
-  const spots = pts && spread(pts, (i) => (named(i) ? [150, 34] : isPin(i) ? [84, 36] : [230, 120]));
+  const spots = pts && spread(pts, (i) => (named(i) ? [170, 48] : isPin(i) ? [84, 36] : [230, 120]));
   useEffect(() => {
     const m = map.current;
     if (!m) return;
-    if (view3dRef.current === null) m.fitBounds(boundsOf(sitesRef.current), { padding: padRef.current, maxZoom: 14, duration: 600 });
+    if (view3dRef.current === null && !holdRef.current) m.fitBounds(boundsOf(sitesRef.current), { padding: padRef.current, maxZoom: 14, duration: 600 });
     Promise.resolve().then(() => setPts(sitesRef.current.map((s) => m.project([s.lon, s.lat]))));
   }, [shape]);
 
@@ -221,6 +295,7 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
   };
   const close3d = () => {
     const m = map.current;
+    leaveInside(false);
     view3dRef.current = null;
     setView3d(null);
     setPinned(null);
@@ -229,13 +304,65 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
     // level the camera and drop the 3D view's padding (flyTo keeps it on the map, and fitBounds adds its own on top)
     m.easeTo({ pitch: 0, bearing: 0, padding: { top: 0, bottom: 0, left: 0, right: 0 }, duration: 700 });
     m.once("moveend", () => {
-      if (view3dRef.current === null) m.fitBounds(boundsOf(sitesRef.current), { padding: padRef.current, maxZoom: 14, duration: 1100 });
+      if (view3dRef.current === null && !holdRef.current) m.fitBounds(boundsOf(sitesRef.current), { padding: padRef.current, maxZoom: 14, duration: 1100 });
     });
   };
-  // Escape leaves the 3D view
+
+  /** Step into the building: the camera dollies up to its wall, then the plant room fades in. */
+  const goInside = (i: number) => {
+    const m = map.current;
+    if (!m) return;
+    setPinned(null);
+    setHoverNow(null);
+    m.easeTo({ zoom: 19.3, pitch: 74, duration: 900, essential: true });
+    if (insideTimer.current) clearTimeout(insideTimer.current);
+    insideTimer.current = setTimeout(() => setInside(i), 600);
+  };
+  /** Leave the plant room; `back` returns the camera to the building's 3D view. */
+  function leaveInside(back = true) {
+    if (insideTimer.current) clearTimeout(insideTimer.current);
+    insideTimer.current = null;
+    setInside(null);
+    if (back && view3dRef.current !== null) {
+      setPinned(view3dRef.current);
+      map.current?.easeTo({ zoom: VIEW_3D.zoom, pitch: VIEW_3D.pitch, duration: 1000, essential: true });
+    }
+  }
+  useEffect(() => () => {
+    if (insideTimer.current) clearTimeout(insideTimer.current);
+  }, []);
+
+  /** Fly from wherever the map is into the sites (the opening shot, or back from the whole map). */
+  function flyIn(slow = 0) {
+    const m = map.current;
+    if (!m) return;
+    holdRef.current = true;
+    setSwiss(false);
+    m.fitBounds(boundsOf(sitesRef.current), { padding: padRef.current, maxZoom: 14, pitch: 0, bearing: 0, duration: slow ? 4800 : 3000, essential: true });
+    m.once("moveend", () => {
+      holdRef.current = false;
+    });
+  }
+  /** Zoom out to the whole of Switzerland. */
+  const flyOut = () => {
+    const m = map.current;
+    if (!m) return;
+    holdRef.current = true;
+    setSwiss(true);
+    setPinned(null);
+    setHoverNow(null);
+    leaveInside(false);
+    if (view3dRef.current !== null) {
+      view3dRef.current = null;
+      setView3d(null);
+      (m.getSource("site-bldg") as maplibregl.GeoJSONSource | undefined)?.setData({ type: "FeatureCollection", features: [] });
+    }
+    m.fitBounds(SWISS, { padding: swissPad(padRef.current), pitch: 0, bearing: 0, duration: 2600, essential: true });
+  };
+  // Escape steps back out: from inside the building to its 3D view, from the 3D view to the map
   useEffect(() => {
     if (view3d === null) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close3d();
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && (inside !== null ? leaveInside() : close3d());
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   });
@@ -271,7 +398,7 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
         </div>
       )}
 
-      {spots && S && (
+      {spots && S && !far && (
         <div key={t} className="pointer-events-none absolute inset-0">
           {sites.flatMap((_, i) => {
             if (!spots[i]) return [];
@@ -294,6 +421,7 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
       )}
 
       {spots &&
+        !far &&
         sites.map((s, i) => {
           if (!spots[i]) return null;
           const x = S?.series[i];
@@ -308,7 +436,8 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
           const paused = x ? x.paused_now[t] : 0;
           const waiting = x ? x.waiting_now[t] : 0;
           const movedIn = S ? S.deadline_jobs.filter((j) => j[4] === i && j[5] === t && j[1] !== i).length + (x?.moved_in[t] ?? 0) : 0;
-          if (isPin(i))
+          if (isPin(i)) {
+            const st = statusAt?.(i);
             return (
               <button
                 key={s.id}
@@ -318,22 +447,36 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
                 }}
                 onMouseEnter={() => setHover(i)}
                 onMouseLeave={() => setHover(null)}
+                title={st ? STATUS[st].label : KIND_LABEL[s.kind]}
                 className={clsx(
-                  "absolute flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-full bg-card py-1 pl-1 pr-2 text-[12px] font-semibold shadow",
-                  selected === i ? "ring-2 ring-rust" : "ring-1 ring-line",
+                  "absolute flex -translate-x-1/2 -translate-y-1/2 items-center gap-2 rounded-xl border bg-white py-1.5 pl-1.5 pr-2.5 text-left leading-tight shadow-pill transition-colors",
+                  selected === i ? "border-ink ring-1 ring-ink" : "border-line/60 hover:border-faint",
                 )}
                 style={{ left: spots[i].x, top: spots[i].y }}
               >
-                <span className="grid size-6 place-items-center rounded-full bg-amber-soft text-rust-deep">
-                  <Icon size={13} />
+                {/* the kind of building */}
+                <span className={clsx("grid size-7 shrink-0 place-items-center rounded-lg", s.kind === "spa" ? "bg-teal-soft text-[#2f6e75]" : "bg-amber-soft text-rust-deep")}>
+                  <Icon size={15} />
                 </span>
-                {named(i) && <span className="max-w-[90px] truncate">{s.name}</span>}
-                <span className={clsx(named(i) && "font-normal text-muted")}>
-                  {run}/{n}
+                <span className="min-w-0">
+                  <span className="flex items-center gap-1.5 whitespace-nowrap">
+                    {/* the heat status, the same colours as the servers panel */}
+                    <span className="size-2.5 shrink-0 rounded-full transition-colors duration-500" style={{ background: st ? STATUS[st].color : STATUS.idle.color }} />
+                    {named(i) && <span className="max-w-[110px] truncate text-[13.5px] font-semibold">{s.name}</span>}
+                    <span className={clsx("text-[13px] tabular-nums", named(i) ? "text-muted" : "font-semibold")}>
+                      {run}/{n}
+                    </span>
+                    {paused > 0 && <Pause size={11} className="shrink-0 text-[#2f6e75]" fill="currentColor" />}
+                  </span>
+                  {named(i) && st && st !== "idle" && st !== "used" && (
+                    <span className="mt-0.5 block whitespace-nowrap pl-4 text-[12.5px] font-semibold" style={{ color: STATUS[st].text }}>
+                      {STATUS[st].short}
+                    </span>
+                  )}
                 </span>
-                {paused > 0 && <Pause size={11} className="text-rust" fill="currentColor" />}
               </button>
             );
+          }
           return (
             <div key={s.id} className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: spots[i].x, top: spots[i].y }}>
               <div
@@ -348,7 +491,10 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
                   selected === i ? "ring-2 ring-rust" : "ring-1 ring-line",
                 )}
               >
-                <span className={clsx("relative grid size-11 place-items-center rounded-xl", s.kind === "spa" ? "bg-teal-soft text-[#2f6e75]" : "bg-amber-soft text-rust-deep")}>
+                <span
+                  className={clsx("relative grid size-11 place-items-center rounded-xl transition-shadow duration-500", s.kind === "spa" ? "bg-teal-soft text-[#2f6e75]" : "bg-amber-soft text-rust-deep")}
+                  style={statusAt?.(i) && statusAt(i) !== "idle" ? { boxShadow: `0 0 0 3px ${STATUS[statusAt(i)!].color}` } : undefined}
+                >
                   <Icon size={22} />
                   {(up || down) && (
                     <span className={clsx("absolute -right-2 -top-2 grid size-5 place-items-center rounded-full text-cream", up ? "bg-rust" : "bg-teal")}>
@@ -424,7 +570,7 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
           );
         })}
 
-      {spots && S && (
+      {spots && S && !far && (
         <svg key={`mv${t}`} className="pointer-events-none absolute inset-0 h-full w-full overflow-visible">
           <defs>
             <marker id="mv-head" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto">
@@ -461,7 +607,7 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
         </svg>
       )}
 
-      {spots && S && card !== null && card < sites.length && spots[card] && (
+      {spots && S && !far && card !== null && card < sites.length && spots[card] && (
         <SiteHour
           x={spots[card].x}
           y={spots[card].y}
@@ -478,9 +624,16 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
           actions={
             <>
               {view3d === card ? (
-                <CardBtn onClick={close3d}>
-                  <ArrowLeft size={13} /> Back to map
-                </CardBtn>
+                <>
+                  {insideOf?.(card) && (
+                    <CardBtn onClick={() => goInside(card)} title="Step into the plant room and see its servers">
+                      <DoorOpen size={13} /> Go inside
+                    </CardBtn>
+                  )}
+                  <CardBtn onClick={close3d}>
+                    <ArrowLeft size={13} /> Back to map
+                  </CardBtn>
+                </>
               ) : (
                 <CardBtn onClick={() => open3d(card)}>
                   <Box size={13} /> 3D view
@@ -492,14 +645,52 @@ export function SitesMap({ sites, schedule, t, dur, selected, setSelected, setSe
         />
       )}
 
-      {view3d !== null && sites[view3d] && (
+      {/* far out: the sites are one marker, a click flies back in */}
+      {pts && far && pts.length > 0 && (
+        <button
+          onClick={() => flyIn()}
+          title="Fly back to the sites"
+          className="absolute flex -translate-x-1/2 -translate-y-1/2 items-center gap-2 rounded-full border border-line/60 bg-white py-1.5 pl-1.5 pr-3.5 text-[14px] font-semibold shadow-pill hover:bg-cream"
+          style={{ left: pts.reduce((a, p) => a + p.x, 0) / pts.length, top: pts.reduce((a, p) => a + p.y, 0) / pts.length }}
+        >
+          <span className="relative grid size-6 place-items-center">
+            <span className="absolute inset-0 animate-ping rounded-full bg-rust/40" />
+            <span className="size-3 rounded-full bg-rust ring-2 ring-white" />
+          </span>
+          Basel <span className="font-normal text-muted">· {sites.length} buildings</span>
+        </button>
+      )}
+
+      {fromSwiss && view3d === null && (
+        <button
+          onClick={() => (swiss ? flyIn() : flyOut())}
+          className={clsx("absolute z-10 flex items-center gap-1.5 rounded-full border border-line/60 bg-white px-3.5 py-2 text-[13.5px] font-semibold text-ink shadow-pill hover:bg-cream", swissBtnAt)}
+        >
+          {swiss ? (
+            <>
+              <ArrowLeft size={14} /> Back to Basel
+            </>
+          ) : (
+            <>
+              <MapIcon size={14} /> Switzerland
+            </>
+          )}
+        </button>
+      )}
+
+      {view3d !== null && inside === null && sites[view3d] && (
         <button
           onClick={close3d}
-          className="absolute left-1/2 top-4 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-ink px-4 py-2 text-[13px] font-semibold text-cream shadow-lg hover:bg-ink-2"
+          className="absolute left-1/2 top-4 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-line/60 bg-white px-4 py-2 text-[13.5px] font-semibold text-ink shadow-pill hover:bg-cream"
         >
           <ArrowLeft size={14} /> Back to the map · {sites[view3d].name} in 3D
         </button>
       )}
+
+      {inside !== null && sites[inside] && (() => {
+        const d = insideOf?.(inside);
+        return d ? <BuildingInside key={sites[inside].id} d={d} onBack={() => leaveInside()} area={{ top: pad.top, bottom: Math.min(pad.bottom, 96), left: pad.left, right: pad.right }} /> : null;
+      })()}
 
       {showPick && (
         <div className="absolute z-10 w-[230px] -translate-x-1/2 rounded-2xl bg-card p-3 shadow-xl ring-1 ring-line" style={{ left: Math.max(pick.x, 125), top: Math.min(pick.y + 14, 300) }}>
@@ -589,7 +780,12 @@ function SiteHour(p: {
   const rows = [
     { l: "Needs", v: `${p.demand.toFixed(1)} kW` },
     { l: "Servers give", v: `${p.heat.toFixed(1)} kW` },
-    ...(p.live ? [] : [{ l: "Backup heater", v: `${backup.toFixed(1)} kW`, hot: backup > 0.05 }]),
+    // the live demo has no backup heater: what the servers do not give right now comes out of the tank, while it holds any
+    ...(p.live
+      ? p.soc > 0.05
+        ? [{ l: "From tank", v: `${Math.max(0, p.demand - p.heat).toFixed(1)} kW` }]
+        : [{ l: "Not covered", v: `${Math.max(0, p.demand - p.heat).toFixed(1)} kW`, hot: p.demand - p.heat > 0.05 }]
+      : [{ l: "Backup heater", v: `${backup.toFixed(1)} kW`, hot: backup > 0.05 }]),
   ];
   const level = p.tank > 0 ? Math.max(0, Math.min(1, p.soc / p.tank)) : 0;
   // no room above the pin (a building's 3D view puts it near the top): open the card below it
@@ -599,28 +795,28 @@ function SiteHour(p: {
       onMouseEnter={p.onEnter}
       onMouseLeave={p.onLeave}
       onClick={(e) => e.stopPropagation()}
-      className="absolute z-20 w-[220px] rounded-2xl bg-ink p-3.5 text-cream shadow-xl"
+      className="rise absolute z-20 w-[230px] rounded-2xl border border-line/60 bg-white p-3.5 text-ink shadow-pill"
       style={below ? { left: p.x, top: p.y + 22, transform: "translate(-50%, 0)" } : { left: p.x, top: p.y - (p.high ? 58 : 22), transform: "translate(-50%, -100%)" }}
     >
       {/* a bridge over the gap to the pin, so moving onto the card keeps it open */}
       <div className={clsx("absolute inset-x-0", below ? "bottom-full" : "top-full")} style={{ height: below ? 14 : p.high ? 46 : 14 }} />
-      <div className="text-[13px] font-semibold">{p.name}</div>
-      <div className="mt-2 space-y-1 text-[13px]">
+      <div className="text-[14px] font-semibold">{p.name}</div>
+      <div className="mt-2 space-y-1 text-[13.5px]">
         {rows.map((r) => (
           <div key={r.l} className="flex justify-between">
-            <span className="text-cream/60">{r.l}</span>
-            <b className={clsx("tabular-nums", r.hot && "text-amber")}>{r.v}</b>
+            <span className="text-muted">{r.l}</span>
+            <b className={clsx("font-semibold tabular-nums", r.hot && "text-[#a85a12]")}>{r.v}</b>
           </div>
         ))}
       </div>
-      <div className="mt-2.5 flex justify-between text-[13px]">
-        <span className="text-cream/60">Tank</span>
-        <b className="tabular-nums">
+      <div className="mt-2.5 flex justify-between text-[13.5px]">
+        <span className="text-muted">Tank</span>
+        <b className="font-semibold tabular-nums">
           {p.live ? `${Math.round(level * 100)} % · ` : ""}
           {p.soc.toFixed(0)} / {p.tank} kWh
         </b>
       </div>
-      <div className={clsx("mt-1.5 overflow-hidden rounded-full bg-cream/15", p.live ? "h-2.5" : "h-1.5")}>
+      <div className={clsx("mt-1.5 overflow-hidden rounded-full bg-cream ring-1 ring-line/70", p.live ? "h-2.5" : "h-1.5")}>
         <div className={clsx("h-full rounded-full", p.live ? "bg-gradient-to-r from-[#3f8f9a] to-[#7cc3cb]" : "bg-amber")} style={{ width: `${level * 100}%` }} />
       </div>
       {p.actions && <div className="mt-3 flex flex-wrap gap-1.5">{p.actions}</div>}
@@ -636,7 +832,7 @@ export function CardBtn({ onClick, children, title }: { onClick: () => void; chi
         e.stopPropagation();
         onClick();
       }}
-      className="flex items-center gap-1.5 rounded-full bg-cream/12 px-2.5 py-1 text-[12px] font-semibold text-cream ring-1 ring-cream/25 hover:bg-cream/20"
+      className="flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[12.5px] font-semibold text-ink ring-1 ring-line hover:bg-cream"
     >
       {children}
     </button>

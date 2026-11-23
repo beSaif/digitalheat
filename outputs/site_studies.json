@@ -344,98 +344,98 @@
  ],
  "summer": {
   "base (on/off servers)": {
-   "coverage": 0.7283,
+   "coverage": 0.7578,
    "dumped_kwh": 0.0,
-   "utilisation": 0.8264,
-   "summer_utilisation": 0.6719,
+   "utilisation": 0.7643,
+   "summer_utilisation": 0.6004,
    "missed_pct": 0.0,
    "cooled_server_h": 0.0,
    "fan_kwh": 0.0,
-   "always_on_share": 0.9084,
-   "electricity_chf": 134793.84,
-   "heat_value_chf": 43134.03,
-   "run_server_h": 405395,
+   "always_on_share": 0.9072,
+   "electricity_chf": 140243.51,
+   "heat_value_chf": 44876.17,
+   "run_server_h": 421785,
    "break_even_chf_per_server_h": 0.2261
   },
   "_monthly": [
    {
-    "permit_sh": 41664.0,
-    "run_sh": 41664.0,
-    "heat_sh": 41664.0,
+    "permit_sh": 45413.0,
+    "run_sh": 45413.0,
+    "heat_sh": 45413.0,
     "cooled_sh": 0.0,
     "demand": 59229,
-    "served": 33329,
+    "served": 36294,
     "dumped": 0.0,
     "queue_sh": 0,
     "queue_jobs": 0,
     "by_type": {
-     "embed": 14694.2,
+     "embed": 18443.2,
      "rerank": 681.8,
      "other": 26288.0
     }
    },
    {
-    "permit_sh": 37632.0,
-    "run_sh": 37632.0,
-    "heat_sh": 37632.0,
+    "permit_sh": 40715.0,
+    "run_sh": 40715.0,
+    "heat_sh": 40715.0,
     "cooled_sh": 0.0,
     "demand": 51645,
-    "served": 30105,
+    "served": 32571,
     "dumped": 0.0,
     "queue_sh": 0,
     "queue_jobs": 0,
     "by_type": {
-     "embed": 13272.2,
+     "embed": 16355.2,
      "rerank": 615.8,
      "other": 23744.0
     }
    },
    {
-    "permit_sh": 41221.0,
-    "run_sh": 41209.0,
-    "heat_sh": 41209.0,
+    "permit_sh": 43378.0,
+    "run_sh": 43366.0,
+    "heat_sh": 43366.0,
     "cooled_sh": 0.0,
     "demand": 48846,
-    "served": 32936,
+    "served": 34662,
     "dumped": 0.0,
     "queue_sh": 0,
     "queue_jobs": 0,
     "by_type": {
-     "embed": 14239.2,
+     "embed": 16396.2,
      "rerank": 681.8,
      "other": 26288.0
     }
    },
    {
-    "permit_sh": 35478.0,
-    "run_sh": 35343.0,
-    "heat_sh": 35343.0,
+    "permit_sh": 36085.0,
+    "run_sh": 35950.0,
+    "heat_sh": 35950.0,
     "cooled_sh": 0.0,
     "demand": 34191,
-    "served": 27997,
+    "served": 28517,
     "dumped": 0.0,
-    "queue_sh": 63.0,
+    "queue_sh": 75.0,
     "queue_jobs": 29,
     "by_type": {
-     "embed": 9306.2,
+     "embed": 9925.2,
      "rerank": 659.8,
-     "other": 25377.0
+     "other": 25365.0
     }
    },
    {
-    "permit_sh": 29966.0,
-    "run_sh": 29532.0,
-    "heat_sh": 29532.0,
+    "permit_sh": 30113.0,
+    "run_sh": 29679.0,
+    "heat_sh": 29679.0,
     "cooled_sh": 0.0,
     "demand": 25530,
-    "served": 23612,
+    "served": 23729,
     "dumped": 0.0,
-    "queue_sh": 302.0,
-    "queue_jobs": 53,
+    "queue_sh": 310.0,
+    "queue_jobs": 55,
     "by_type": {
-     "embed": 2801.2,
+     "embed": 2944.2,
      "rerank": 681.8,
-     "other": 26049.0
+     "other": 26053.0
     }
    },
    {
@@ -446,12 +446,12 @@
     "demand": 18738,
     "served": 18738,
     "dumped": 0.0,
-    "queue_sh": 3070.0,
-    "queue_jobs": 401,
+    "queue_sh": 3075.0,
+    "queue_jobs": 402,
     "by_type": {
-     "embed": 74.2,
+     "embed": 71.2,
      "rerank": 659.8,
-     "other": 22672.0
+     "other": 22675.0
     }
    },
    {
@@ -462,7 +462,7 @@
     "demand": 19725,
     "served": 19725,
     "dumped": 0.0,
-    "queue_sh": 5457.0,
+    "queue_sh": 5462.0,
     "queue_jobs": 702,
     "by_type": {
      "embed": 73.2,
@@ -478,74 +478,74 @@
     "demand": 19388,
     "served": 19388,
     "dumped": 0.0,
-    "queue_sh": 8246.0,
-    "queue_jobs": 1046,
+    "queue_sh": 8252.0,
+    "queue_jobs": 1047,
     "by_type": {
-     "embed": 75.2,
+     "embed": 76.2,
      "rerank": 681.8,
-     "other": 23499.0
+     "other": 23498.0
     }
    },
    {
-    "permit_sh": 28416.0,
-    "run_sh": 28056.0,
-    "heat_sh": 28056.0,
+    "permit_sh": 28538.0,
+    "run_sh": 28178.0,
+    "heat_sh": 28178.0,
     "cooled_sh": 0.0,
     "demand": 23975,
-    "served": 22465,
+    "served": 22563,
     "dumped": 0.0,
-    "queue_sh": 6374.0,
-    "queue_jobs": 820,
+    "queue_sh": 6252.0,
+    "queue_jobs": 804,
     "by_type": {
-     "embed": 84.2,
+     "embed": 78.2,
      "rerank": 659.8,
-     "other": 27312.0
+     "other": 27440.0
     }
    },
    {
-    "permit_sh": 38500.0,
-    "run_sh": 38488.0,
-    "heat_sh": 38488.0,
+    "permit_sh": 39153.0,
+    "run_sh": 39141.0,
+    "heat_sh": 39141.0,
     "cooled_sh": 0.0,
     "demand": 37039,
-    "served": 31047,
+    "served": 31534,
     "dumped": 0.0,
     "queue_sh": 0,
     "queue_jobs": 0,
     "by_type": {
-     "embed": 5144.2,
+     "embed": 5919.2,
      "rerank": 681.8,
-     "other": 32662.0
+     "other": 32540.0
     }
    },
    {
-    "permit_sh": 39513.0,
-    "run_sh": 39489.0,
-    "heat_sh": 39489.0,
+    "permit_sh": 41985.0,
+    "run_sh": 41961.0,
+    "heat_sh": 41961.0,
     "cooled_sh": 0.0,
     "demand": 49486,
-    "served": 31626,
+    "served": 33603,
     "dumped": 0.0,
     "queue_sh": 0,
     "queue_jobs": 0,
     "by_type": {
-     "embed": 13389.2,
+     "embed": 15861.2,
      "rerank": 659.8,
      "other": 25440.0
     }
    },
    {
-    "permit_sh": 41664.0,
-    "run_sh": 41664.0,
-    "heat_sh": 41664.0,
+    "permit_sh": 45064.0,
+    "run_sh": 45064.0,
+    "heat_sh": 45064.0,
     "cooled_sh": 0.0,
     "demand": 57483,
-    "served": 33348,
+    "served": 36089,
     "dumped": 0.0,
     "queue_sh": 0,
     "queue_jobs": 0,
     "by_type": {
-     "embed": 14694.2,
+     "embed": 18094.2,
      "rerank": 681.8,
      "other": 26288.0
     }
@@ -555,10 +555,10 @@
    {
     "id": "BS-01",
     "name": "Reference house",
-    "servers": 4,
-    "coverage": 0.5803,
-    "utilisation": 0.6465,
-    "summer_utilisation": 0.3291,
+    "servers": 11,
+    "coverage": 0.9997,
+    "utilisation": 0.4052,
+    "summer_utilisation": 0.1378,
     "demand_kwh": 31231
    },
    {
@@ -608,46 +608,46 @@
    }
   ],
   "partial power": {
-   "coverage": 0.7284,
+   "coverage": 0.7578,
    "dumped_kwh": 0.0,
-   "utilisation": 0.8265,
-   "summer_utilisation": 0.6719,
+   "utilisation": 0.7643,
+   "summer_utilisation": 0.6004,
    "missed_pct": 0.0,
    "cooled_server_h": 0.0,
    "fan_kwh": 0.0,
    "always_on_share": 0.9457,
-   "electricity_chf": 134804.69,
-   "heat_value_chf": 43137.5,
-   "run_server_h": 405427.63615734736,
+   "electricity_chf": 140252.18,
+   "heat_value_chf": 44878.9,
+   "run_server_h": 421811.07951672236,
    "break_even_chf_per_server_h": 0.2261
   },
   "dry cooler 4 kW per site, deadline/forced only": {
-   "coverage": 0.7283,
+   "coverage": 0.7578,
    "dumped_kwh": 0.0,
-   "utilisation": 0.8264,
-   "summer_utilisation": 0.6719,
+   "utilisation": 0.7643,
+   "summer_utilisation": 0.6004,
    "missed_pct": 0.0,
    "cooled_server_h": 0.0,
    "fan_kwh": 0.0,
-   "always_on_share": 0.9084,
-   "electricity_chf": 134793.84,
-   "heat_value_chf": 43134.03,
-   "run_server_h": 405395,
+   "always_on_share": 0.9072,
+   "electricity_chf": 140243.51,
+   "heat_value_chf": 44876.17,
+   "run_server_h": 421785,
    "break_even_chf_per_server_h": 0.2261
   },
   "dry cooler 4 kW per site, fill spare servers": {
-   "coverage": 0.7283,
-   "dumped_kwh": 55701.6,
-   "utilisation": 0.9683,
-   "summer_utilisation": 0.9394,
+   "coverage": 0.7578,
+   "dumped_kwh": 73597.6,
+   "utilisation": 0.931,
+   "summer_utilisation": 0.8739,
    "missed_pct": 0.0,
-   "cooled_server_h": 69627.0,
-   "fan_kwh": 1114.0,
+   "cooled_server_h": 91997.0,
+   "fan_kwh": 1472.0,
    "always_on_share": 1.0,
-   "electricity_chf": 158315.23,
-   "heat_value_chf": 43134.03,
-   "run_server_h": 475022.0,
-   "break_even_chf_per_server_h": 0.2425
+   "electricity_chf": 171321.94,
+   "heat_value_chf": 44876.17,
+   "run_server_h": 513782.0,
+   "break_even_chf_per_server_h": 0.2461
   }
  },
  "outage": {
@@ -1254,17 +1254,17 @@
    ]
   ],
   "replicas=1": {
-   "lost_server_h": 1970.58,
+   "lost_server_h": 2075.85,
    "twin": {
     "done": 2190,
     "missed": 0,
     "open": 0,
     "lost": 0,
     "forced": 0,
-    "moves": 8,
+    "moves": 7,
     "pauses": 0,
     "checkpoints": 0,
-    "restarts": 16
+    "restarts": 13
    },
    "sim": {
     "done": 36500,
@@ -1272,22 +1272,22 @@
     "open": 0,
     "lost": 0,
     "forced": 0,
-    "moves": 8654,
+    "moves": 9408,
     "pauses": 0,
     "checkpoints": 0,
-    "restarts": 480
+    "restarts": 512
    },
    "missed_pct": 0.0
   },
   "replicas=2": {
-   "lost_server_h": 1984.56,
+   "lost_server_h": 2069.43,
    "twin": {
     "done": 4355,
     "missed": 0,
     "open": 0,
     "lost": 25,
     "forced": 0,
-    "moves": 248,
+    "moves": 265,
     "pauses": 0,
     "checkpoints": 0,
     "restarts": 0
@@ -1298,27 +1298,27 @@
     "open": 0,
     "lost": 0,
     "forced": 0,
-    "moves": 10094,
+    "moves": 10971,
     "pauses": 0,
     "checkpoints": 0,
-    "restarts": 489
+    "restarts": 522
    },
    "missed_pct": 0.0
   }
  },
  "partial_house": {
   "on/off": {
-   "on_share": 0.8433,
-   "summer_on_share": 0.7022,
-   "coverage": 0.5803,
-   "utilisation": 0.6465,
-   "switches": 2746
+   "on_share": 0.8364,
+   "summer_on_share": 0.6963,
+   "coverage": 0.9997,
+   "utilisation": 0.4052,
+   "switches": 2866
   },
   "partial power": {
    "on_share": 1.0,
    "summer_on_share": 1.0,
-   "coverage": 0.5805,
-   "utilisation": 0.6467,
+   "coverage": 0.9997,
+   "utilisation": 0.4052,
    "switches": 0
   }
  }

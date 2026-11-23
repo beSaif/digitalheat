@@ -20,7 +20,7 @@ export const TAGLINE = 'Computing that heats the building it runs in.'
 export const CREDIT = 'sprintd Basel · GreenTech Edition 2026'
 
 /** Tag colour per role passed to roll(); leave `who` empty there to show no tags. */
-export const ROLE_COLORS: Record<string, string> = { DigitalHeat: C.rust, Homeowner: C.teal, Customer: C.navy }
+export const ROLE_COLORS: Record<string, string> = { DigitalHeat: C.rust, Homeowner: C.teal, Customer: C.navy, 'This laptop': C.muted }
 
 // --- clips ------------------------------------------------------------------------------------
 export type Cut = { name: string; who: string; from: number; until: number }

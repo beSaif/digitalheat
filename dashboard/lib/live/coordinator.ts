@@ -50,8 +50,9 @@ import {
  * building needs heat. Nothing runs that the customer did not order.
  *
  * Every building has enough servers to cover 100 % of its heat demand (no heat pump, no backup heater):
- * the scheduler sizes each rack from the building's highest hour of the year, with each building type sized
- * against the house (X_HOUSE in shared.ts: a pharma lab is 5 houses, a hospital 4).
+ * the scheduler gives each rack the fewest servers that, with the building's tank, cover every hour of the
+ * year (sizing "tank": the reference house gets 11), with each building type sized against the house
+ * (X_HOUSE in shared.ts: a pharma lab is 5 houses, a hospital 4).
  *
  * Which racks have heat is the DigitalHeat scheduler's decision (scheduler/day.py, the yearly balance's
  * code) for one moment: now (today's date and hour with 2025 weather), a January morning or a July
@@ -303,7 +304,7 @@ function decide(s: Store, key: CondKey): Promise<DayData> {
     day: m.day,
     hour: m.hour,
     hours: 1,
-    sizing: "peak", // every building has enough servers for 100 % of its heat: no heat pump, no backup heater
+    sizing: "tank", // the fewest servers that, with the tank, cover 100 % of the heat: no heat pump, no backup heater
   });
   if (!planCache.has(req)) {
     if (planCache.size > 40) planCache.delete(planCache.keys().next().value!);
@@ -387,10 +388,10 @@ function rackIndex(s: Store, n: NodeRec) {
 
 /*
  * A device stands for its whole rack, so the work goes out in proportion to servers on, measured against
- * the biggest rack with all its servers on (racks are sized for the coldest hour of the year). On a
- * January morning nearly every server is on and the fleet works almost flat out; in July a pharma lab
- * with 39 of its 66 servers on works 59 % of the time and a house running 1 server for its hot water
- * takes 1 part for every 66, so the same order takes much longer. Less heat needed, less computing.
+ * the biggest rack with all its servers on (racks are sized for 100 % of the year's heat with their tank). On a
+ * January morning nearly every server is on and the fleet works almost flat out; in July a hospital with
+ * 17 of its 38 servers on works 45 % of the time and a house running 1 server for its hot water takes
+ * 1 part for every 38, so the same order takes much longer. Less heat needed, less computing.
  */
 function biggestRack(s: Store) {
   let top = 0;

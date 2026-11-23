@@ -210,7 +210,8 @@ def friend_example(base_price, house):
 
 
 def house_servers():
-    return REFERENCE[0].get("servers", 4)
+    from scheduler.sites import KINDS
+    return REFERENCE[0].get("servers", KINDS["house"]["servers"])
 
 
 def rollout(f, price_sh, discount, servers=1000, cool=False):
@@ -343,7 +344,7 @@ def report(R):
     L += ["", f"Case owner's example: a friend pays USD {v('friend_aws_simulation_usd_per_year'):,.0f}/yr (CHF {fr['aws_chf']:,}) "
           f"on AWS for simulations = {fr['server_h']:,} server-hours on our reference server = {fr['servers_at_80pct']} of one server "
           f"running 80 % of the year. At AWS + {int(v('compute_premium') * 100)} % he would pay CHF {fr['our_price_chf']:,}/yr; at our "
-          f"base-case rate CHF {fr['our_price_at_base_rate_chf']:,}/yr. One reference house (4 servers, 70 % sold) needs about {fr['customers_per_house']} such customers."]
+          f"base-case rate CHF {fr['our_price_at_base_rate_chf']:,}/yr. One reference house ({house_servers()} servers, 70 % sold) needs about {fr['customers_per_house']} such customers."]
     ro = R["rollout"]
     L += ["", f"Rollout of {ro['servers']:,} servers in services-type sites: capex {ro['capex_chf'] / 1e6:.1f} M CHF, "
           f"revenue {ro['revenue_chf_y'] / 1e6:.1f} M CHF/yr, EBITDA {ro['ebitda_chf_y'] / 1e6:.1f} M CHF/yr, payback "

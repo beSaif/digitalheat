@@ -1,10 +1,11 @@
 [
-  {"id": "l01", "clip": "join", "offset": 0.5, "text": "So this is Lena. She lives in Basel, and instead of a heat pump, her basement has DigitalHeat servers. She scans the code, types her name... and that's her house, up on our map."},
-  {"id": "l02", "clip": "fleet", "text": "Fourteen servers, enough for all her heat in the coldest hour of the year. A few others join too... a pharma lab, a family home, a spa, an office and a greenhouse."},
-  {"id": "l03", "clip": "order", "text": "Now the customer. That's the jury today. You want a 3D image rendered, you can see what it costs, and you order it."},
-  {"id": "l04", "clip": "winter", "text": "It's a January morning, and every building on the map needs heat. So the image is cut into sixty tiles, and every building's servers render a share of them."},
-  {"id": "l05", "clip": "winter", "offset": 13.5, "text": "The coloured corner on each tile shows which building rendered it... some are Lena's. The heat from that work went straight into her radiators."},
-  {"id": "l06", "clip": "summer-order", "text": "Now July, two in the afternoon. This time the customer asks an AI to search scientific papers for a claim about aspirin."},
-  {"id": "l07", "clip": "summer", "text": "Lena only needs hot water now, and her tank is full... so just one of her fourteen servers runs, and the greenhouse is off completely. The work goes to the pharma lab and the spa, which still need the heat."},
-  {"id": "l09", "clip": "download", "text": "The customer gets the finished image. And every server that worked on it was heating a building that needed the heat."}
+  {"id": "m01", "clip": "order", "offset": 0.5, "text": "This is the customer. They want a 3D image rendered. They see the price up front, and they order it."},
+  {"id": "m02", "clip": "house", "offset": 0.5, "text": "And this is where it runs. The reference house in Basel, on the fifteenth of January, eight in the morning, minus two degrees outside. It needs about nine kilowatts of heat."},
+  {"id": "m03", "clip": "house", "offset": 13.5, "text": "There are eleven servers in the basement, and right now all eleven are on. It's cold and the tank has room, so every bit of their heat gets used."},
+  {"id": "m04", "clip": "fleet", "text": "Back out on the map, the same scheduler runs a hospital and a spa too. At minus two, everyone wants heat... so the image is cut into sixty parts, and every building renders a share."},
+  {"id": "m05", "clip": "fill", "text": "Now say the family stops using heat, and the house's tank is full. Watch the part it's working on."},
+  {"id": "m06", "clip": "fill", "offset": 8.4, "text": "The rack stops halfway, saves exactly where it got to, and a building that still needs heat finishes it from there. Nothing gets computed twice."},
+  {"id": "m07", "clip": "summer", "text": "Same buildings, the fifteenth of July, two in the afternoon. The house only needs hot water now, so just one of its eleven servers runs. The spa still heats its pool, so the work goes there."},
+  {"id": "m08", "clip": "realjob", "text": "And this isn't only on screen. It's the same scheduler code, controlling a real AI job on this laptop, as one server of the reference house on that July day."},
+  {"id": "m09", "clip": "realjob", "offset": 12.5, "text": "No heat needed... the job pauses. Heat needed again... it carries on from exactly where it was."}
 ]

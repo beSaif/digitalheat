@@ -40,7 +40,7 @@ Spoken lines are in quotes. **[Cue]** = what the operator does. Times are where 
 
 **[Cue]** Hover over **Lena's** pin on the map. On the card, click **3D view**.
 
-> "This is Lena's house. Her phone is standing in for her fourteen servers."
+> "This is Lena's house. Her phone is standing in for her eleven servers."
 
 Hold Lena's phone up for a second.
 
@@ -82,7 +82,7 @@ Point at that part in the image: it shows **saving**, then a percentage.
 
 > "Same fleet, July, two in the afternoon. The customer now asks an AI to search five thousand scientific abstracts for a claim."
 
-> "Homes only need hot water now. Lena runs one or two of her fourteen servers. The work goes to the pharma lab and the spa, which need heat all year. Less heat needed means less computing, and the scheduler follows it."
+> "Homes only need hot water now. Lena runs one or two of her eleven servers. The work goes to the pharma lab and the spa, which need heat all year. Less heat needed means less computing, and the scheduler follows it."
 
 **[Cue]** Point at the best matches as they appear.
 
@@ -90,13 +90,13 @@ Point at that part in the image: it shows **saving**, then a percentage.
 
 ### 3:45 · Does it pay?
 
-> "We ran the same scheduler over a full year of Basel weather for the case's reference house with four servers."
+> "We ran the same scheduler over a full year of Basel weather for the case's reference house with eleven servers."
 
 Say the numbers slowly:
 
-> "It covers 58 % of the house's heat and never throws heat away. The servers are busy 65 % of the time, and not one of 27,000 jobs missed its deadline."
+> "It covers 99.97 % of the house's heat and never throws heat away. The servers are busy 41 % of the time, and not one of 48,000 jobs missed its deadline."
 
-> "It breaks even at 1.11 francs per server-hour, hardware included. Sold at the AWS spot price, 2.74, that one house earns DigitalHeat about 37,000 francs a year. It stops paying off below 23 % utilisation."
+> "All in, one server-hour costs us 1.72 francs. Sold at the AWS spot price, 2.74, that one house earns DigitalHeat about 40,000 francs a year. It stops paying off below 23 % utilisation."
 
 ### 4:30 · What's real, what's next
 
@@ -137,4 +137,4 @@ Both. `python3 -m scheduler.live` pauses, checkpoints and resumes a real embeddi
 The host's meter pays all of it, and DigitalHeat refunds the share the heat doesn't cover. The host pays for heat below the price of a heat pump.
 
 **How many servers per house?**
-The case's reference house has 4, and that's what the yearly numbers use. In the live demo every building has enough for 100 % of its heat (Lena's house: 14), because DigitalHeat said there's no heat pump and no backup.
+11, in the yearly numbers and in the live demo. It's the fewest that cover all of a house's heat for the year with its 35 kWh tank; the coldest hour alone would need 14. DigitalHeat said there's no heat pump and no backup, so every building gets that rack (Lena's house: 11).

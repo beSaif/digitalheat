@@ -220,7 +220,8 @@ export const KIND_NAME: Record<string, string> = {
 };
 /*
  * Site types against the house (our assumption): a building of 4x needs 4 times the house's heat in its
- * coldest hour, so it gets about 4 times the house's servers (house: 14). Each keeps its own heat profile:
+ * coldest hour. Its rack is the fewest servers that, with its tank, cover every hour of the year (house: 11,
+ * hospital 38), so it isn't exactly 4 times the house's: its own heat profile decides. Each keeps that profile:
  * sites with heat all year (pharma, hospital, spa) have the big racks that stay on in summer, while a
  * house in July runs one or two servers for its hot water.
  */

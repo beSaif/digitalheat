@@ -1,0 +1,59 @@
+{
+  "join": {
+    "clips": [
+      {
+        "name": "join",
+        "who": "Homeowner"
+      },
+      {
+        "name": "fleet",
+        "who": "DigitalHeat"
+      }
+    ],
+    "at": "2026-11-22T01:54:22.539Z"
+  },
+  "january": {
+    "clips": [
+      {
+        "name": "order",
+        "who": "Customer"
+      },
+      {
+        "name": "winter",
+        "who": "DigitalHeat"
+      }
+    ],
+    "at": "2026-11-22T01:55:06.269Z"
+  },
+  "lock": {
+    "clips": [
+      {
+        "name": "lock",
+        "who": "Homeowner"
+      }
+    ],
+    "at": "2026-11-22T01:32:06.838Z"
+  },
+  "result": {
+    "clips": [
+      {
+        "name": "download",
+        "who": "Customer"
+      }
+    ],
+    "at": "2026-11-22T01:30:01.860Z"
+  },
+  "july": {
+    "clips": [
+      {
+        "name": "summer-order",
+        "who": "Customer"
+      },
+      {
+        "name": "summer",
+        "who": "DigitalHeat"
+      }
+    ],
+    "at": "2026-11-22T01:58:07.018Z"
+  }
+}

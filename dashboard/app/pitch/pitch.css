@@ -1,0 +1,211 @@
+/*
+ * The pitch's look: warm cream paper, chocolate ink, coral / butter / sage, chunky outlines with
+ * offset shadows, sticker-tilted cards, a striped "scarf". Everything is scoped to .cosy, so the
+ * console keeps its own look. Colours re-theme the Tailwind tokens: both --dh-* (globals.css) and --color-*, so they apply inside this scope.
+ */
+
+.cosy {
+  --dh-paper: #fff6e9;
+  --color-paper: #fff6e9;
+  --dh-cream: #fffdf8;
+  --color-cream: #fffdf8;
+  --dh-card: #fffdf8;
+  --color-card: #fffdf8;
+  --dh-line: #f0dcc3;
+  --color-line: #f0dcc3;
+  --dh-ink: #4a3428;
+  --color-ink: #4a3428;
+  --dh-ink-2: #5e4536;
+  --color-ink-2: #5e4536;
+  --dh-muted: #7d6252;
+  --color-muted: #7d6252;
+  --dh-faint: #a88b77;
+  --color-faint: #a88b77;
+  --dh-rust: #ef7b6c;
+  --color-rust: #ef7b6c;
+  --dh-rust-deep: #c9584a;
+  --color-rust-deep: #c9584a;
+  --dh-amber: #f7c95c;
+  --color-amber: #f7c95c;
+  --dh-amber-soft: #fbe3a8;
+  --color-amber-soft: #fbe3a8;
+  --dh-teal: #6fae86;
+  --color-teal: #6fae86;
+  --dh-teal-soft: #dcefe2;
+  --color-teal-soft: #dcefe2;
+  --dh-alarm: #d9534f;
+  --color-alarm: #d9534f;
+  --bd: #4a3428;
+  --font-display: var(--font-fredoka);
+  --font-plex: var(--font-nunito);
+  font-family: var(--font-nunito), "Trebuchet MS", system-ui, sans-serif;
+  font-feature-settings: "tnum" 1;
+}
+.cosy .font-display {
+  letter-spacing: 0;
+}
+
+/* the "dark" slides follow the reference too: the same cream paper, with light and dark swapped
+   (text written as cream becomes chocolate, ink panels become cream), and highlights in coral */
+.cosy .grain {
+  --dh-paper: #fff6e9;
+  --color-paper: #fff6e9;
+  --dh-card: #fffdf8;
+  --color-card: #fffdf8;
+  --dh-line: #f0dcc3;
+  --color-line: #f0dcc3;
+  --dh-cream: #4a3428;
+  --color-cream: #4a3428;
+  --dh-ink: #fffdf8;
+  --color-ink: #fffdf8;
+  --dh-muted: #7d6252;
+  --color-muted: #7d6252;
+  --dh-amber: #e8685a;
+  --color-amber: #e8685a;
+  --bd: #4a3428;
+  color: #4a3428;
+  background: #fff6e9;
+}
+
+/* one centred column, heading and content together, as in the reference */
+.cosy section > div:first-child {
+  width: 100%;
+  max-width: 1280px;
+  margin-inline: auto;
+  justify-content: center;
+}
+.cosy section > div:first-child > .flex-1:not([class*="min-h-"]) {
+  flex-grow: 0;
+}
+
+/* chunky sticker: outline + offset shadow (overrides Tailwind's ring shadow) */
+.cosy .sticker,
+.cosy .dh-card {
+  border: 3px solid var(--bd) !important;
+  box-shadow: 6px 6px 0 var(--bd) !important;
+}
+.cosy .sticker-sm,
+.cosy .dh-pill {
+  border: 3px solid var(--bd) !important;
+  box-shadow: 3px 3px 0 var(--bd) !important;
+}
+.cosy .tilt-l {
+  transform: rotate(-1deg);
+}
+.cosy .tilt-r {
+  transform: rotate(1deg);
+}
+
+/* buttons press down like the reference */
+.cosy button.press {
+  border: 3px solid var(--bd);
+  box-shadow: 3px 3px 0 var(--bd);
+  transition: transform 0.08s, box-shadow 0.08s;
+}
+.cosy button.press:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--bd);
+}
+
+/* the kicker: a butter pill */
+.cosy .kicker {
+  display: inline-block;
+  align-self: flex-start;
+  background: #f7c95c;
+  color: #4a3428;
+  border: 3px solid var(--bd);
+  border-radius: 99px;
+  padding: 2px 14px;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* striped scarf: divider and the top progress bar */
+.cosy .scarf {
+  height: 22px;
+  border-radius: 12px;
+  border: 3px solid var(--bd);
+  background: repeating-linear-gradient(90deg, #ef7b6c 0 28px, #f7c95c 28px 56px, #8fc0a0 56px 84px);
+}
+.cosy .scarf-bar {
+  background: repeating-linear-gradient(90deg, #ef7b6c 0 18px, #f7c95c 18px 36px, #8fc0a0 36px 54px);
+  border-radius: 0 8px 8px 0;
+}
+
+/* each slide's content rises in when it comes into view */
+.cosy section > div:first-child > * {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.7s, transform 0.7s;
+}
+.cosy section[data-in] > div:first-child > * {
+  opacity: 1;
+  transform: none;
+}
+.cosy section[data-in] > div:first-child > *:nth-child(2) {
+  transition-delay: 0.15s;
+}
+.cosy section[data-in] > div:first-child > *:nth-child(3) {
+  transition-delay: 0.3s;
+}
+.cosy section[data-in] > div:first-child > *:nth-child(n + 4) {
+  transition-delay: 0.45s;
+}
+
+/* a server that is on hops a little */
+.cosy .hop {
+  animation: cosy-hop 1.1s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: bottom;
+}
+@keyframes cosy-hop {
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+.cosy input[type="range"] {
+  accent-color: #ef7b6c;
+}
+
+/* heat rising from the radiator, and a sleeping server's z Z (as in the reference) */
+.cosy .steam {
+  animation: cosy-up 2.6s ease-in infinite;
+  transform-box: fill-box;
+}
+@keyframes cosy-up {
+  0% { transform: translateY(14px); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: translateY(-26px); opacity: 0; }
+}
+.cosy .zz {
+  animation: cosy-zz 2.4s ease-in infinite;
+}
+@keyframes cosy-zz {
+  0% { opacity: 0; transform: translateY(8px); }
+  40% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-12px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cosy *,
+  .cosy section > div:first-child > * {
+    animation: none !important;
+    transition: none !important;
+  }
+  .cosy section > div:first-child > * {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* the printed script: flat, no shadows or tilt */
+@media print {
+  .cosy .sticker {
+    box-shadow: none !important;
+    transform: none !important;
+    break-inside: avoid;
+  }
+}

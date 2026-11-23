@@ -36,14 +36,14 @@ So: sell the twin tier while there is spare capacity, and raise the markup (or s
 
 ## 3. Homeowner offer (reference house)
 
-Heat pump running cost = electricity ÷ COP = 0.3325 ÷ 2.5 = **0.1330 CHF per kWh of heat**. Server heat used: 18,123 kWh/year; server electricity: 22,654 kWh/year.
+Heat pump running cost = electricity ÷ COP = 0.3325 ÷ 2.5 = **0.1330 CHF per kWh of heat**. Server heat used: 31,222 kWh/year; server electricity: 39,044 kWh/year.
 
 | Heat price | CHF/kWh heat | Host pays /yr | Host saves /yr vs heat pump | Host's share of the servers' power | DigitalHeat refunds /yr |
 |---|---|---|---|---|---|
-| same as heat pump | 0.1330 | 2,410 | 0 | 32 % | 5,122 |
-| 30 % below heat pump | 0.0931 | 1,687 | 723 | 22 % | 5,845 |
-| 50 % below heat pump | 0.0665 | 1,205 | 1,205 | 16 % | 6,327 |
-| free heat | 0.0000 | 0 | 2,410 | 0 % | 7,532 |
+| same as heat pump | 0.1330 | 4,153 | 0 | 32 % | 8,830 |
+| 30 % below heat pump | 0.0931 | 2,907 | 1,246 | 22 % | 10,075 |
+| 50 % below heat pump | 0.0665 | 2,076 | 2,076 | 16 % | 10,906 |
+| free heat | 0.0000 | 0 | 4,153 | 0 % | 12,982 |
 
 Case owner's example, heating bill 1,500 CHF/year: 30 % off saves 450/yr = **4,500 CHF in 10 years**; 50 % off saves 750/yr = **7,500 CHF in 10 years**.
 
@@ -70,35 +70,35 @@ Annual cash flows per server at the base-case price (3.42 CHF/server-h), 70 % of
 
 | Fleet | Server-h run | Sold | Revenue | Heat income | Electricity | Opex | EBITDA | Payback (yr) | Break-even price CHF/server-h |
 |---|---|---|---|---|---|---|---|---|---|
-| reference house | 5,664 | 3,964 | 12,203 | 422 | 1,883 | 3,600 | 7,141 | 4.1 | 3.04 |
-| services fleet | 7,239 | 5,067 | 15,598 | 539 | 2,407 | 3,200 | 10,530 | 2.5 | 2.28 |
-| services fleet + dry cooler | 8,483 | 5,938 | 18,276 | 539 | 2,827 | 3,224 | 12,765 | 2.1 | 2.04 |
+| reference house | 3,549 | 2,485 | 7,648 | 264 | 1,180 | 3,155 | 3,577 | 7.4 | 4.19 |
+| services fleet | 6,695 | 4,686 | 14,425 | 499 | 2,226 | 3,167 | 9,531 | 2.8 | 2.42 |
+| services fleet + dry cooler | 8,155 | 5,709 | 17,571 | 499 | 2,719 | 3,188 | 12,163 | 2.2 | 2.09 |
 
 Payback (years) by price and share of server-hours sold, services fleet:
 
 | Price CHF/server-h | 25 % sold | 50 % sold | 75 % sold | 100 % sold |
 |---|---|---|---|---|
 | 0.50 | never | never | never | never |
-| 1.00 | never | never | never | 18.5 |
-| 1.50 | never | never | 11.8 | 5.7 |
-| 2.00 | never | 18.5 | 5.7 | 3.4 |
-| 2.74 | never | 6.9 | 3.2 | 2.1 |
-| 3.00 | never | 5.7 | 2.8 | 1.9 |
-| 3.42 | 53.1 | 4.4 | 2.3 | 1.6 |
-| 5.00 | 8.7 | 2.4 | 1.4 | 1.0 |
-| 9.45 | 2.6 | 1.0 | 0.7 | 0.5 |
-| 11.81 | 1.9 | 0.8 | 0.5 | 0.4 |
+| 1.00 | never | never | never | 23.4 |
+| 1.50 | never | never | 14.1 | 6.4 |
+| 2.00 | never | 23.4 | 6.4 | 3.7 |
+| 2.74 | never | 7.9 | 3.5 | 2.3 |
+| 3.00 | never | 6.4 | 3.1 | 2.0 |
+| 3.42 | 102.9 | 4.9 | 2.5 | 1.7 |
+| 5.00 | 10.1 | 2.6 | 1.5 | 1.1 |
+| 9.45 | 2.8 | 1.1 | 0.7 | 0.5 |
+| 11.81 | 2.1 | 0.9 | 0.6 | 0.4 |
 
 RAM price sensitivity (services fleet, base price):
 
 | RAM price | RAM per server (CHF) | Capex per server | Payback (yr) | Break-even CHF/server-h |
 |---|---|---|---|---|
-| early 2025 | 2,519 | 18,722 | 1.6 | 1.76 |
-| 2026 contract (base) | 10,511 | 26,714 | 2.5 | 2.28 |
-| retail Nov 2026 | 16,973 | 33,176 | 3.4 | 2.71 |
+| early 2025 | 2,519 | 18,531 | 1.8 | 1.85 |
+| 2026 contract (base) | 10,511 | 26,524 | 2.8 | 2.42 |
+| retail Nov 2026 | 16,973 | 32,985 | 3.7 | 2.88 |
 
-Case owner's example: a friend pays USD 12,000/yr (CHF 10,080) on AWS for simulations = 1,067 server-hours on our reference server = 0.15 of one server running 80 % of the year. At AWS + 25 % he would pay CHF 12,600/yr; at our base-case rate CHF 3,650/yr. One reference house (4 servers, 70 % sold) needs about 15 such customers.
+Case owner's example: a friend pays USD 12,000/yr (CHF 10,080) on AWS for simulations = 1,067 server-hours on our reference server = 0.15 of one server running 80 % of the year. At AWS + 25 % he would pay CHF 12,600/yr; at our base-case rate CHF 3,650/yr. One reference house (11 servers, 70 % sold) needs about 26 such customers.
 
-Rollout of 1,000 servers in services-type sites: capex 26.7 M CHF, revenue 15.6 M CHF/yr, EBITDA 10.5 M CHF/yr, payback 2.5 years, NPV over 5 years at 8 % = 15.3 M CHF.
+Rollout of 1,000 servers in services-type sites: capex 26.5 M CHF, revenue 14.4 M CHF/yr, EBITDA 9.5 M CHF/yr, payback 2.8 years, NPV over 5 years at 8 % = 11.5 M CHF.
 
 **When it does not pay off:** below the break-even price per server-hour in the table, or when less than the break-even share of server-hours is sold (demand, not heat, is the risk), or when the heat is given away free (heat income lost, and waste: windows open at 26 °C). RAM at today's prices is the largest single capex item; see the sensitivity in docs/business-model.md.

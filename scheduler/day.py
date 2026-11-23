@@ -15,8 +15,9 @@ the balance's. Then, for each requested hour, it records:
          type, where it came from, where it is, state, work done, deadline
 
 `outages` (site id, first hour of the year, hours) take a site down, as in the balance's --outage.
-`sizing: "peak"` gives every site enough servers to cover its highest hour of heat demand in the year
-(servers = peak kW / 0.8): all heat from servers, no heat pump and no backup heater.
+`sizing: "tank"` (the live demo) gives every site the fewest servers that, with its tank, cover every hour
+of the year (scheduler.sites.tank_servers; reference house: 11): all heat from servers, no heat pump and no
+backup heater. `sizing: "peak"` sizes for the highest hour without the tank (servers = peak kW / 0.8; house: 14).
 A site's `x_house` (live demo only) scales its hourly demand so its coldest hour needs x_house times the
 house's: the building keeps its own daily and yearly shape, only its size changes.
 
@@ -25,13 +26,12 @@ Nothing here decides anything: it only records the Scheduler's own decisions.
 
 import argparse
 import json
-import math
 import sys
 from datetime import date, timedelta
 
 from scheduler.balance import DEFAULT_SITES, REFERENCE
 from scheduler.core import REC, Scheduler, job_types
-from scheduler.sites import Site, demand
+from scheduler.sites import Site, demand, size_sites
 from scheduler.weather import temperatures
 
 
@@ -57,15 +57,7 @@ def run(sites_in, year=2025, day=0, hour=0, hours=24, outages=(), sizing=None):
     sites = [Site.from_dict(s) for s in sites_in]
     temps = [temperatures(s.lat, s.lon, year) for s in sites]
     dem = [demand(s, tt, year) for s, tt in zip(sites, temps)]
-    for i, d in enumerate(sites_in):  # live demo: size the building against the house
-        x = float(d.get("x_house") or 0)
-        if x > 0 and max(dem[i]) > 0:
-            house = Site.from_dict({"id": "house", "kind": "house", "lat": sites[i].lat, "lon": sites[i].lon})
-            f = x * max(demand(house, temps[i], year)) / max(dem[i])
-            dem[i] = [v * f for v in dem[i]]
-    if sizing == "peak":  # cover 100 % of heat demand with servers
-        for s, d in zip(sites, dem):
-            s.servers = math.ceil(max(d) / REC - 1e-9)
+    dem = size_sites(sites, sites_in, temps, dem, year, sizing, REC)  # live demo: x_house, sizing="tank"
     idx = {s.id: i for i, s in enumerate(sites)}
     outs = [(idx[o[0]], int(o[1]), int(o[2])) for o in outages if o[0] in idx and int(o[2]) > 0]
     sch = Scheduler(sites, dem, job_types(), outages=outs)
